@@ -67,7 +67,7 @@ class Z3Symbols:
 		key = (name, arity)
 		if key in self.funcs:
 			return self.funcs[key]
-		use_sort = sort or self.sort
+		use_sort = self.sort if sort is None else sort
 		func = Function(name, *([self.sort] * arity), use_sort)
 		self.funcs[key] = func
 		return func
@@ -82,6 +82,12 @@ class TokenStream:
 		if self.index >= len(self.tokens):
 			return None
 		return self.tokens[self.index]
+
+	def peek_offset(self, offset: int) -> Optional[str]:
+		idx = self.index + offset
+		if idx >= len(self.tokens):
+			return None
+		return self.tokens[idx]
 
 	def next(self) -> Optional[str]:
 		tok = self.peek()
@@ -151,6 +157,7 @@ class FolParser:
 			return expr
 		if tok in ("ForAll", "Exists"):
 			return self._parse_quantifier(stream)
+		start_index = stream.index
 		term = self._parse_term(stream)
 		comp = stream.peek()
 		if comp == "IN":
@@ -159,8 +166,17 @@ class FolParser:
 			pred = self.symbols.get_pred("In", 2)
 			return pred(term, right)
 		if comp in ("=", "!=", ">=", "<=", ">", "<"):
+			numeric = comp in (">=", "<=", ">", "<")
+			if comp in ("=", "!="):
+				next_tok = stream.peek_offset(1)
+				if next_tok is not None and re.fullmatch(r"\d+(?:\.\d+)?", next_tok):
+					numeric = True
+			if numeric and isinstance(term, BoolRef):
+				stream.index = start_index
+				term = self._parse_term(stream, prefer_numeric=True)
+				comp = stream.peek()
 			stream.next()
-			right = self._parse_term(stream)
+			right = self._parse_term(stream, prefer_numeric=numeric)
 			return self._build_comparison(comp, term, right)
 		if not isinstance(term, BoolRef):
 			raise ValueError("Predicate expected, got term")
@@ -182,12 +198,12 @@ class FolParser:
 			return ForAll([var], body)
 		return Exists([var], body)
 
-	def _parse_term(self, stream: TokenStream) -> ExprRef:
+	def _parse_term(self, stream: TokenStream, prefer_numeric: bool = False) -> ExprRef:
 		tok = stream.next()
 		if tok is None:
 			raise ValueError("Unexpected end of input")
 		if tok == "(":
-			expr = self._parse_term(stream)
+			expr = self._parse_term(stream, prefer_numeric=prefer_numeric)
 			stream.expect(")")
 			return expr
 		if tok.startswith("'") and tok.endswith("'"):
@@ -202,14 +218,19 @@ class FolParser:
 			args = []
 			if stream.peek() != ")":
 				while True:
-					args.append(self._parse_term(stream))
+					args.append(self._parse_term(stream, prefer_numeric=prefer_numeric))
 					if stream.peek() == ",":
 						stream.next()
 						continue
 					break
 			stream.expect(")")
+			if prefer_numeric:
+				func = self.symbols.get_func(tok, len(args), IntSort())
+				return func(*args)
 			pred = self.symbols.get_pred(tok, len(args))
 			return pred(*args)
+		if prefer_numeric:
+			return self.symbols.get_const(tok, IntSort())
 		return self.symbols.get_const(tok)
 
 	def _build_comparison(self, op: str, left: ExprRef, right: ExprRef) -> BoolRef:
