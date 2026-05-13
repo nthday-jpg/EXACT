@@ -18,3 +18,13 @@ This folder contains the normalized version of the logic-based dataset.
 ## How to regenerate
 
 Run the notebook data/process.ipynb from the data/ folder so paths resolve correctly.
+
+## Physics preprocessing
+
+- File: data/physic.csv
+- Notebook: data/preprocess_physics.ipynb
+- Steps:
+	- Collects unique characters before and after normalization.
+	- Replaces non-ASCII scientific notation (e.g., 1.00 × 10⁷) with ASCII equivalents.
+	- Normalizes multiplication to `*` with spacing (e.g., 1.82 * 10^-3).
+	- Wraps powers as `10^{...}` (e.g., 10^-4 to 10^{-4}).
