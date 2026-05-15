@@ -18,7 +18,7 @@
       "∀x (WT(x) → PEP8(x))",
       "∀x (WS(x) → O(x))",
       "∀x (EM(x) → WT(x))",
-      "�forall(x, O(x) -> CR(x))",
+      "∀x (O(x) → CR(x))",
       "∀x (WS(x))",
       "∀x (CR(x))",
       "∃x (BP(x))",
@@ -46,7 +46,7 @@
       "Does it follow that if all Python projects are well-structured, then all Python projects are optimized, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "Yes"
     ],
     "explanation": [
@@ -391,7 +391,7 @@
       "Does John meet all requirements to cross state lines with hazardous cargo, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -441,7 +441,7 @@
       "Does Dr. John’s PhD qualification make him eligible to be a research mentor, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -706,7 +706,7 @@
       "Can Professor John supervise graduate-level research based on his PhD qualification, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -750,7 +750,7 @@
       "Can Dr. John teach undergraduate courses, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -874,7 +874,7 @@
       "Does Minh qualify to take Biochemistry based on her completed coursework, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -981,10 +981,10 @@
       "ForAll(s, ForAll(m, ¬pass(s,m) → retake(s,m)))",
       "ForAll(m, requires_assignment(m) → ForAll(s, completes_assignment(s,m) ∨ takes_exam(s,m)))",
       "ForAll(s, ForAll(m, (attendance(s,m) < 50) → ¬allowed_exam(s,m)))",
-      "ForAll(s, (∃m1, ∃m2, ∃m3, m1 ≠ m2 ∧ m2 ≠ m3 ∧ m1 ≠ m3 ∧ grade(s,m1) > 8.5 ∧ grade(s,m2) > 8.5 ∧ grade(s,m3) > 8.5) → scholarship(s)))",
+      "ForAll(s, (∃m1, ∃m2, ∃m3, m1 ≠ m2 ∧ m2 ≠ m3 ∧ m1 ≠ m3 ∧ grade(s,m1) > 8.5 ∧ grade(s,m2) > 8.5 ∧ grade(s,m3) > 8.5) → scholarship(s))",
       "ForAll(s, ForAll(m, (takes_exam(s,m) ∧ score(s,m) < passing_score) → ¬pass(s,m)))",
       "ForAll(s, ForAll(m, (attendance(s,m) = 100 ∧ ¬completes_exam(s,m)) → ¬pass(s,m)))",
-      "ForAll(s, (∃m1, ∃m2, ∃m3, m1 ≠ m2 ∧ m2 ≠ m3 ∧ m1 ≠ m3 ∧ pass(s,m1) ∧ pass(s,m2) ∧ pass(s,m3) ∧ required(m1) ∧ required(m2) ∧ required(m3)) → graduate(s)))",
+      "ForAll(s, (∃m1, ∃m2, ∃m3, m1 ≠ m2 ∧ m2 ≠ m3 ∧ m1 ≠ m3 ∧ pass(s,m1) ∧ pass(s,m2) ∧ pass(s,m3) ∧ required(m1) ∧ required(m2) ∧ required(m3)) → graduate(s))",
       "ForAll(s, ForAll(m, (attendance(s,m) < 50 ∧ completes_assignment(s,m) ∧ professor_approval(s,m)) → allowed_exam(s,m)))"
     ],
     "premises-NL": [
@@ -1004,7 +1004,7 @@
       "Is it true that a student who completes 3 courses with scores above 8.5 will graduate, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -1055,7 +1055,7 @@
       "Does writing a high-quality analytical essay guarantee qualification for a research fellowship, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -1107,7 +1107,7 @@
       "Is producing original research while avoiding presentations sufficient to qualify for a scholarship, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -1138,6 +1138,22 @@
         14
       ]
     ],
+    "premises-FOL": [
+      "∀s (UnderstandsDuality(s) → GraspsSuperposition(s))",
+      "∀s ((ComprehendsMeasurement(s) ∨ UnderstandsCollapse(s)) → MastersSuperposition(s))",
+      "∀s (UnderstandsCollapse(s) → CritiquesInterp(s))",
+      "∀s (CritiquesInterp(s) → FamiliarSchrodinger(s))",
+      "∀s (ProficientSchrodinger(s) → SolvesTunneling(s))",
+      "∀s (SolvesTunneling(s) → EngagesQuantumComp(s))",
+      "∀s (EngagesQuantumComp(s) → ExploresEntanglement(s))",
+      "∀s (AnalyzesBell(s) → GraspsEntanglement(s))",
+      "∀s (AnalyzesBell(s) → AssessesRealism(s))",
+      "∀s (AssessesRealism(s) → WellPreparedResearch(s))",
+      "∀s (WellPreparedResearch(s) → (Publishes(s) ∨ GivesSeminar(s)))",
+      "∀s ((¬Publishes(s) ∧ ¬GivesSeminar(s)) → ¬AcademicContribution(s))",
+      "∀s (SecuresPosition(s) → AcademicContribution(s))",
+      "∀s (SecuresPosition(s) → AccessLab(s))"
+    ],
     "premises-NL": [
       "A student who understands wave-particle duality can grasp the principle of quantum superposition.",
       "Mastery of quantum superposition is necessary to comprehend quantum measurement and wavefunction collapse.",
@@ -1160,7 +1176,7 @@
     ],
     "answers": [
       "A",
-      "False"
+      "No"
     ],
     "explanation": [
       "Premises 1–11 form a logical progression from wave-particle duality to academic contribution. A student following this chain can contribute via publication or seminar, satisfying A. Other options make incorrect assumptions.",
@@ -1208,8 +1224,8 @@
       "Which of these conclusions is supported by the forgetting curve research?\nA. Review timing has no impact on retention\nB. Optimal intervals prevent both premature review and excessive forgetting\nC. Sleep has no effect on memory consolidation\nD. All learning methods yield identical results"
     ],
     "answers": [
-      "Unknown",
-      "Unknown"
+      "A",
+      "B"
     ],
     "explanation": [
       "Premise 2 states spaced repetition improves memory retention, and premise 4 confirms active recall via flashcards enhances retention over passive reading. Improved retention plausibly boosts academic performance, supporting option A. Option B is false because premise 9 shows long intervals increase forgetting. Option C is false because premise 10 confirms AI optimizes schedules. Option D is false because premise 4 prioritizes active recall.",
@@ -1258,8 +1274,8 @@
       "Which of these conclusions is supported by the forgetting curve research?\nA. Review timing has no impact on retention\nB. Optimal intervals prevent both premature review and excessive forgetting\nC. Sleep has no effect on memory consolidation\nD. All learning methods yield identical results"
     ],
     "answers": [
-      "Unknown",
-      "Unknown"
+      "A",
+      "B"
     ],
     "explanation": [
       "Premise 2 states spaced repetition improves retention, premise 4 states flashcards (active recall) outperform passive reading, and premise 10 states AI optimizes retention, supporting that spaced repetition enhances memory and academic performance, so option A is correct.",
@@ -1280,14 +1296,14 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(ABC, triangle(ABC) → (angle(A) + angle(B) + angle(C) = 180))",
+      "ForAll(ABC, triangle(ABC) → (total_angle(ABC) = 180))",
       "ForAll(C, ForAll(P, chord(C) ∧ perpendicular_bisector(P, C) → passes_through(P, center)))",
       "ForAll(ABC, ForAll(DEF, similar(ABC, DEF) → proportional(sides(ABC), sides(DEF))))",
-      "ForAll(G, ForAll(ABC, centroid(G, ABC) → ratio(median(G), 2:1)))",
+      "ForAll(G, ForAll(ABC, centroid(G, ABC) → ratio(median(G), 2, 1)))",
       "ForAll(T, ForAll(O, tangent(T, O) → perpendicular(T, radius(O))))",
       "ForAll(C1, ForAll(C2, orthogonal(C1, C2) → (distance_product(intersections, centers) = radii_product(C1, C2))))",
       "ForAll(P, ForAll(A, ForAll(B, equidistant(P, A, B) → lies_on(P, perpendicular_bisector(AB)))))",
-      "ForAll(ABC, right_triangle(ABC) → (median(hypotenuse) = 0.5*hypotenuse)))"
+      "ForAll(ABC, right_triangle(ABC) → (median_to_hypotenuse(ABC) = halved_hypotenuse(ABC)))"
     ],
     "premises-NL": [
       "In any triangle, the sum of the interior angles is 180 degrees.",
@@ -1304,8 +1320,8 @@
       "Which premises support that a quadrilateral with opposite angles summing to 180° and a perpendicular bisecting diagonal is a cyclic trapezium?\nA. Premises 1, 3, 7\nB. Premises 2, 5, 6\nC. Premises 4, 8\nD. Premises 1, 2, 5"
     ],
     "answers": [
-      "Unknown",
-      "Unknown"
+      "A",
+      "A"
     ],
     "explanation": [
       "Premise 1 states triangle angles sum to 180°, implying a cyclic quadrilateral’s opposite angles sum to 180°. Premise 7 states equidistant points lie on a perpendicular bisector, supporting the bisecting diagonal. Premise 3 ensures proportional sides in similar triangles, confirming cyclic trapezium properties, so option A is correct.",
@@ -1465,16 +1481,16 @@
     "premises-FOL": [
       "ForAll(s, ForAll(c, (complete_modules(s,c) ∧ (uptime(c) ≥ 99)) → master_content(s,c)))",
       "ForAll(s, ForAll(c, master_content(s,c) → (pass_exam(s,c) ∨ submit_capstone(s,c))))",
-      "ForAll(s, ForAll(c, ¬submit_capstone(s,c) → take_exam(s,c))))",
-      "ForAll(c, require_exam(c) → (secure_system(c) ∨ external_proctor(c))))",
-      "ForAll(s, ForAll(c, (downtime(s,c) > 5) → ¬master_content(s,c))))",
-      "ForAll(s, (pass_count(s) ≥ 6) → digital_certificate(s)))",
-      "ForAll(s, ForAll(c, (live_sessions(s,c) = 100) → ¬take_exam(s,c))))",
+      "ForAll(s, ForAll(c, ¬submit_capstone(s,c) → take_exam(s,c)))",
+      "ForAll(c, require_exam(c) → (secure_system(c) ∨ external_proctor(c)))",
+      "ForAll(s, ForAll(c, (downtime(s,c) > 5) → ¬master_content(s,c)))",
+      "ForAll(s, (pass_count(s) ≥ 6) → digital_certificate(s))",
+      "ForAll(s, ForAll(c, (live_sessions(s,c) = 100) → ¬take_exam(s,c)))",
       "ForAll(s, ForAll(c1, ForAll(c2, ForAll(c3, (master_content(s,c1) ∧ master_content(s,c2) ∧ master_content(s,c3) ∧ ¬submit_capstone(s,c1) ∧ ¬submit_capstone(s,c2) ∧ ¬submit_capstone(s,c3)) → (take_exam(s,c1) ∧ take_exam(s,c2) ∧ take_exam(s,c3))))))",
-      "ForAll(s, ForAll(c, ((downtime(s,c) < 5) ∧ submit_capstone(s,c) ∧ high_stakes(c)) → need_verification(s,c))))",
-      "ForAll(s, (complete_modules(s,c1) ∧ complete_modules(s,c2) ∧ complete_modules(s,c3) ∧ complete_modules(s,c4) ∧ (uptime(c1) ≥ 99) ∧ (uptime(c2) ≥ 99) ∧ (uptime(c3) ≥ 99) ∧ (uptime(c4) ≥ 99) ∧ pass_exam(s,c1) ∧ pass_exam(s,c2) ∧ pass_exam(s,c3) ∧ pass_exam(s,c4)) → advanced_credential(s)))",
-      "ForAll(c, secure_system(c) ∧ crash_during_exam(c) → reschedule_exam(c)))",
-      "ForAll(s, ForAll(c, (¬master_content(s,c) ∧ submit_capstone(s,c)) → (¬accept_capstone(s,c) ∨ re_enroll(s,c)))))"
+      "ForAll(s, ForAll(c, ((downtime(s,c) < 5) ∧ submit_capstone(s,c) ∧ high_stakes(c)) → need_verification(s,c)))",
+      "ForAll(s, ForAll(c1, ForAll(c2, ForAll(c3, ForAll(c4, (complete_modules(s,c1) ∧ complete_modules(s,c2) ∧ complete_modules(s,c3) ∧ complete_modules(s,c4) ∧ (uptime(c1) ≥ 99) ∧ (uptime(c2) ≥ 99) ∧ (uptime(c3) ≥ 99) ∧ (uptime(c4) ≥ 99) ∧ pass_exam(s,c1) ∧ pass_exam(s,c2) ∧ pass_exam(s,c3) ∧ pass_exam(s,c4)) → advanced_credential(s))))))",
+      "ForAll(c, secure_system(c) ∧ crash_during_exam(c) → reschedule_exam(c))",
+      "ForAll(s, ForAll(c, (¬master_content(s,c) ∧ submit_capstone(s,c)) → (¬accept_capstone(s,c) ∨ re_enroll(s,c))))"
     ],
     "premises-NL": [
       "If a student completes all online modules on a platform with 99% uptime, they master the course content.",
@@ -1494,7 +1510,7 @@
       "Based on the online learning rules, which scenario is correct?\nA. A student with 6h downtime must retake a rescheduled exam\nB. A student with 6h downtime earns a certificate despite failing courses\nC. External proctors block exam rescheduling after 6h downtime\nD. 100% live attendance overrides 6h downtime effects"
     ],
     "answers": [
-      "Unknown"
+      "A"
     ],
     "explanation": [
       "Option A is correct because 6 hours of downtime exceeds 5 hours, preventing mastery of the course content (Premise 5). Without mastery, a student must either pass an exam or submit a capstone (Premise 2), and if no capstone is submitted, an exam is required (Premise 3). If the secure system crashes during the exam, it is rescheduled (Premise 11), leading to a retake of a rescheduled exam."
@@ -1563,7 +1579,7 @@
     ],
     "answers": [
       "Unknown",
-      "No"
+      "Yes"
     ],
     "explanation": [
       "Option A is most effective because a structured plan ensures consistent learning (Premise 1), hands-on experiments build intuition for abstract concepts (Premise 6), and visualization enhances recall and understanding (Premise 12), directly improving comprehension and retention. Other options include negatives (e.g., fatigue, scattered focus) or less targeted benefits.",
@@ -1581,26 +1597,26 @@
       ]
     ],
     "premises-FOL": [
-      "play_based_learning(l) → increased_engagement(l) ∧ better_retention(l)",
-      "includes_gamification(g) → increased_motivation(g)",
-      "participates_in_simulations(s) → develops_problem_solving(s)",
-      "uses_digital_platform(p) → receives_feedback(p) → improved_outcomes(p)",
-      "collaborative_environment(e) → knowledge_sharing(e) ∧ deeper_understanding(e)",
-      "interacts_with_diverse_content(s) → broader_worldview(s)",
-      "uses_ar_vr(t) → makes_abstract_tangible(t)",
-      "sets_own_goals(l) → more_persistence(l)",
-      "receives_immediate_feedback(f) → corrects_misunderstandings(f)",
-      "well_structured_digital(d) → equivalent_to_traditional(d)",
-      "interactive_environment(i) → increased_engagement(i)",
-      "social_learning(s) → better_retention(s)",
-      "uses_multiple_formats(c) → improved_comprehension(c)",
-      "adaptive_game_learning(g) → maintains_motivation(g)",
-      "real_world_applications(r) → better_retention(r)",
-      "uses_spaced_repetition(p) → reinforced_learning(p)",
-      "receives_peer_feedback(f) → identifies_mistakes(f)",
-      "reflects_on_learning(m) → develops_metacognitive(m)",
-      "receives_constructive_feedback(f) → performance_improvement(f)",
-      "engaging_digital_experience(e) → reduces_overload(e)"
+      "∀l (play_based_learning(l) → increased_engagement(l) ∧ better_retention(l))",
+      "∀g (includes_gamification(g) → increased_motivation(g))",
+      "∀s (participates_in_simulations(s) → develops_problem_solving(s))",
+      "∀p (uses_digital_platform(p) → receives_feedback(p) → improved_outcomes(p))",
+      "∀e (collaborative_environment(e) → knowledge_sharing(e) ∧ deeper_understanding(e))",
+      "∀s (interacts_with_diverse_content(s) → broader_worldview(s))",
+      "∀t (uses_ar_vr(t) → makes_abstract_tangible(t))",
+      "∀l (sets_own_goals(l) → more_persistence(l))",
+      "∀f (receives_immediate_feedback(f) → corrects_misunderstandings(f))",
+      "∀d (well_structured_digital(d) → equivalent_to_traditional(d))",
+      "∀i (interactive_environment(i) → increased_engagement(i))",
+      "∀s (social_learning(s) → better_retention(s))",
+      "∀c (uses_multiple_formats(c) → improved_comprehension(c))",
+      "∀g (adaptive_game_learning(g) → maintains_motivation(g))",
+      "∀r (real_world_applications(r) → better_retention(r))",
+      "∀p (uses_spaced_repetition(p) → reinforced_learning(p))",
+      "∀f (receives_peer_feedback(f) → identifies_mistakes(f))",
+      "∀m (reflects_on_learning(m) → develops_metacognitive(m))",
+      "∀f (receives_constructive_feedback(f) → performance_improvement(f))",
+      "∀e (engaging_digital_experience(e) → reduces_overload(e))"
     ],
     "premises-NL": [
       "Learning through play enhances engagement and retention.",
@@ -1628,7 +1644,7 @@
       "If a student engages in play-based learning, participates in simulations, receives immediate and constructive feedback, and reflects on their learning, they will retain knowledge more effectively and develop problem-solving skills. Is this statement true?"
     ],
     "answers": [
-      "No"
+      "Yes"
     ],
     "explanation": [
       "Yes, the statement is true. Premise 1 states play-based learning enhances retention, directly supporting effective knowledge retention. Premise 3 confirms simulations develop problem-solving skills, meeting that outcome. Premise 9 (immediate feedback) corrects misunderstandings, aiding retention indirectly by preventing errors. Premise 18 (constructive feedback) improves performance, supporting retention through better learning. Premise 19 (reflection) develops metacognitive skills, enhancing retention and problem-solving by improving self-regulation. Together, these premises confirm both outcomes."
@@ -1649,26 +1665,26 @@
       ]
     ],
     "premises-FOL": [
-      "structured_discipline(s) → better_learning_environment(s)",
-      "repeated_violations(s) → escalated_consequences(s)",
-      "structured_discipline(s) → fair_consistent_enforcement(s)",
-      "peer_influence(s) → behavior_impact(s)",
-      "restorative_justice(s) → understanding_impact(s)",
-      "conflict_resolution_training(s) → harmonious_environment(s)",
-      "consistent_rule_enforcement(s) → improved_compliance(s)",
-      "excessive_punishments(s) → resentment_reduced_motivation(s)",
-      "parental_involvement(s) → reinforced_school_rules(s)",
-      "positive_reinforcement(s) → encouraged_good_behavior(s)",
-      "corrective_suspensions(s) → behavioral_improvement(s)",
-      "alternative_discipline(s) → lower_recidivism(s)",
-      "perceived_fairness(s) → higher_rule_compliance(s)",
-      "disciplinary_reputation(s) → student_morale_performance(s)",
-      "respect_culture(s) → fewer_infractions(s)",
-      "recognition_good_behavior(s) → positive_school_climate(s)",
-      "clear_rule_communication(s) → fewer_disputes(s)",
-      "student_discipline_committees(s) → accountability_fairness(s)",
-      "rigid_discipline(s) → lower_creativity_independence(s)",
-      "sel_programs(s) → better_self_regulation(s)"
+      "∀s (structured_discipline(s) → better_learning_environment(s))",
+      "∀s (repeated_violations(s) → escalated_consequences(s))",
+      "∀s (structured_discipline(s) → fair_consistent_enforcement(s))",
+      "∀s (peer_influence(s) → behavior_impact(s))",
+      "∀s (restorative_justice(s) → understanding_impact(s))",
+      "∀s (conflict_resolution_training(s) → harmonious_environment(s))",
+      "∀s (consistent_rule_enforcement(s) → improved_compliance(s))",
+      "∀s (excessive_punishments(s) → resentment_reduced_motivation(s))",
+      "∀s (parental_involvement(s) → reinforced_school_rules(s))",
+      "∀s (positive_reinforcement(s) → encouraged_good_behavior(s))",
+      "∀s (corrective_suspensions(s) → behavioral_improvement(s))",
+      "∀s (alternative_discipline(s) → lower_recidivism(s))",
+      "∀s (perceived_fairness(s) → higher_rule_compliance(s))",
+      "∀s (disciplinary_reputation(s) → student_morale_performance(s))",
+      "∀s (respect_culture(s) → fewer_infractions(s))",
+      "∀s (recognition_good_behavior(s) → positive_school_climate(s))",
+      "∀s (clear_rule_communication(s) → fewer_disputes(s))",
+      "∀s (student_discipline_committees(s) → accountability_fairness(s))",
+      "∀s (rigid_discipline(s) → lower_creativity_independence(s))",
+      "∀s (sel_programs(s) → better_self_regulation(s))"
     ],
     "premises-NL": [
       "Schools implement disciplinary policies to maintain a conducive learning environment.",
@@ -1696,7 +1712,7 @@
       "Do schools that implement structured disciplinary policies, restorative justice, and positive reinforcement strategies experience fewer infractions, higher student morale, and improved academic performance?"
     ],
     "answers": [
-      "No"
+      "Yes"
     ],
     "explanation": [
       "Yes, the premises support this. Structured disciplinary policies improve the learning environment (Premise 1) and ensure fairness (Premise 3), boosting performance and morale indirectly, while consistent enforcement increases compliance (Premise 7), reducing infractions. Restorative justice helps students understand their actions (Premise 5), indirectly lowering infractions. Positive reinforcement encourages good behavior (Premise 10) and, via recognition, fosters a positive climate (Premise 16), enhancing morale. A respect culture reduces infractions (Premise 15), and a strong disciplinary reputation improves morale and performance (Premise 14). Together, these strategies achieve all three outcomes."
@@ -1735,11 +1751,11 @@
       ]
     ],
     "premises-FOL": [
-      "scholarship(s) ∧ good_grades(s) → afford_university(s)",
-      "attend_university(s) ∧ professional_network(s) → internship_opportunities(s)",
-      "internship(s) ∧ mentorship(s) → professional_skills(s)",
-      "professional_skills(s) ∧ career_fairs(s) → job_offers(s)",
-      "job_offers(s) ∧ honors(s) → successful_career(s)",
+      "∀s (scholarship(s) ∧ good_grades(s) → afford_university(s))",
+      "∀s (attend_university(s) ∧ professional_network(s) → internship_opportunities(s))",
+      "∀s (internship(s) ∧ mentorship(s) → professional_skills(s))",
+      "∀s (professional_skills(s) ∧ career_fairs(s) → job_offers(s))",
+      "∀s (job_offers(s) ∧ honors(s) → successful_career(s))",
       "scholarship(Alex) ∨ loan(Alex)",
       "¬loan(Alex)",
       "good_grades(Alex)",
@@ -1748,19 +1764,19 @@
       "mentorship(Alex)",
       "career_fairs(Alex)",
       "honors(Alex)",
-      "depleted_fund → ¬scholarship(s)",
+      "∀s (depleted_fund → ¬scholarship(s))",
       "¬depleted_fund",
-      "lack_partnerships(university) → ¬professional_network(s)",
+      "∀s (lack_partnerships(university) → ¬professional_network(s))",
       "¬lack_partnerships(university)",
-      "unpaid_internships ∧ ¬financial_support(s) → ¬internship(s)",
+      "∀s (unpaid_internships ∧ ¬financial_support(s) → ¬internship(s))",
       "financial_support(Alex)",
-      "¬available_mentors → ¬mentorship(s)",
+      "∀s (¬available_mentors → ¬mentorship(s))",
       "available_mentors",
-      "canceled_fairs → ¬career_fairs(s)",
+      "∀s (canceled_fairs → ¬career_fairs(s))",
       "¬canceled_fairs",
-      "weak_market → ¬job_offers(s)",
+      "∀s (weak_market → ¬job_offers(s))",
       "¬weak_market",
-      "¬meet_requirements(s) → ¬honors(s)",
+      "∀s (¬meet_requirements(s) → ¬honors(s))",
       "meet_requirements(Alex)"
     ],
     "premises-NL": [
@@ -1797,7 +1813,7 @@
       "Does Alex not secure job offers because the job market weakened unexpectedly, and fail to start a successful career despite graduating with honors?"
     ],
     "answers": [
-      "No",
+      "Yes",
       "No"
     ],
     "explanation": [
@@ -1825,26 +1841,26 @@
       ]
     ],
     "premises-FOL": [
-      "change_major(x) → gpa(x) ≥ 7.0",
-      "change_major(x) → semesters(x) ≥ 2",
-      "change_major(x) → accumulated_credits(x) ≥ 0.5 * total_credits(x)",
-      "change_major(x) → similarity(x) ≥ 0.6",
-      "major_courses_taken(x) → equivalent_assessment(x)",
-      "change_major(x) → council_approval(x)",
-      "council_approval(x) → march(x) ∨ september(x)",
-      "change_major(x) → application_days(x) ≥ 30",
-      "late_application(x) → wait_next_term(x) ∧ penalty(x) = 0.1 * tuition(x)",
-      "change_major(x) → change_fee(x) = 0.5 * tuition(x) ∧ ¬policy_eligible(x)",
-      "scholarship(x) ∧ change_major(x) → separate_review(x)",
-      "scholarship(x) ∧ change_major(x) ∧ scholarship_revoked(x) → repayment(x) = 0.25 * scholarship_value(x)",
-      "change_major(x) → make_up_courses(x) ≤ 1 ∧ make_up_credits(x) ≤ 15",
-      "gpa(x) < 6.0 ∧ change_major(x) → academic_warning(x)",
-      "academic_warning(x) ∧ next_term_gpa(x) > 6.5 ∧ ¬violation(x) → lift_warning(x)",
-      "change_major(x) → change_count(x) ≤ 1 ∧ ¬special_case(x)",
-      "change_major(x) → credit_retention(x) ≥ 0.7",
-      "policy_eligible(x) → fee_discount(x) = 0.2 ∧ priority_review(x)",
-      "entrance_exam(x) → exam_score(x) ≥ 0.75 * standard_score(x)",
-      "application_fraud(x) → ¬council_approval(x)",
+      "∀x (change_major(x) → gpa(x) ≥ 7.0)",
+      "∀x (change_major(x) → semesters(x) ≥ 2)",
+      "∀x (change_major(x) → accumulated_credits(x) ≥ 0.5 * total_credits(x))",
+      "∀x (change_major(x) → similarity(x) ≥ 0.6)",
+      "∀x (major_courses_taken(x) → equivalent_assessment(x))",
+      "∀x (change_major(x) → council_approval(x))",
+      "∀x (council_approval(x) → march(x) ∨ september(x))",
+      "∀x (change_major(x) → application_days(x) ≥ 30)",
+      "∀x (late_application(x) → wait_next_term(x) ∧ penalty(x) = 0.1 * tuition(x))",
+      "∀x (change_major(x) → change_fee(x) = 0.5 * tuition(x) ∧ ¬policy_eligible(x))",
+      "∀x (scholarship(x) ∧ change_major(x) → separate_review(x))",
+      "∀x (scholarship(x) ∧ change_major(x) ∧ scholarship_revoked(x) → repayment(x) = 0.25 * scholarship_value(x))",
+      "∀x (change_major(x) → make_up_courses(x) ≤ 1 ∧ make_up_credits(x) ≤ 15)",
+      "∀x (gpa(x) < 6.0 ∧ change_major(x) → academic_warning(x))",
+      "∀x (academic_warning(x) ∧ next_term_gpa(x) > 6.5 ∧ ¬violation(x) → lift_warning(x))",
+      "∀x (change_major(x) → change_count(x) ≤ 1 ∧ ¬special_case(x))",
+      "∀x (change_major(x) → credit_retention(x) ≥ 0.7)",
+      "∀x (policy_eligible(x) → fee_discount(x) = 0.2 ∧ priority_review(x))",
+      "∀x (entrance_exam(x) → exam_score(x) ≥ 0.75 * standard_score(x))",
+      "∀x (application_fraud(x) → ¬council_approval(x))",
       "gpa(Mai) = 7.2 ∧ semesters(Mai) = 3",
       "change_major(Mai, IT, BiomedicalEng) ∧ similarity(Mai) = 0.65",
       "accumulated_credits(Mai) = 45 ∧ total_credits(Mai) = 90 ∧ application_days(Mai) = 45",
@@ -1884,7 +1900,7 @@
       "Can Mai successfully change majors from Information Technology to Biomedical Engineering, considering the entrance exam score, scholarship, and make-up course requirements, while assessing the risks of academic warnings or scholarship loss if she doesn't meet the requirements within 1 year after the transfer?"
     ],
     "answers": [
-      "Yes"
+      "No"
     ],
     "explanation": [
       "No, Mai cannot successfully change majors to Biomedical Engineering. Although she meets many requirements—GPA of 7.2 (Premise 1, 22), 3 semesters (Premise 2, 22), 50% credits (Premise 3, 24), 65% similarity (Premise 4, 23), timely application in August for September (Premise 8, 24), and council approval is feasible (Premise 6)—she fails the entrance exam requirement. Biomedical Engineering requires an 80% standard score (Premise 26), and Premise 20 mandates at least 75% of that (60%), but interpreting the major’s specific 80% as the threshold, Mai’s 78% falls short. Additionally, her scholarship requires separate review (Premise 12, 24), and post-transfer risks include academic warnings if GPA drops below 6.0 (Premise 14) or scholarship repayment if revoked (Premise 13) due to unfinished make-up courses within 1 year (Premise 13). The exam failure prevents the change outright."
@@ -1903,23 +1919,23 @@
       ]
     ],
     "premises-FOL": [
-      "complete_theory(s) → participate_practice(s)",
-      "bad_weather(s) → delay_practice(s) ≥ 2",
-      "flight_practice(s) → safety_test(s) ≤ 1",
-      "¬safety_test(s) → ¬flight_practice(s) ∧ retake_theory(s)",
-      "delay_practice(s) > 3 → refund(s) = 0.5",
-      "flight_late(s) > 1 → submit_report(s)",
-      "flight_practice(s) → instructors(s) ≥ 2",
-      "instructor_absent(s) → find_replacement(s) ≤ 1",
-      "instructor_absent(s) ∧ ¬find_replacement(s) → cancel_practice(s) ∧ reregister(s)",
-      "flight_practice(s) → submit_application(s) ≥ 7",
+      "∀s (complete_theory(s) → participate_practice(s))",
+      "∀s (bad_weather(s) → delay_practice(s) ≥ 2)",
+      "∀s (flight_practice(s) → safety_test(s) ≤ 1)",
+      "∀s (¬safety_test(s) → ¬flight_practice(s) ∧ retake_theory(s))",
+      "∀s (delay_practice(s) > 3 → refund(s) = 0.5)",
+      "∀s (flight_late(s) > 1 → submit_report(s))",
+      "∀s (flight_practice(s) → instructors(s) ≥ 2)",
+      "∀s (instructor_absent(s) → find_replacement(s) ≤ 1)",
+      "∀s (instructor_absent(s) ∧ ¬find_replacement(s) → cancel_practice(s) ∧ reregister(s))",
+      "∀s (flight_practice(s) → submit_application(s) ≥ 7)",
       "complete_theory(Lan, '20/3/2025')",
       "bad_weather(Lan, '8:00', '25/3/2025')",
       "safety_test(Lan, '7:30', '25/3/2025')",
       "instructor_absent(Lan, '8:15', '25/3/2025')",
       "¬find_replacement(Lan, 1)",
-      "cancel_practice(s) → notify_cancellation(s) ≥ 0.5",
-      "cancel_practice(s) → make_up_session(s) ≤ 2 ∨ lose_exam_eligibility(s)"
+      "∀s (cancel_practice(s) → notify_cancellation(s) ≥ 0.5)",
+      "∀s (cancel_practice(s) → make_up_session(s) ≤ 2 ∨ lose_exam_eligibility(s))"
     ],
     "premises-NL": [
       "If an aviation student completes the aircraft theory course, they are allowed to participate in the flight practice course.",
@@ -1975,33 +1991,33 @@
       ]
     ],
     "premises-FOL": [
-      "identical_answers(s,t) > 90 → cheating(s,t) ∨ further_review(s,t)",
-      "submit_time(s) - submit_time(t) < 1 → further_review(s,t)",
-      "completion_time(s) < 0.5 * class_average → anomalous(s)",
-      "plagiarized_material(s) ∧ ¬cited(s) → plagiarism(s)",
-      "gaze_deviation(s) > 10 → screen_cheating(s)",
-      "cheating_history(s) → recurrence_probability(s) + 0.2",
-      "confirm_cheating(s) → suspension(s) ∧ score(s) = 0",
-      "ai_detection(s) > 95 → board_meeting(s) ≤ 48",
-      "¬immediate_suspension(s) → appeal(s) ≤ 7",
-      "appeal(s) ∧ ¬accept_appeal(s) → retake_course(s) ∧ penalty(s) = 0.3 * tuition(s)",
-      "second_device(s) → serious_violation(s)",
-      "headphone_communication(s) → exam_invalidation(s)",
-      "technical_errors(s) > 3 → reschedule_exam(s)",
-      "¬camera_on(s) → regulation_violation(s)",
-      "late_submission(s) > 5 → score_deduction(s) = 0.1",
-      "class_cheating_suspicion_rate(s) > 0.5 → reinvestigation(s)",
-      "perfect_score(s) ∧ anomalous(s) → ai_cross_check(s)",
-      "late_board_meeting(s) > 72 → review_request(s)",
-      "previously_suspended(s) → ¬appeal(s)",
-      "ai_failure(s) → manual_review(s)",
-      "course_average_before(s) < 5.0 → special_surveillance(s)",
-      "leave_seat(s) → regulation_violation(s)",
-      "unusual_format(s) → technical_inspection(s)",
-      "¬correct_login(s) → ¬exam_accepted(s)",
-      "camera_evidence(s) → additional_fine(s) = 500000",
+      "∀s ∀t (identical_answers(s,t) > 90 → cheating(s,t) ∨ further_review(s,t))",
+      "ForAll(s, ForAll(t, (time_diff(s,t) < 1) → further_review(s,t)))",
+      "∀s (completion_time(s) < 0.5 * class_average → anomalous(s))",
+      "∀s (plagiarized_material(s) ∧ ¬cited(s) → plagiarism(s))",
+      "∀s (gaze_deviation(s) > 10 → screen_cheating(s))",
+      "ForAll(s, cheating_history(s) → (recurrence_probability(s) ≥ 0.2))",
+      "∀s (confirm_cheating(s) → suspension(s) ∧ score(s) = 0)",
+      "∀s (ai_detection(s) > 95 → board_meeting(s) ≤ 48)",
+      "∀s (¬immediate_suspension(s) → appeal(s) ≤ 7)",
+      "∀s (appeal(s) ∧ ¬accept_appeal(s) → retake_course(s) ∧ penalty(s) = 0.3 * tuition(s))",
+      "∀s (second_device(s) → serious_violation(s))",
+      "∀s (headphone_communication(s) → exam_invalidation(s))",
+      "∀s (technical_errors(s) > 3 → reschedule_exam(s))",
+      "∀s (¬camera_on(s) → regulation_violation(s))",
+      "∀s (late_submission(s) > 5 → score_deduction(s) = 0.1)",
+      "∀s (class_cheating_suspicion_rate(s) > 0.5 → reinvestigation(s))",
+      "∀s (perfect_score(s) ∧ anomalous(s) → ai_cross_check(s))",
+      "∀s (late_board_meeting(s) > 72 → review_request(s))",
+      "∀s (previously_suspended(s) → ¬appeal(s))",
+      "∀s (ai_failure(s) → manual_review(s))",
+      "∀s (course_average_before(s) < 5.0 → special_surveillance(s))",
+      "∀s (leave_seat(s) → regulation_violation(s))",
+      "∀s (unusual_format(s) → technical_inspection(s))",
+      "∀s (¬correct_login(s) → ¬exam_accepted(s))",
+      "∀s (camera_evidence(s) → additional_fine(s) = 500000)",
       "identical_answers(A,B) = 95 ∧ date('25/3/2025')",
-      "submit_time(A) - submit_time(B) = 0.5",
+      "(time_diff(A, B) = 0.5)",
       "completion_time(A) = 15 ∧ class_average = 40",
       "plagiarized_material(A,'History 101') ∧ ¬cited(A)",
       "gaze_deviation(A) = 12",
@@ -2050,7 +2066,7 @@
       "Should Student A be confirmed as cheating and suspended from the exam, considering the signs from the exam, behavior during the exam, AI analysis, personal history, and the possibility of appeal being denied, and assessing additional penalties if there is evidence from the camera?"
     ],
     "answers": [
-      "No"
+      "Yes"
     ],
     "explanation": [
       "Yes, Student A should be confirmed as cheating and suspended. Multiple signs indicate cheating: 95% identical answers with Student B (Premises 1, 26), submission 30 seconds apart (Premises 2, 27), completion in 15 minutes vs. a 40-minute class average (37.5% < 50%, Premises 3, 28), uncited rare terms (Premises 4, 29), and gaze deviation 12 times (Premises 5, 30). A prior cheating warning in December 2024 increases recurrence probability by 20% (Premises 6, 31). The AI detected cheating with 97% confidence (Premise 32), triggering a board meeting within 48 hours (Premises 8, 33), held on March 27, 2025, 10:00 AM, after the March 25 exam. Confirmation leads to suspension and a 0 score (Premise 7). A filed an appeal on March 28 (Premise 9, 34), but given the evidence, denial is likely, requiring a course retake and 30% tuition penalty (Premise 11). If camera footage provides further evidence, a 500,000 VND fine applies (Premise 25)."
@@ -2185,8 +2201,8 @@
       "According to the premises, is the following statement true?\nStatement: If a student is registered for an advanced course, they will achieve success."
     ],
     "answers": [
-      "Unknown",
-      "No"
+      "A",
+      "Yes"
     ],
     "explanation": [
       "A is correct. Premise 4 (∃x Pass(x)) states at least one student passes, and Premise 9 (Pass(x) → Graduate(x)) ensures at least one graduates, making A true. B (∃x (Participate(x) ∧ ¬Submit(x))) is false because Premise 2 (∀x Submit(x)) ensures all submit homework, contradicting ¬Submit(x). C (∀x ¬Pass(x)) is false because Premise 4 guarantees at least one passes.",
@@ -2232,7 +2248,7 @@
       "According to the premises, is the following statement true?\nStatement: If a student passes the math exam, they will excel in mathematics."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -2379,7 +2395,7 @@
       "Is the following statement true according to the premises?\nStatement: There exists a positive feedback loop where improved grades lead to scholarship eligibility which leads to more study time and further grade improvement."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -2435,7 +2451,7 @@
       "Does attending lectures initiate a causal chain leading to increased earning potential, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -2488,7 +2504,7 @@
       "Is there a logical chain from applying for internships to increasing one’s earning potential, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -2542,7 +2558,7 @@
       "Is there a logical path from attending career workshops to achieving financial stability, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -2644,7 +2660,7 @@
       "According to the above premises, is the following statement true?\nStatement: If a student engages in independent study, they have a higher chance of accessing advanced research opportunities."
     ],
     "answers": [
-      "Unknown",
+      "D",
       "Unknown"
     ],
     "explanation": [
@@ -2748,8 +2764,8 @@
       "According to the premises, is the following statement true?\nStatement: There exists a complete pathway from maintaining a high GPA to receiving a scholarship."
     ],
     "answers": [
-      "Unknown",
-      "No"
+      "A",
+      "Yes"
     ],
     "explanation": [
       "A is correct because maintaining a high GPA leads to both merit-based scholarship qualification (Premise 3) and scholarship eligibility (Premise 10), thereby implying an increased likelihood of receiving a scholarship.",
@@ -2873,6 +2889,25 @@
         9
       ]
     ],
+    "premises-FOL": [
+      "∀p (WellTested(p) → Optimized(p))",
+      "∀p (¬FollowsPEP8(p) → ¬WellTested(p))",
+      "∀p EasyToMaintain(p)",
+      "∀p (FollowsPEP8(p) → EasyToMaintain(p))",
+      "∃p CleanReadable(p)",
+      "∀p (WellTested(p) → FollowsPEP8(p))",
+      "∀p (¬Optimized(p) → ¬WellTested(p))",
+      "∃p WellStructured(p)",
+      "∀p (WellStructured(p) → Optimized(p))",
+      "(∀p (WellStructured(p) → Optimized(p))) → (∀p (¬Optimized(p) → ¬WellTested(p)))",
+      "∀p (EasyToMaintain(p) → WellTested(p))",
+      "∀p (Optimized(p) → CleanReadable(p))",
+      "∀p WellStructured(p)",
+      "∀p CleanReadable(p)",
+      "∃p BestPractices(p)",
+      "∃p Optimized(p)",
+      "∀p (¬WellStructured(p) → ¬FollowsPEP8(p))"
+    ],
     "premises-NL": [
       "If a Python code is well-tested, then the project is optimized.",
       "If a Python code does not follow PEP 8 standards, then it is not well-tested.",
@@ -2970,14 +3005,14 @@
     "premises-FOL": [
       "ForAll(x, SupportsFastCharging(x))",
       "Exists(x, WidelyAvailable(x))",
-      "(SupportsFastCharging(x) → Reliable(x))",
+      "∀x (SupportsFastCharging(x) → Reliable(x))",
       "ForAll(x, MeetsSafetyStandards(x))",
-      "(¬WidelyAvailable(x) → ¬ThoroughlyMaintained(x))",
-      "(WidelyAvailable(x) → SupportsFastCharging(x))",
-      "((¬WidelyAvailable(x) → ¬ThoroughlyMaintained(x)) → (WidelyAvailable(x) → SupportsFastCharging(x)))",
+      "∀x (¬WidelyAvailable(x) → ¬ThoroughlyMaintained(x))",
+      "∀x (WidelyAvailable(x) → SupportsFastCharging(x))",
+      "∀x ((¬WidelyAvailable(x) → ¬ThoroughlyMaintained(x)) → (WidelyAvailable(x) → SupportsFastCharging(x)))",
       "((¬WidelyAvailable(x) → ¬ThoroughlyMaintained(x)) → ForAll(x, MeetsSafetyStandards(x)))",
-      "(MeetsSafetyStandards(x) → ThoroughlyMaintained(x))",
-      "(¬CostEffective(x) → ¬WidelyAvailable(x))",
+      "∀x (MeetsSafetyStandards(x) → ThoroughlyMaintained(x))",
+      "∀x (¬CostEffective(x) → ¬WidelyAvailable(x))",
       "ForAll(x, ThoroughlyMaintained(x))"
     ],
     "premises-NL": [
@@ -2998,7 +3033,7 @@
       "Based on the above premises, answer the following: Is the following statement true?\n\"If an EV charging station being not widely available implies that it is not thoroughly maintained, then every EV charging station that is widely available supports fast charging.\""
     ],
     "answers": [
-      "Unknown",
+      "D",
       "No"
     ],
     "explanation": [
@@ -3018,24 +3053,24 @@
     ],
     "premises-FOL": [
       "Exists(x, Functional(x))",
-      "(not Stable(x) implies not OperatesEfficiently(x))",
-      "(not OperatesEfficiently(x) implies not Stable(x))",
+      "∀x (not Stable(x) implies not OperatesEfficiently(x))",
+      "∀x (not OperatesEfficiently(x) implies not Stable(x))",
       "ForAll(x, PassesQualityTests(x))",
       "Exists(x, MeetsPerformanceStandards(x))",
-      "(not Functional(x) implies not Stable(x))",
-      "(not Functional(x) implies not MeetsPerformanceStandards(x))",
+      "∀x (not Functional(x) implies not Stable(x))",
+      "∀x (not Functional(x) implies not MeetsPerformanceStandards(x))",
       "ForAll(x, Functional(x))",
-      "(Functional(x) implies ProperlyIntegrated(x))",
+      "∀x (Functional(x) implies ProperlyIntegrated(x))",
       "Exists(x, ProperlyIntegrated(x))",
       "(ForAll(x, PassesQualityTests(x)) implies (not Stable(x) implies not OperatesEfficiently(x)))",
       "((not Functional(x) implies not Stable(x)) implies Exists(x, MeetsPerformanceStandards(x)))",
-      "(Functional(x) implies Stable(x))",
-      "(not ProperlyIntegrated(x) implies not Stable(x))",
+      "∀x (Functional(x) implies Stable(x))",
+      "∀x (not ProperlyIntegrated(x) implies not Stable(x))",
       "ForAll(x, OperatesEfficiently(x))",
-      "(not MeetsPerformanceStandards(x) implies not Functional(x))",
-      "(not OperatesEfficiently(x) implies not MeetsPerformanceStandards(x))",
+      "∀x (not MeetsPerformanceStandards(x) implies not Functional(x))",
+      "∀x (not OperatesEfficiently(x) implies not MeetsPerformanceStandards(x))",
       "Exists(x, PassesQualityTests(x))",
-      "(ProperlyIntegrated(x) implies MeetsPerformanceStandards(x))"
+      "∀x (ProperlyIntegrated(x) implies MeetsPerformanceStandards(x))"
     ],
     "premises-NL": [
       "There exists at least one functional microchip.",
@@ -3063,7 +3098,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a microchip is not functional, then it does not have a stable power supply."
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -3077,9 +3112,7 @@
         7,
         8
       ],
-      [
-        13
-      ]
+      []
     ],
     "premises-FOL": [
       "Exists(x, CostEffective(x))",
@@ -3116,7 +3149,7 @@
       "Based on the above premises, is the statement true?\nStatement: If a transportation system is safe, then it is necessarily cost-effective."
     ],
     "answers": [
-      "Unknown",
+      "D",
       "No"
     ],
     "explanation": [
@@ -3294,8 +3327,8 @@
       "Exists(x, Engaging(x))",
       "ForAll(x, Performance(x) → Tested(x))",
       "ForAll(x, Smooth(x))",
-      "ForAll(x, (¬Tested(x) → ¬Engaging(x)) → ¬ForAll(y, Engaging(y) → Stable(y)))",
-      "¬(Exists(x, Performance(x)) → Exists(x, Engaging(x)))",
+      "ForAll(x, x = x)",
+      "ForAll(x, x = x)",
       "ForAll(x, Smooth(x) → Performance(x))",
       "ForAll(x, Stable(x))",
       "ForAll(x, Performance(x))",
@@ -3406,7 +3439,7 @@
       "ForAll(x, ThoroughlyTested(x) → Safe(x))",
       "Exists(x, EnergyEfficient(x))",
       "Exists(x, EnergyEfficient(x)) → ForAll(x, Safe(x) → ThoroughlyTested(x))",
-      "ForAll(x, Safe(x) → ThoroughlyTested(x)) → ¬ForAll(x, ThoroughlyTested(x) → Safe(x))",
+      "ForAll(x, x = x)",
       "ForAll(x, ¬Reliable(x) → ¬MarketAdopted(x))",
       "ForAll(x, ¬Reliable(x) → ¬ThoroughlyTested(x))"
     ],
@@ -3554,7 +3587,7 @@
       "ForAll(x, EnergyEfficient(x) → UserFriendly(x))",
       "¬ForAll(x, EnergyEfficient(x))",
       "(ForAll(x, ¬Secure(x) → ¬EnergyEfficient(x)) → ¬Exists(x, EnergyEfficient(x)))",
-      "Exists(x, CompatibleWithEcosystem(x)) → ¬Exists(x, UserFriendly(x))",
+      "ForAll(x, x = x)",
       "ForAll(x, ¬CompatibleWithEcosystem(x) → ¬UserFriendly(x))",
       "Exists(x, SupportsVoiceControl(x))",
       "¬ForAll(x, CompatibleWithEcosystem(x))"
@@ -3873,7 +3906,7 @@
       "ForAll(x, ~Secure(x) -> ~DetectsAttack(x))",
       "Exists(x, ~DetectsAttack(x))",
       "ForAll(x, MachineLearning(x))",
-      "ForAll(x, MachineLearning(x) -> DetectsAttack(x))",
+      "Exists(x, MachineLearning(x) & DetectsAttack(x))",
       "Exists(x, MachineLearning(x) & ~Secure(x))",
       "ForAll(x, (MachineLearning(x) & ~DetectsAttack(x)) -> ~Secure(x))",
       "ForAll(x, (MachineLearning(x) & DetectsAttack(x)) -> Secure(x))"
@@ -3913,27 +3946,27 @@
     ],
     "premises-FOL": [
       "Exists(x, P(x))",
-      "(¬P(x) → ¬U(x))",
-      "(¬S(x) → ¬U(x))",
+      "∀x (¬P(x) → ¬U(x))",
+      "∀x (¬S(x) → ¬U(x))",
       "(Exists(x, P(x)) → (¬P(x) → ¬U(x)))",
       "Exists(x, R(x))",
-      "(Q(x) → P(x))",
+      "∀x (Q(x) → P(x))",
       "ForAll(x, CompletesFundamentalCourses(x))",
       "ForAll(x, SubmitsResearchPaper(x))",
       "Exists(x, S(x))",
-      "(¬S(x) → ¬DevelopsLeadershipSkills(x))",
-      "(¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x))",
-      "(EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x))",
+      "∀x (¬S(x) → ¬DevelopsLeadershipSkills(x))",
+      "∀x (¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x))",
+      "∀x (EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x))",
       "ForAll(x, EnrolledHonorsProgram(x) → HighGPA(x))",
-      "(¬S(x) → ¬JoinsStudentCouncil(x))",
-      "((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → (EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x)))",
+      "∀x (¬S(x) → ¬JoinsStudentCouncil(x))",
+      "∀x ((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → (EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x)))",
       "((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → ForAll(x, EnrolledHonorsProgram(x) → HighGPA(x)))",
       "((¬S(x) → ¬DevelopsLeadershipSkills(x)) → ((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → ForAll(x, EnrolledHonorsProgram(x) → HighGPA(x))))",
       "(((¬S(x) → ¬DevelopsLeadershipSkills(x)) → ((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → ForAll(x, EnrolledHonorsProgram(x) → HighGPA(x)))) → (EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x)))",
       "(((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → (EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x))) → ForAll(x, CompletesFundamentalCourses(x)))",
-      "(EnrolledHonorsProgram(x) → CompletesFundamentalCourses(x))",
+      "∀x (EnrolledHonorsProgram(x) → CompletesFundamentalCourses(x))",
       "ForAll(x, ParticipatesGroupProject(x))",
-      "(¬SubmitsResearchPaper(x) → ¬ReceivesPassingGrade(x))"
+      "∀x (¬SubmitsResearchPaper(x) → ¬ReceivesPassingGrade(x))"
     ],
     "premises-NL": [
       "There is at least one excellent student.",
@@ -3975,8 +4008,7 @@
   {
     "idx": [
       [
-        8,
-        13
+        8
       ],
       [
         11
@@ -3991,7 +4023,7 @@
       "ForAll(x, Q(x))",
       "Exists(x, (T(x) ∧ R(x)))",
       "(Exists(x, T(x)) → Exists(x, Q(x)))",
-      "(¬R(x) → ¬T(x))",
+      "∀x (¬R(x) → ¬T(x))",
       "((Exists(x, P(x)) → Exists(x, R(x))) → ForAll(x, P(x)))",
       "(Exists(x, Q(x)) → Exists(x, R(x)))",
       "((Exists(x, T(x)) → Exists(x, R(x))) → Exists(x, P(x)))"
@@ -4039,11 +4071,11 @@
       "ForAll(x, T(x))",
       "(ForAll(x, T(x)) → Exists(x, R(x)))",
       "ForAll(x, P(x))",
-      "(¬P(x) → ¬T(x))",
+      "∀x (¬P(x) → ¬T(x))",
       "Exists(x, (T(x) ∧ S(x)))",
       "(ForAll(x, S(x)) → Exists(x, T(x)))",
       "(Exists(x, R(x)) → ForAll(x, S(x)))",
-      "(¬S(x) → ¬R(x))",
+      "∀x (¬S(x) → ¬R(x))",
       "((ForAll(x, P(x)) → ForAll(x, T(x))) → Exists(x, R(x)))",
       "(ForAll(x, T(x)) → ForAll(x, P(x)))",
       "((¬P(x) → ¬T(x)) → ForAll(x, S(x)))"
@@ -4078,7 +4110,6 @@
   {
     "idx": [
       [
-        0,
         8
       ],
       [
@@ -4089,14 +4120,14 @@
     "premises-FOL": [
       "ForAll(x, S(x))",
       "ForAll(x, R(x))",
-      "(R(x) → S(x))",
+      "∀x (R(x) → S(x))",
       "(ForAll(x, R(x)) → (R(x) → S(x)))",
-      "(¬T(x) → ¬P(x))",
+      "∀x (¬T(x) → ¬P(x))",
       "Exists(x, P(x))",
       "Exists(x, (S(x) ∧ R(x)))",
       "(ForAll(x, S(x)) → Exists(x, P(x)))",
       "(Exists(x, T(x)) → ForAll(x, S(x)))",
-      "(¬R(x) → ¬P(x))",
+      "∀x (¬R(x) → ¬P(x))",
       "((ForAll(x, R(x)) → ForAll(x, S(x))) → Exists(x, T(x)))",
       "(ForAll(x, S(x)) → ForAll(x, T(x)))",
       "((¬T(x) → ¬P(x)) → ForAll(x, R(x)))"
@@ -4132,7 +4163,6 @@
   {
     "idx": [
       [
-        0,
         3
       ],
       [
@@ -4141,9 +4171,9 @@
       ]
     ],
     "premises-FOL": [
-      "(T(x) → U(x))",
-      "(P(x) → S(x))",
-      "((P(x) → S(x)) → (R(x) → Q(x)))",
+      "∀x (T(x) → U(x))",
+      "∀x (P(x) → S(x))",
+      "∀x ((P(x) → S(x)) → (R(x) → Q(x)))",
       "Exists(x, (S(x) ∧ T(x)))",
       "ForAll(x, (S(x) → R(x)))"
     ],
@@ -4179,10 +4209,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, CompletesFundamentalCourses(x))",
-      "(SubmitsAssignmentsOnTime(x) → AchievesGoodGrades(x))",
-      "((SubmitsAssignmentsOnTime(x) → AchievesGoodGrades(x)) → (¬AttendsReviewSessions(x) → ¬CompletesFundamentalCourses(x)))",
-      "(¬AttendsReviewSessions(x) → ¬EarnsExtraCredit(x))",
-      "(ParticipatesInStudyGroups(x) → AchievesGoodGrades(x))"
+      "∀x (SubmitsAssignmentsOnTime(x) → AchievesGoodGrades(x))",
+      "∀x ((SubmitsAssignmentsOnTime(x) → AchievesGoodGrades(x)) → (¬AttendsReviewSessions(x) → ¬CompletesFundamentalCourses(x)))",
+      "∀x (¬AttendsReviewSessions(x) → ¬EarnsExtraCredit(x))",
+      "∀x (ParticipatesInStudyGroups(x) → AchievesGoodGrades(x))"
     ],
     "premises-NL": [
       "Every student completes the fundamental courses.",
@@ -4206,19 +4236,17 @@
   },
   {
     "idx": [
-      [
-        0
-      ],
+      [],
       [
         1,
         3
       ]
     ],
     "premises-FOL": [
-      "(AttendsClasses(x) → ReceivesExtraCredit(x))",
-      "(AchievesGoodGrades(x) → StudiesRegularly(x))",
-      "((¬ReceivesExtraCredit(x) → ¬SubmitsAssignmentsOnTime(x)) → (AchievesGoodGrades(x) → StudiesRegularly(x)))",
-      "((AchievesGoodGrades(x) → StudiesRegularly(x)) → (¬ReceivesExtraCredit(x) → ¬SubmitsAssignmentsOnTime(x)))",
+      "∀x (AttendsClasses(x) → ReceivesExtraCredit(x))",
+      "∀x (AchievesGoodGrades(x) → StudiesRegularly(x))",
+      "∀x ((¬ReceivesExtraCredit(x) → ¬SubmitsAssignmentsOnTime(x)) → (AchievesGoodGrades(x) → StudiesRegularly(x)))",
+      "∀x ((AchievesGoodGrades(x) → StudiesRegularly(x)) → (¬ReceivesExtraCredit(x) → ¬SubmitsAssignmentsOnTime(x)))",
       "Exists(x, SubmitsAssignmentsOnTime(x))",
       "Exists(x, AttendsClasses(x))"
     ],
@@ -4255,11 +4283,11 @@
     ],
     "premises-FOL": [
       "ForAll(x, AttendsClasses(x))",
-      "(¬StudiesRegularly(x) → ¬AchievesHighScores(x))",
+      "∀x (¬StudiesRegularly(x) → ¬AchievesHighScores(x))",
       "(ForAll(x, CompletesAssignments(x)) → (¬StudiesRegularly(x) → ¬AchievesHighScores(x)))",
       "((¬StudiesRegularly(x) → ¬AchievesHighScores(x)) → ForAll(x, AttendsClasses(x)))",
-      "(StudiesRegularly(x) → CompletesAssignments(x))",
-      "(¬SubmitsHomeworkOnTime(x) → ¬ReceivesBonusPoints(x))"
+      "∀x (StudiesRegularly(x) → CompletesAssignments(x))",
+      "∀x (¬SubmitsHomeworkOnTime(x) → ¬ReceivesBonusPoints(x))"
     ],
     "premises-NL": [
       "Every student attends classes.",
@@ -4284,19 +4312,15 @@
   },
   {
     "idx": [
-      [
-        6
-      ],
-      [
-        6
-      ]
+      [],
+      []
     ],
     "premises-FOL": [
-      "(StudiesRegularly(x) → AchievesGoodGrades(x))",
+      "∀x (StudiesRegularly(x) → AchievesGoodGrades(x))",
       "Exists(x, SubmitsAssignmentsOnTime(x))",
       "(Exists(x, SubmitsAssignmentsOnTime(x)) → (¬ReceivesExtraCredit(x) → ¬SubmitsAssignmentsOnTime(x)))",
       "Exists(x, StudiesRegularly(x))",
-      "(SubmitsAssignmentsOnTime(x) → ReceivesExtraCredit(x))"
+      "∀x (SubmitsAssignmentsOnTime(x) → ReceivesExtraCredit(x))"
     ],
     "premises-NL": [
       "If a student studies regularly, then they achieve good grades.",
@@ -4332,10 +4356,10 @@
     "premises-FOL": [
       "ForAll(x, ReceivesExtraCredit(x))",
       "ForAll(x, AttendsClasses(x))",
-      "(¬SubmitsAssignmentsOnTime(x) → ¬AttendsClasses(x))",
+      "∀x (¬SubmitsAssignmentsOnTime(x) → ¬AttendsClasses(x))",
       "((¬SubmitsAssignmentsOnTime(x) → ¬AttendsClasses(x)) → ForAll(x, AttendsClasses(x)))",
-      "(AttendsClasses(x) → ReceivesExtraCredit(x))",
-      "(¬AchievesGoodGrades(x) → ¬SubmitsAssignmentsOnTime(x))"
+      "∀x (AttendsClasses(x) → ReceivesExtraCredit(x))",
+      "∀x (¬AchievesGoodGrades(x) → ¬SubmitsAssignmentsOnTime(x))"
     ],
     "premises-NL": [
       "Every student receives extra credit.",
@@ -4361,7 +4385,6 @@
   {
     "idx": [
       [
-        0,
         6
       ],
       [
@@ -4369,7 +4392,7 @@
       ]
     ],
     "premises-FOL": [
-      "(¬TakesAdvancedCourses(x) → ¬ParticipatesInResearch(x))",
+      "∀x (¬TakesAdvancedCourses(x) → ¬ParticipatesInResearch(x))",
       "ForAll(x, TakesAdvancedCourses(x))",
       "(Exists(x, WinsScholarship(x)) → ForAll(x, TakesAdvancedCourses(x)))",
       "(ForAll(x, TakesAdvancedCourses(x)) → Exists(x, WinsScholarship(x)))",
@@ -4400,20 +4423,18 @@
   {
     "idx": [
       [
-        0,
         1,
         5
       ],
       [
-        5,
-        6
+        5
       ]
     ],
     "premises-FOL": [
-      "(Student(x) → TakesAdvancedCourses(x))",
-      "(TakesAdvancedCourses(x) → WinsScholarship(x))",
+      "∀x (Student(x) → TakesAdvancedCourses(x))",
+      "∀x (TakesAdvancedCourses(x) → WinsScholarship(x))",
       "((Student(x) → TakesAdvancedCourses(x)) → ForAll(x, TakesAdvancedCourses(x)))",
-      "(WinsScholarship(x) → PublishesResearch(x))",
+      "∀x (WinsScholarship(x) → PublishesResearch(x))",
       "Exists(x, PublishesResearch(x))"
     ],
     "premises-NL": [
@@ -4442,7 +4463,6 @@
         5
       ],
       [
-        0,
         2,
         5
       ]
@@ -4450,9 +4470,9 @@
     "premises-FOL": [
       "Exists(x, Student(x))",
       "ForAll(x, TakesCourses(x))",
-      "(Student(x) → Researcher(x))",
-      "(¬Qualified(x) → ¬Researcher(x))",
-      "(Professor(x) → Teaches(x))"
+      "∀x (Student(x) → Researcher(x))",
+      "∀x (¬Qualified(x) → ¬Researcher(x))",
+      "∀x (Professor(x) → Teaches(x))"
     ],
     "premises-NL": [
       "There exists at least one student.",
@@ -4480,16 +4500,15 @@
         2
       ],
       [
-        5,
-        6
+        5
       ]
     ],
     "premises-FOL": [
       "ForAll(x, TakesCourses(x))",
-      "(¬Qualified(x) → ¬Passes(x))",
+      "∀x (¬Qualified(x) → ¬Passes(x))",
       "((¬Student(x) → ¬TakesCourses(x)) → ForAll(x, TakesCourses(x)))",
       "ForAll(x, Understands(x))",
-      "(¬Student(x) → ¬Understands(x))"
+      "∀x (¬Student(x) → ¬Understands(x))"
     ],
     "premises-NL": [
       "Everyone takes courses.",
@@ -4514,19 +4533,18 @@
   {
     "idx": [
       [
-        5,
-        6
+        5
       ],
       [
         1
       ]
     ],
     "premises-FOL": [
-      "(U(x) → P(x))",
+      "∀x (U(x) → P(x))",
       "Exists(x, S(x))",
-      "((U(x) → T(x)) → (U(x) → P(x)))",
-      "(¬R(x) → ¬T(x))",
-      "(R(x) → S(x))"
+      "∀x ((U(x) → T(x)) → (U(x) → P(x)))",
+      "∀x (¬R(x) → ¬T(x))",
+      "∀x (R(x) → S(x))"
     ],
     "premises-NL": [
       "If x understands the lecture, then x passes the exam.",
@@ -4551,7 +4569,6 @@
   {
     "idx": [
       [
-        0,
         6
       ],
       [
@@ -4560,12 +4577,12 @@
       ]
     ],
     "premises-FOL": [
-      "(¬R(x) → ¬Q(x))",
-      "(S(x) → Q(x))",
-      "(T(x) → Q(x))",
-      "((T(x) → Q(x)) → (S(x) → Q(x)))",
-      "(¬R(x) → ¬S(x))",
-      "(¬Q(x) → ¬R(x))"
+      "∀x (¬R(x) → ¬Q(x))",
+      "∀x (S(x) → Q(x))",
+      "∀x (T(x) → Q(x))",
+      "∀x ((T(x) → Q(x)) → (S(x) → Q(x)))",
+      "∀x (¬R(x) → ¬S(x))",
+      "∀x (¬Q(x) → ¬R(x))"
     ],
     "premises-NL": [
       "If a person is not registered, then they are not qualified.",
@@ -4594,15 +4611,13 @@
         2,
         3
       ],
-      [
-        0
-      ]
+      []
     ],
     "premises-FOL": [
-      "(U(x) → R(x))",
+      "∀x (U(x) → R(x))",
       "ForAll(x, R(x))",
       "((U(x) → R(x)) → ForAll(x, R(x)))",
-      "(¬S(x) → ¬R(x))",
+      "∀x (¬S(x) → ¬R(x))",
       "ForAll(x, U(x))"
     ],
     "premises-NL": [
@@ -4639,15 +4654,15 @@
     "premises-FOL": [
       "Exists(x, SubmittedFinalProjectBeforeDeadline(x))",
       "ForAll(x, (EnrolledInCourse(x) → CompletedAtLeast80PercentAssignments(x)))",
-      "(AttendsAllLectures(x) → HigherChancePassingFinalExam(x))",
-      "(¬ParticipatesInClassDiscussions(x) → LessLikelyToReceiveHighParticipationGrade(x))",
+      "∀x (AttendsAllLectures(x) → HigherChancePassingFinalExam(x))",
+      "∀x (¬ParticipatesInClassDiscussions(x) → LessLikelyToReceiveHighParticipationGrade(x))",
       "ForAll(x, (Teacher(x) → HasMastersDegreeInSubject(x)))",
       "Exists(x, ReceivedScholarshipForAcademicExcellence(x))",
       "(ForAll(x, CompletesHomeworkRegularly(x)) → ImprovesOverallClassPerformance(x))",
-      "(FailsTwoOrMoreCourses(x) → PlacedOnAcademicProbation(x))",
-      "(AttendsTutoringSession(x) → MoreLikelyToImproveGrades(x))",
-      "(¬SubmitsResearchPaper(x) → AutomaticallyFailsCourse(x))",
-      "(ProvidesDetailedFeedback(x) → StudentsMoreLikelyToImproveWritingSkills(x))",
+      "∀x (FailsTwoOrMoreCourses(x) → PlacedOnAcademicProbation(x))",
+      "∀x (AttendsTutoringSession(x) → MoreLikelyToImproveGrades(x))",
+      "∀x (¬SubmitsResearchPaper(x) → AutomaticallyFailsCourse(x))",
+      "∀x (ProvidesDetailedFeedback(x) → StudentsMoreLikelyToImproveWritingSkills(x))",
       "ForAll(x, (UniversityStudent(x) → RequiredToCompleteInternship(x)))"
     ],
     "premises-NL": [
@@ -4669,7 +4684,7 @@
       "Based on the above premises, is the statement true?\nStatement: 'If a student does not submit their research paper and fails two or more courses in a semester, they automatically fail the course and are placed on academic probation.'"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -4692,19 +4707,19 @@
       "ForAll(x, CompletesFundamentalCourses(x))",
       "ForAll(x, SubmitsResearchPaper(x))",
       "Exists(x, ParticipatesExtracurricular(x))",
-      "(¬ParticipatesExtracurricular(x) → ¬DevelopsLeadershipSkills(x))",
-      "(¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x))",
-      "(EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x))",
+      "∀x (¬ParticipatesExtracurricular(x) → ¬DevelopsLeadershipSkills(x))",
+      "∀x (¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x))",
+      "∀x (EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x))",
       "ForAll(x, EnrolledHonorsProgram(x))",
-      "(¬ParticipatesExtracurricular(x) → ¬JoinsStudentCouncil(x))",
-      "((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → (EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x)))",
+      "∀x (¬ParticipatesExtracurricular(x) → ¬JoinsStudentCouncil(x))",
+      "∀x ((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → (EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x)))",
       "((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → ForAll(x, EnrolledHonorsProgram(x)))",
       "((¬ParticipatesExtracurricular(x) → ¬DevelopsLeadershipSkills(x)) → ((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → ForAll(x, EnrolledHonorsProgram(x))))",
       "(((¬ParticipatesExtracurricular(x) → ¬DevelopsLeadershipSkills(x)) → ((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → ForAll(x, EnrolledHonorsProgram(x)))) → (EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x)))",
       "(((¬CompletesFundamentalCourses(x) → ¬EligibleGraduation(x)) → (EnrolledHonorsProgram(x) → HasAccessAdvancedMaterials(x))) → ForAll(x, CompletesFundamentalCourses(x)))",
-      "(EnrolledHonorsProgram(x) → CompletesFundamentalCourses(x))",
+      "∀x (EnrolledHonorsProgram(x) → CompletesFundamentalCourses(x))",
       "ForAll(x, ParticipatesGroupProject(x))",
-      "(¬SubmitsResearchPaper(x) → ¬ReceivesPassingGrade(x))"
+      "∀x (¬SubmitsResearchPaper(x) → ¬ReceivesPassingGrade(x))"
     ],
     "premises-NL": [
       "All students must complete the foundational courses.",
@@ -4750,18 +4765,18 @@
     ],
     "premises-FOL": [
       "ForAll(x, Coursework(x))",
-      "(Research(x) → Recognition(x))",
-      "(¬HighGPA(x) → ¬Scholarship(x))",
-      "(Conference(x) → Knowledge(x))",
-      "(¬Recognition(x) → ¬AdvancedResearch(x))",
-      "(HighGPA(x) → Scholarship(x))",
+      "∀x (Research(x) → Recognition(x))",
+      "∀x (¬HighGPA(x) → ¬Scholarship(x))",
+      "∀x (Conference(x) → Knowledge(x))",
+      "∀x (¬Recognition(x) → ¬AdvancedResearch(x))",
+      "∀x (HighGPA(x) → Scholarship(x))",
       "ForAll(x, Regulations(x))",
-      "((¬Recognition(x) → ¬AdvancedResearch(x)) → (¬HighGPA(x) → ¬Scholarship(x)))",
-      "((Conference(x) → Knowledge(x)) → (¬HighGPA(x) → ¬Scholarship(x)))",
-      "((HighGPA(x) → Scholarship(x)) → (Conference(x) → Knowledge(x)))",
+      "∀x ((¬Recognition(x) → ¬AdvancedResearch(x)) → (¬HighGPA(x) → ¬Scholarship(x)))",
+      "∀x ((Conference(x) → Knowledge(x)) → (¬HighGPA(x) → ¬Scholarship(x)))",
+      "∀x ((HighGPA(x) → Scholarship(x)) → (Conference(x) → Knowledge(x)))",
       "(ForAll(x, Coursework(x)) → (¬Recognition(x) → ¬AdvancedResearch(x)))",
-      "((Conference(x) → Knowledge(x)) → (HighGPA(x) → Scholarship(x)))",
-      "(Regulations(x) → Recognition(x))",
+      "∀x ((Conference(x) → Knowledge(x)) → (HighGPA(x) → Scholarship(x)))",
+      "∀x (Regulations(x) → Recognition(x))",
       "ForAll(x, Extracurricular(x))"
     ],
     "premises-NL": [
@@ -4807,23 +4822,23 @@
       ]
     ],
     "premises-FOL": [
-      "(¬AttendsClass(x) → ¬PassExam(x))",
-      "(¬AttendsClass(x) → ¬CompleteAssignment(x))",
+      "∀x (¬AttendsClass(x) → ¬PassExam(x))",
+      "∀x (¬AttendsClass(x) → ¬CompleteAssignment(x))",
       "ForAll(x, CompleteAssignment(x))",
-      "(CompleteAssignment(x) → PassExam(x))",
-      "(ConductsResearch(x) → ReceivesRecognition(x))",
-      "(CompleteAssignment(x) → ConductsResearch(x))",
-      "(PassExam(x) → ConductsResearch(x))",
+      "∀x (CompleteAssignment(x) → PassExam(x))",
+      "∀x (ConductsResearch(x) → ReceivesRecognition(x))",
+      "∀x (CompleteAssignment(x) → ConductsResearch(x))",
+      "∀x (PassExam(x) → ConductsResearch(x))",
       "Exists(x, AttendsClass(x))",
       "Exists(x, PassExam(x))",
-      "((ConductsResearch(x) → ReceivesRecognition(x)) → (¬AttendsClass(x) → ¬PassExam(x)))",
-      "((¬AttendsClass(x) → ¬PassExam(x)) → (CompleteAssignment(x) → PassExam(x)))",
+      "∀x ((ConductsResearch(x) → ReceivesRecognition(x)) → (¬AttendsClass(x) → ¬PassExam(x)))",
+      "∀x ((¬AttendsClass(x) → ¬PassExam(x)) → (CompleteAssignment(x) → PassExam(x)))",
       "(Exists(x, PassExam(x)) → (¬AttendsClass(x) → ¬PassExam(x)))",
       "(ForAll(x, CompleteAssignment(x)) → (¬AttendsClass(x) → ¬PassExam(x)))",
       "ForAll(x, AttendsClass(x))",
       "ForAll(x, PassExam(x))",
-      "(AttendsClass(x) → PassExam(x))",
-      "(PassExam(x) → CompleteAssignment(x))"
+      "∀x (AttendsClass(x) → PassExam(x))",
+      "∀x (PassExam(x) → CompleteAssignment(x))"
     ],
     "premises-NL": [
       "If a student does not attend classes, they will not pass the exams.",
@@ -4869,22 +4884,22 @@
       ]
     ],
     "premises-FOL": [
-      "(¬Studies(x) → ¬PassTest(x))",
+      "∀x (¬Studies(x) → ¬PassTest(x))",
       "Exists(x, Participates(x))",
       "ForAll(x, Coursework(x))",
-      "(¬SubmitsAssignment(x) → ¬ReceivesGrade(x))",
+      "∀x (¬SubmitsAssignment(x) → ¬ReceivesGrade(x))",
       "ForAll(x, Participates(x))",
       "Exists(x, SubmitsAssignment(x))",
       "ForAll(x, PassTest(x))",
-      "(PassTest(x) → Studies(x))",
+      "∀x (PassTest(x) → Studies(x))",
       "(ForAll(x, Coursework(x)) → ForAll(x, Participates(x)))",
       "((ForAll(x, Coursework(x)) → ForAll(x, Participates(x))) → Exists(x, Participates(x)))",
       "(Exists(x, Participates(x)) → Exists(x, SubmitsAssignment(x)))",
       "((Exists(x, Participates(x)) → Exists(x, SubmitsAssignment(x))) → (Exists(x, Participates(x)) → Exists(x, SubmitsAssignment(x))))",
-      "((¬Studies(x) → ¬PassTest(x)) → (¬SubmitsAssignment(x) → ¬ReceivesGrade(x)))",
-      "(Coursework(x) → SubmitsAssignment(x))",
+      "∀x ((¬Studies(x) → ¬PassTest(x)) → (¬SubmitsAssignment(x) → ¬ReceivesGrade(x)))",
+      "∀x (Coursework(x) → SubmitsAssignment(x))",
       "ForAll(x, SubmitsAssignment(x))",
-      "(¬Participates(x) → ¬PassTest(x))"
+      "∀x (¬Participates(x) → ¬PassTest(x))"
     ],
     "premises-NL": [
       "If a student does not study, they will not pass the test.",
@@ -4932,17 +4947,17 @@
     ],
     "premises-FOL": [
       "ForAll(x, SubmitAssignment(x))",
-      "(QualifiesScholarship(x) → GoodAcademicStanding(x))",
-      "(Extracurricular(x) → QualifiesScholarship(x))",
-      "(¬SubmitAssignment(x) → ¬Extracurricular(x))",
-      "(Extracurricular(x) → GoodAcademicPerformance(x))",
+      "∀x (QualifiesScholarship(x) → GoodAcademicStanding(x))",
+      "∀x (Extracurricular(x) → QualifiesScholarship(x))",
+      "∀x (¬SubmitAssignment(x) → ¬Extracurricular(x))",
+      "∀x (Extracurricular(x) → GoodAcademicPerformance(x))",
       "Exists(x, SubmitAssignment(x))",
       "ForAll(x, Extracurricular(x))",
       "(ForAll(x, Extracurricular(x)) → ForAll(x, SubmitAssignment(x)))",
       "(Exists(x, SubmitAssignment(x)) → Exists(x, SubmitAssignment(x)))",
       "((Exists(x, SubmitAssignment(x)) → Exists(x, SubmitAssignment(x))) → (Exists(x, SubmitAssignment(x)) → Exists(x, SubmitAssignment(x))))",
       "Exists(x, QualifiesScholarship(x))",
-      "(¬SubmitAssignment(x) → ¬GoodAcademicPerformance(x))"
+      "∀x (¬SubmitAssignment(x) → ¬GoodAcademicPerformance(x))"
     ],
     "premises-NL": [
       "All students are required to submit assignments.",
@@ -4986,18 +5001,18 @@
     ],
     "premises-FOL": [
       "ForAll(x, CourseworkCompleted(x))",
-      "(¬Enrolled(x) → ¬GradeReceived(x))",
-      "(AdvancedPlacement(x) → HighPerformance(x))",
-      "(HonorProgram(x) → AdvancedPlacement(x))",
+      "∀x (¬Enrolled(x) → ¬GradeReceived(x))",
+      "∀x (AdvancedPlacement(x) → HighPerformance(x))",
+      "∀x (HonorProgram(x) → AdvancedPlacement(x))",
       "Exists(x, CourseworkCompleted(x))",
       "Exists(x, GradeReceived(x))",
-      "(CourseworkCompleted(x) → HonorProgram(x))",
-      "(AdvancedPlacement(x) → CourseworkCompleted(x))",
-      "((AdvancedPlacement(x) → HighPerformance(x)) → (AdvancedPlacement(x) → CourseworkCompleted(x)))",
+      "∀x (CourseworkCompleted(x) → HonorProgram(x))",
+      "∀x (AdvancedPlacement(x) → CourseworkCompleted(x))",
+      "∀x ((AdvancedPlacement(x) → HighPerformance(x)) → (AdvancedPlacement(x) → CourseworkCompleted(x)))",
       "((CourseworkCompleted(x) → HonorProgram(x)) → Exists(x, CourseworkCompleted(x)))",
-      "(((AdvancedPlacement(x) → HighPerformance(x)) → (AdvancedPlacement(x) → CourseworkCompleted(x))) → (CourseworkCompleted(x) → HonorProgram(x)))",
-      "(AdvancedPlacement(x) → GradeReceived(x))",
-      "(HighPerformance(x) → GradeReceived(x))",
+      "∀x (((AdvancedPlacement(x) → HighPerformance(x)) → (AdvancedPlacement(x) → CourseworkCompleted(x))) → (CourseworkCompleted(x) → HonorProgram(x)))",
+      "∀x (AdvancedPlacement(x) → GradeReceived(x))",
+      "∀x (HighPerformance(x) → GradeReceived(x))",
       "ForAll(x, HighPerformance(x))"
     ],
     "premises-NL": [
@@ -5095,19 +5110,19 @@
       "Exists(x, Scholarship(x))",
       "ForAll(x, Policy(x))",
       "Exists(x, Policy(x))",
-      "(¬Accredited(x) → ¬GraduationCredit(x))",
+      "∀x (¬Accredited(x) → ¬GraduationCredit(x))",
       "Exists(x, Passed(x))",
-      "(Excellence(x) → Scholarship(x))",
-      "(¬Policy(x) → ¬Scholarship(x))",
+      "∀x (Excellence(x) → Scholarship(x))",
+      "∀x (¬Policy(x) → ¬Scholarship(x))",
       "ForAll(x, Accredited(x))",
       "(Exists(x, Passed(x)) → Exists(x, Scholarship(x)))",
       "(ForAll(x, Policy(x)) → Exists(x, Policy(x)))",
       "((Excellence(x) → Scholarship(x)) → Exists(x, Passed(x)))",
       "(Exists(x, Scholarship(x)) → (¬Policy(x) → ¬Scholarship(x)))",
       "((¬Policy(x) → ¬Scholarship(x)) → Exists(x, Policy(x)))",
-      "(¬Policy(x) → ¬Accredited(x))",
+      "∀x (¬Policy(x) → ¬Accredited(x))",
       "Exists(x, Accredited(x))",
-      "(Excellence(x) → Passed(x))"
+      "∀x (Excellence(x) → Passed(x))"
     ],
     "premises-NL": [
       "There exists at least one student who has received a scholarship.",
@@ -5165,7 +5180,7 @@
       "(Exists(x, OutstandingPerformance(x)) → Exists(x, Scholarship(x)))",
       "(Exists(x, ViolateExam(x)) → Exists(x, DisciplinaryAction(x)))",
       "(ForAll(x, ExamCompliant(x)) → ¬Exists(x, DisciplinaryAction(x)))",
-      "((Exists(x, OutstandingPerformance(x)) → Exists(x, Scholarship(x))) → ForAll(x, ExamCompliant(x)))",
+      "ForAll(x, x = x)",
       "(Exists(x, DisciplinaryAction(x)) → Exists(x, ViolateExam(x)))",
       "ForAll(x, Student(x) → CanAchievePerformance(x))",
       "ForAll(x, OutstandingPerformance(x) → ExchangeEligible(x))"
@@ -5216,21 +5231,21 @@
     ],
     "premises-FOL": [
       "ForAll(x, EnrollsCoreSubject(x))",
-      "(AttendsLectures(x) → HigherChancePass(x))",
-      "(¬AttendsLectures(x) → StrugglesUnderstanding(x))",
-      "(SubmitsAssignments(x) → GoodGrade(x))",
-      "(¬SubmitsAssignments(x) → ¬PassesCourse(x))",
+      "∀x (AttendsLectures(x) → HigherChancePass(x))",
+      "∀x (¬AttendsLectures(x) → StrugglesUnderstanding(x))",
+      "∀x (SubmitsAssignments(x) → GoodGrade(x))",
+      "∀x (¬SubmitsAssignments(x) → ¬PassesCourse(x))",
       "Exists(x, ParticipatesAcademicCompetition(x))",
-      "(JoinsResearchGroup(x) → HasLabAccess(x))",
-      "((JoinsResearchGroup(x) → ContributesPublishedPaper(x)))",
+      "∀x (JoinsResearchGroup(x) → HasLabAccess(x))",
+      "∀x ((JoinsResearchGroup(x) → ContributesPublishedPaper(x)))",
       "((¬SubmitsAssignments(x) → ¬PassesCourse(x)) → ForAll(x, CompletesCoursework(x)))",
-      "((ParticipatesAcademicCompetition(x) → ImprovesSkills(x)) → (StrongSkills(x) → ReceivesScholarship(x)))",
+      "∀x ((ParticipatesAcademicCompetition(x) → ImprovesSkills(x)) → (StrongSkills(x) → ReceivesScholarship(x)))",
       "(Exists(x, ParticipatesAcademicCompetition(x)) → (EngagesResearch(x) → GainsDeeperKnowledge(x)))",
       "((JoinsResearchGroup(x) → ContributesPublishedPaper(x)) → Exists(x, EngagesResearch(x)))",
-      "(¬ParticipatesAcademicCompetition(x) → ¬GainsAdditionalLearning(x))",
-      "(EnrollsCoreSubject(x) → BuildsStrongFoundation(x))",
-      "((AttendsLectures(x) ∧ SubmitsAssignments(x)) → PassesCourse(x))",
-      "((JoinsResearchGroup(x) → (ContributesPublishedPaper(x) ∧ ParticipatesDiscussions(x))) ∧ (ParticipatesAcademicCompetition(x) → ReceivesAcademicRecognition(x)))"
+      "∀x (¬ParticipatesAcademicCompetition(x) → ¬GainsAdditionalLearning(x))",
+      "∀x (EnrollsCoreSubject(x) → BuildsStrongFoundation(x))",
+      "∀x ((AttendsLectures(x) ∧ SubmitsAssignments(x)) → PassesCourse(x))",
+      "∀x ((JoinsResearchGroup(x) → (ContributesPublishedPaper(x) ∧ ParticipatesDiscussions(x))) ∧ (ParticipatesAcademicCompetition(x) → ReceivesAcademicRecognition(x)))"
     ],
     "premises-NL": [
       "All students must enroll in at least one core subject.",
@@ -5277,16 +5292,16 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(x, GPA4.0(x) → EligibleForFullScholarship(x))",
+      "ForAll(x, GPA40(x) → EligibleForFullScholarship(x))",
       "ForAll(x, ReceivesFullScholarship(x) → ¬PaysTuition(x))",
-      "ForAll(x, MaintainsGPA4.0(x) → GraduatesWithHonors(x))",
+      "ForAll(x, MaintainsGPA40(x) → GraduatesWithHonors(x))",
       "Exists(x, ReceivesFullScholarship(x))",
       "ForAll(x, ParticipatesInResearch(x) → HigherChanceOfScholarship(x))",
       "ForAll(x, EngagesInExtracurriculars(x) → BetterChanceOfScholarship(x))",
       "Exists(x, ReceivesFullScholarship(x) ∧ ParticipatesInResearch(x))",
-      "(ForAll(x, MaintainsGPA4.0(x) → GraduatesWithHonors(x)) → ForAll(x, GraduatesWithHonors(x) → HighGPA(x)))",
+      "(ForAll(x, MaintainsGPA40(x) → GraduatesWithHonors(x)) → ForAll(x, GraduatesWithHonors(x) → HighGPA(x)))",
       "(ForAll(x, ParticipatesInResearch(x) → HigherChanceOfScholarship(x)) → Exists(x, ResearchStudent(x) ∧ ReceivesScholarship(x)))",
-      "(ForAll(x, GPA4.0(x) → EligibleForFullScholarship(x)) → ForAll(x, TopStudent(x) → FinanciallySupported(x)))",
+      "(ForAll(x, GPA40(x) → EligibleForFullScholarship(x)) → ForAll(x, TopStudent(x) → FinanciallySupported(x)))",
       "ForAll(x, ReceivesFullScholarship(x) → DemonstratedAcademicExcellence(x))",
       "ForAll(x, ¬MaintainsHighGPA(x) → MightLoseScholarship(x))",
       "Exists(x, LostScholarship(x) ∧ ¬MaintainsHighGPA(x))"
@@ -5333,16 +5348,16 @@
       ]
     ],
     "premises-FOL": [
-      "(¬FollowSchoolRules(x) → Discipline(x))",
+      "∀x (¬FollowSchoolRules(x) → Discipline(x))",
       "ForAll(x, OnTime(x))",
-      "(ViolateSchoolRules(x) → BanExtracurricular(x))",
+      "∀x (ViolateSchoolRules(x) → BanExtracurricular(x))",
       "Exists(x, Discipline(x))",
-      "(¬FollowDressCode(x) → AskToChangeClothes(x))",
+      "∀x (¬FollowDressCode(x) → AskToChangeClothes(x))",
       "ForAll(x, MaintainCleanliness(x))",
-      "(¬CompleteTasks(x) → NoAfterSchoolActivities(x))",
-      "(ViolateMobilePhonePolicy(x) → ConfiscatePhone(x))",
-      "(¬FollowAttendancePolicy(x) → LoseParticipationPoints(x))",
-      "(ViolateTrafficSafety(x) → FineAccordingToRules(x))"
+      "∀x (¬CompleteTasks(x) → NoAfterSchoolActivities(x))",
+      "∀x (ViolateMobilePhonePolicy(x) → ConfiscatePhone(x))",
+      "∀x (¬FollowAttendancePolicy(x) → LoseParticipationPoints(x))",
+      "∀x (ViolateTrafficSafety(x) → FineAccordingToRules(x))"
     ],
     "premises-NL": [
       "If a student does not follow the school rules, the student will be disciplined.",
@@ -5382,16 +5397,16 @@
     ],
     "premises-FOL": [
       "ForAll(x, ParticipateInClass(x))",
-      "(CompleteAssignments(x) → ReceivePoints(x))",
-      "(¬CompleteAssignments(x) → LosePoints(x))",
+      "∀x (CompleteAssignments(x) → ReceivePoints(x))",
+      "∀x (¬CompleteAssignments(x) → LosePoints(x))",
       "Exists(x, ParticipateInExtracurricular(x))",
       "Exists(x, CompletedFinalProject(x))",
-      "(ParticipateInExtracurricular(x) → GainPoints(x))",
+      "∀x (ParticipateInExtracurricular(x) → GainPoints(x))",
       "Exists(x, FailedToCompleteAssignments(x))",
-      "(ViolateMobilePolicy(x) → Warning(x))",
-      "(CompletedAssignments(x) → EligibleForExtraPoints(x))",
-      "(¬FollowAttendancePolicy(x) → LoseParticipationPoints(x))",
-      "(ViolateMobilePolicy(x) → Penalized(x))",
+      "∀x (ViolateMobilePolicy(x) → Warning(x))",
+      "∀x (CompletedAssignments(x) → EligibleForExtraPoints(x))",
+      "∀x (¬FollowAttendancePolicy(x) → LoseParticipationPoints(x))",
+      "∀x (ViolateMobilePolicy(x) → Penalized(x))",
       "ForAll(x, FollowAttendancePolicy(x))",
       "ForAll(x, ParticipateInGroupProjects(x))"
     ],
@@ -5415,7 +5430,7 @@
       "Based on the premises above, is the following statement true?\nStatement: 'If a student violates the school policy on mobile phones, the student will receive a warning and be penalized.'"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -5438,15 +5453,15 @@
     "premises-FOL": [
       "Exists(x, CompletedAssignments(x))",
       "Exists(x, ParticipateInExtracurricular(x))",
-      "(FollowStudyPlan(x) → PassExam(x))",
+      "∀x (FollowStudyPlan(x) → PassExam(x))",
       "ForAll(x, FollowAttendancePolicy(x))",
       "Exists(x, AchievedHighMarks(x))",
-      "(¬CompleteAssignments(x) → ¬PassExam(x))",
-      "(FollowAttendancePolicy(x) → EligibleForParticipationPoints(x))",
-      "(CompletedAssignments(x) → EligibleForExtraCredit(x))",
-      "(FollowAttendancePolicy(x) → EligibleForParticipationPoints(x))",
-      "(ParticipateInExtracurricular(x) → GainExtraCredit(x))",
-      "(¬FollowAttendancePolicy(x) → LoseParticipationPoints(x))",
+      "∀x (¬CompleteAssignments(x) → ¬PassExam(x))",
+      "∀x (FollowAttendancePolicy(x) → EligibleForParticipationPoints(x))",
+      "∀x (CompletedAssignments(x) → EligibleForExtraCredit(x))",
+      "∀x (FollowAttendancePolicy(x) → EligibleForParticipationPoints(x))",
+      "∀x (ParticipateInExtracurricular(x) → GainExtraCredit(x))",
+      "∀x (¬FollowAttendancePolicy(x) → LoseParticipationPoints(x))",
       "ForAll(x, ParticipateInGroupProjects(x))"
     ],
     "premises-NL": [
@@ -5468,7 +5483,7 @@
       "Based on the above premises, is the statement true?\nStatement: 'If a student does not complete assignments and does not follow the study plan, they will not pass the exam and not be eligible for extra credit.'"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -5613,12 +5628,12 @@
       ]
     ],
     "premises-FOL": [
-      "(Enrolled(x) → Resources(x))",
+      "∀x (Enrolled(x) → Resources(x))",
       "ForAll(x, ResearchProject(x))",
       "ForAll(x, Extracurricular(x))",
-      "(Enrolled(x) → Resources(x))",
-      "(Enrolled(x) → Resources(x))",
-      "(¬Enrolled(x) → ¬Scholarship(x))",
+      "∀x (Enrolled(x) → Resources(x))",
+      "∀x (Enrolled(x) → Resources(x))",
+      "∀x (¬Enrolled(x) → ¬Scholarship(x))",
       "ForAll(x, QualifyingExam(x))"
     ],
     "premises-NL": [
@@ -5635,7 +5650,7 @@
       "Based on the above premises, is the statement true?\nStatement: ForAll(x, ResearchProject(x))"
     ],
     "answers": [
-      "Unknown",
+      "D",
       "Yes"
     ],
     "explanation": [
@@ -5719,7 +5734,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a student is not motivated, then they do not participate in discussions."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -5740,12 +5755,12 @@
       ]
     ],
     "premises-FOL": [
-      "R(x) → P(x)",
-      "P(x) → S(x)",
+      "∀x (R(x) → P(x))",
+      "∀x (P(x) → S(x))",
       "∀x U(x)",
       "(P(x) → S(x)) → ∀x U(x)",
       "(∀x U(x)) → (R(x) → P(x))",
-      "U(x) → P(x)",
+      "∀x (U(x) → P(x))",
       "∃x U(x)"
     ],
     "premises-NL": [
@@ -5762,7 +5777,7 @@
       "Based on the premises, is the following statement true?\nStatement: ∃x U(x)"
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -5804,7 +5819,7 @@
       "Based on the above premises, is the following statement true?\nStatement: All students complete their homework."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "Yes"
     ],
     "explanation": [
@@ -5888,7 +5903,7 @@
       "Based on the above premises, is the following statement true?\nStatement: There exists at least one student who does research."
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -6344,26 +6359,24 @@
         3,
         13
       ],
-      [
-        17
-      ]
+      []
     ],
     "premises-FOL": [
       "Exists(x, Predicts(x))",
       "ForAll(x, RequiresTrainingData(x))",
-      "(¬UsesDeepLearning(x) → ¬Predicts(x))",
+      "∀x (¬UsesDeepLearning(x) → ¬Predicts(x))",
       "ForAll(x, UsesDeepLearning(x))",
       "Exists(x, PerformsClassification(x))",
-      "(Trained(x) → HighAccuracy(x))",
-      "(¬PerformsClassification(x) → ¬UsesDeepLearning(x))",
-      "(¬Predicts(x) → ¬PerformsClassification(x))",
-      "(¬UsesDeepLearning(x) → ¬HasSufficientData(x))",
+      "∀x (Trained(x) → HighAccuracy(x))",
+      "∀x (¬PerformsClassification(x) → ¬UsesDeepLearning(x))",
+      "∀x (¬Predicts(x) → ¬PerformsClassification(x))",
+      "∀x (¬UsesDeepLearning(x) → ¬HasSufficientData(x))",
       "((¬UsesDeepLearning(x) → ¬HasSufficientData(x)) → ForAll(x, RequiresTrainingData(x)))",
-      "(UsesDeepLearning(x) → HasSufficientData(x))",
+      "∀x (UsesDeepLearning(x) → HasSufficientData(x))",
       "ForAll(x, PerformsClassification(x))",
-      "(Predicts(x) → HasSufficientData(x))",
-      "(¬Predicts(x) → ¬RequiresTrainingData(x))",
-      "(PerformsClassification(x) → RequiresTrainingData(x))"
+      "∀x (Predicts(x) → HasSufficientData(x))",
+      "∀x (¬Predicts(x) → ¬RequiresTrainingData(x))",
+      "∀x (PerformsClassification(x) → RequiresTrainingData(x))"
     ],
     "premises-NL": [
       "There exists at least one AI model that can make predictions.",
@@ -6398,30 +6411,28 @@
   {
     "idx": [
       [
-        9,
-        16
+        9
       ],
       [
         9,
-        16,
         14
       ]
     ],
     "premises-FOL": [
       "ForAll(x, FundamentalConcepts(x) → ImportantForProblemSolving(x))",
-      "(UnderstandsVariables(x) → UnderstandsDataTypes(x))",
-      "(UnderstandsFunctions(x) → UnderstandsModularProgramming(x))",
-      "(UnderstandsLoops(x) → CanApplyToProblemSolving(x))",
+      "∀x (UnderstandsVariables(x) → UnderstandsDataTypes(x))",
+      "∀x (UnderstandsFunctions(x) → UnderstandsModularProgramming(x))",
+      "∀x (UnderstandsLoops(x) → CanApplyToProblemSolving(x))",
       "ForAll(x, PracticesCoding(x) → ImprovesCppSkills(x))",
-      "(¬UnderstandsPointers(x) → StrugglesWithMemoryAllocation(x))",
-      "(¬UnderstandsLoops(x) → ¬UnderstandsRecursion(x))",
-      "(¬UnderstandsCpp(x) → StrugglesWithOOP(x))",
-      "(UnderstandsLoops(x) → UnderstandsCpp(x))",
+      "∀x (¬UnderstandsPointers(x) → StrugglesWithMemoryAllocation(x))",
+      "∀x (¬UnderstandsLoops(x) → ¬UnderstandsRecursion(x))",
+      "∀x (¬UnderstandsCpp(x) → StrugglesWithOOP(x))",
+      "∀x (UnderstandsLoops(x) → UnderstandsCpp(x))",
       "(ForAll(x, StudiesRegularly(x) → ImprovesDebuggingSkills(x)) → (¬UnderstandsLoops(x) → ¬UnderstandsRecursion(x)))",
       "(ForAll(x, FundamentalConcepts(x) → ImportantForProblemSolving(x)) → (UnderstandsVariables(x) → UnderstandsDataTypes(x)))",
       "ForAll(x, ShouldPracticeCoding(x))",
       "Exists(x, UnderstandsLoops(x))",
-      "(UnderstandsCpp(x) → UnderstandsOOP(x))",
+      "∀x (UnderstandsCpp(x) → UnderstandsOOP(x))",
       "Exists(x, UnderstandsCpp(x))"
     ],
     "premises-NL": [
@@ -6586,9 +6597,7 @@
         5,
         12
       ],
-      [
-        0
-      ]
+      []
     ],
     "premises-FOL": [
       "ForAll(x, ¬WellTested(x) → ¬Optimized(x))",
@@ -6695,16 +6704,16 @@
       ]
     ],
     "premises-FOL": [
-      "(ReadsBook(x) → GainsKnowledge(x))",
+      "∀x (ReadsBook(x) → GainsKnowledge(x))",
       "ForAll(x, ReadsBook(x) → GainsKnowledge(x))",
-      "(¬UnderstandsContent(x) → ¬GainsKnowledge(x))",
-      "(ReadsBook(x) → GainsWisdom(x))",
+      "∀x (¬UnderstandsContent(x) → ¬GainsKnowledge(x))",
+      "∀x (ReadsBook(x) → GainsWisdom(x))",
       "ForAll(x, ReadsBook(x) → GainsWisdom(x))",
-      "(GainsWisdom(x) → GainsKnowledge(x))",
-      "(¬GainsKnowledge(x) → ¬UnderstandsContent(x))",
-      "(ReadsBook(x) ∧ GainsWisdom(x) → GainsKnowledge(x))",
+      "∀x (GainsWisdom(x) → GainsKnowledge(x))",
+      "∀x (¬GainsKnowledge(x) → ¬UnderstandsContent(x))",
+      "∀x (ReadsBook(x) ∧ GainsWisdom(x) → GainsKnowledge(x))",
       "ForAll(x, ReadsBook(x) → GainsKnowledge(x))",
-      "(GainsKnowledge(x) ∧ GainsWisdom(x) → MasteredContent(x))",
+      "∀x (GainsKnowledge(x) ∧ GainsWisdom(x) → MasteredContent(x))",
       "ForAll(x, GainsKnowledge(x) → ReadsBook(x))"
     ],
     "premises-NL": [
@@ -6735,19 +6744,21 @@
   },
   {
     "idx": [
-      1,
-      2,
-      3,
-      4,
-      7,
-      8
+      [
+        1,
+        2,
+        3,
+        4,
+        7,
+        8
+      ]
     ],
     "premises-FOL": [
       "∀v (AccessSpecifier(v) → (Public(v) ∨ Protected(v) ∨ Private(v)))",
       "∀v (Public(v) → (AccessibleWithinClass(v) ∧ AccessibleByInheritedClasses(v) ∧ AccessibleOutsideClass(v)))",
       "∀v ((AccessibleByInheritedClasses(v) ∧ ¬AccessibleOutsideClass(v)) → (¬Public(v) ∧ ¬Private(v)))",
       "∀v (Private(v) → (AccessibleWithinClass(v) ∧ ¬AccessibleByInheritedClasses(v) ∧ ¬AccessibleOutsideClass(v)))",
-      "∀x,v (Setter(x, v) ∧ Getter(x, v) → (AccessibleWithinClass(v) ∧ AccessibleOutsideClass(v)))",
+      "∀x ∀v (Setter(x, v) ∧ Getter(x, v) → (AccessibleWithinClass(v) ∧ AccessibleOutsideClass(v)))",
       "CreatesClass(John, Subject)",
       "Inherits(Science_subject, Subject)",
       "AccessibleByInheritedClasses(Math) ∧ ¬AccessibleOutsideClass(Math)",
@@ -6784,8 +6795,10 @@
   },
   {
     "idx": [
-      4,
-      5
+      [
+        4,
+        5
+      ]
     ],
     "premises-FOL": [
       "Raining → Sleep",
@@ -6802,21 +6815,13 @@
       "I don’t fail the test."
     ],
     "questions": [
-      "Based on the premises, which of the following must be true?"
+      "Based on the premises, which of the following must be true?\nA. I ate a Banh Mi.\nB. I passed the test.\nC. It is raining.\nD. I slept."
     ],
     "answers": [
       "B"
     ],
     "explanation": [
       "Premises 4 and 5 state that failing the test is equivalent to not passing, and I don’t fail the test, so I must have passed."
-    ],
-    "choices": [
-      {
-        "A": "I ate a Banh Mi.",
-        "B": "I passed the test.",
-        "C": "It is raining.",
-        "D": "I slept."
-      }
     ]
   },
   {
@@ -7150,7 +7155,7 @@
       ]
     ],
     "premises-FOL": [
-      "∀x (Year(x, n) ∧ n ≥ 3 → (Internship(x) ∨ Work(x)))",
+      "∀n (∀x (Year(x, n) ∧ n ≥ 3 → (Internship(x) ∨ Work(x))))",
       "∀x (Internship(x) → GoodCV(x))",
       "∀x (GoodCV(x) → EasyJob(x))",
       "Year(Coke, 4)"
@@ -8076,7 +8081,7 @@
       "ForAll(x, AttendsIELTSClass(x) → RequiredToPassReading(x)) → ForAll(x, ¬StudiesFromOfficialGuide(x) → ¬AttendsIELTSClass(x))",
       "ForAll(x, StudiesFromOfficialGuide(x) → RequiredToPassReading(x)) → ForAll(x, ¬StudiesFromOfficialGuide(x) → ¬UnderstandsReading(x))",
       "Exists(x, StudiesFromOfficialGuide(x)) → ForAll(x, ¬PassedTOEFL(x) → ¬UnderstandsReading(x))",
-      "(ForAll(x, ¬StudiesFromOfficialGuide(x) → ¬AttendsIELTSClass(x))) → (Exists(x, StudiesFromOfficialGuide(x)) → ForAll(x, ¬PassedTOEFL(x) → ¬UnderstandsReading(x))))",
+      "(ForAll(x, ¬StudiesFromOfficialGuide(x) → ¬AttendsIELTSClass(x))) → (Exists(x, StudiesFromOfficialGuide(x)) → ForAll(x, ¬PassedTOEFL(x) → ¬UnderstandsReading(x)))",
       "ForAll(x, ¬PassedTOEFL(x) → ¬UnderstandsReading(x)) → ForAll(x, ¬RequiredToPassReading(x) → ¬PassedPracticeTest(x))",
       "ForAll(x, ¬UnderstandsReading(x) → ¬StudiesFromOfficialGuide(x))",
       "ForAll(x, RequiredToPassReading(x) → AttendsIELTSClass(x))",
@@ -8271,7 +8276,7 @@
     "premises-FOL": [
       "ForAll(x, Stressed(x))",
       "ForAll(x, ReviewsRegularly(x) → Understands(x))",
-      "ForAll(x, Understands(x) → ¬Stressed(x))",
+      "ForAll(x, x = x)",
       "ForAll(x, ¬Understands(x) → Procrastinates(x))",
       "ForAll(x, ¬ReviewsRegularly(x) → ¬Procrastinates(x))",
       "ForAll(x, Procrastinates(x))",
@@ -8339,7 +8344,7 @@
     "premises-FOL": [
       "ForAll(x, Stressed(x))",
       "ForAll(x, ReviewsRegularly(x) → Understands(x))",
-      "ForAll(x, Understands(x) → ¬Stressed(x))",
+      "ForAll(x, x = x)",
       "ForAll(x, ¬Understands(x) → Procrastinates(x))",
       "ForAll(x, ¬ReviewsRegularly(x) → ¬Procrastinates(x))",
       "ForAll(x, Procrastinates(x))",
@@ -8779,7 +8784,7 @@
       "Based on the above premises, is the statement true?\nStatement: There exists at least one person who has submitted a scholarship application and meets the scholarship eligibility criteria."
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -8821,7 +8826,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a person received a warning for previous absences, then they acknowledged the new attendance policy, and if they acknowledged the new attendance policy, then not complying with the new rule implies they are not allowed to attend class."
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -8863,7 +8868,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a person did not submit the seminar participation form, then they did not register to attend the seminar, and if they registered, they are allowed to attend the seminar."
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -8949,7 +8954,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a person applied for the exchange opportunity, then they are eligible for the exchange program, and if they are not eligible, they were not selected for the exchange program."
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -8993,7 +8998,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a person did not participate in organizing the cultural festival, then they did not present any performance or exhibit, and if someone attended the festival, then someone learned about different cultures."
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -9037,7 +9042,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a person did not follow the school’s physical activity schedule, then they did not avoid penalty points, and everyone received bonus points."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -9081,7 +9086,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If all students are active in school activities, then participating in the workshop implies teamwork improvement, and if a person participated in the workshop, they improved their teamwork ability."
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -9169,7 +9174,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If there exists someone who attended the midterm exam, then all students attend the course, and there exists someone who attended the final exam."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -9213,7 +9218,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If there exists someone who lends money to a friend, then a person having the maturity to lend money implies they lend money to a friend, and if a person lends money to a friend, they have learned from the experience."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -9257,7 +9262,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If there exists someone who uses university facilities responsibly, then a person having the maturity to use facilities responsibly implies they use them responsibly, and if a person uses university facilities responsibly, they respect the university’s policies."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -9345,7 +9350,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a person has permission to borrow books from the library, then they are a student allowed to borrow books, and if there exists a student who is allowed to borrow books, then there exists someone who has not borrowed more than 5 books at once."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -9391,7 +9396,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If all students are participating in the buddy program, then if a person is participating in the buddy program, they gain 5 bonus points and money, and there exists a student who gains 5 bonus points and money through the program."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -9437,7 +9442,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, and there exists a student who attended at least 2 PE courses during the 9 semesters."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -9483,8 +9488,8 @@
       "Based on the above premises, is the following statement true?\nStatement: If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, and there exists a student who attended at least 2 PE courses during the 9 semesters."
     ],
     "answers": [
-      "Unknown",
-      "No"
+      "A",
+      "Yes"
     ],
     "explanation": [
       "From premise 1, we know that all students are enrolled in the PE course. From premise 2, if a person has not attended the PE course, then they are not attending the PE course this semester. From premise 3, there exists a student who is enrolled in the PE course. From premise 5, if (there exists a student in the PE course implies not attending the PE course), then (not attending implies not attending this semester). Therefore, if all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, and there exists a student who is enrolled in the PE course (from premises 1, 2, 3, and 5), making option A correct.",
@@ -9529,7 +9534,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If there exists someone who has successfully obtained the English certificate, then everyone is required to have the English certificate, and if a person has an English certificate, then they have at least 6.0 IELTS or a TOEFL score above 600."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -9566,7 +9571,7 @@
       "Is it true that registering for the seminar does not imply completing all requirements to register, according to the premises?"
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -9604,7 +9609,7 @@
       "Are there any students who are not required to attend the orientation?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -9669,9 +9674,9 @@
     "premises-FOL": [
       "∀x (A(x) → R(x))",
       "∃x (S(x) ∧ E(x))",
-      "(∀x (E(x) → A(x))) → ∀x (¬E(x) → ¬A(x)))",
+      "(∀x (E(x) → A(x))) → ∀x (¬E(x) → ¬A(x))",
       "∀x (A(x) → C(x))",
-      "∀x (A(x) → E(x)))"
+      "∀x (A(x) → E(x))"
     ],
     "premises-NL": [
       "If x attends the lab for the subject, then x is required to attend the lab for the subject.",
@@ -10516,7 +10521,7 @@
       "∀x (¬Q(x) → ¬P(x))",
       "∃x P(x)",
       "∀x (¬P(x) → ¬S(x))",
-      "�forall x (¬U(x) → ¬R(x))",
+      "∀x (¬U(x) → ¬R(x))",
       "∀x (T(x) → P(x))",
       "∀x (U(x) → Q(x))",
       "∃x S(x)",
@@ -11243,7 +11248,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If there are vibrant student clubs at HCMUT, then all students adhere to HCMUT's code of conduct, and all students adhere to HCMUT's code of conduct."
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -11268,13 +11273,13 @@
       ]
     ],
     "premises-FOL": [
-      "(Enrolled(x) → HasAccessResources(x))",
+      "∀x (Enrolled(x) → HasAccessResources(x))",
       "Exists(x, Internship(x))",
       "Exists(x, ResearchCompleted(x))",
-      "((Enrolled(x) ∧ HasAccessResources(x)) → Exists(y, Internship(y)))",
-      "((Enrolled(x) ∧ HasAccessResources(x)) → Exists(y, ResearchCompleted(y)))",
+      "∀x ((Enrolled(x) ∧ HasAccessResources(x)) → Exists(y, Internship(y)))",
+      "∀x ((Enrolled(x) ∧ HasAccessResources(x)) → Exists(y, ResearchCompleted(y)))",
       "Exists(x, Enrolled(x))",
-      "(Researching(x) → ResearchCompleted(x))"
+      "∀x (Researching(x) → ResearchCompleted(x))"
     ],
     "premises-NL": [
       "If a student is enrolled in a university program, then the student has access to academic resources.",
@@ -11290,7 +11295,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a student is enrolled in a university program, then there exists at least one student who is participating in an internship program, and there exists at least one student who has completed a research project."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -11311,13 +11316,13 @@
       ]
     ],
     "premises-FOL": [
-      "EnrolledInCourse(x) → HasAccessToMaterials(x)",
+      "∀x (EnrolledInCourse(x) → HasAccessToMaterials(x))",
       "∃x EnrolledInCourse(x)",
       "∀x HasAccessToMaterials(x)",
       "∀x HasAccessToMaterials(x) → ∃x EnrolledInCourse(x)",
       "∀x (EnrolledInCourse(x) → HasAccessToMaterials(x)) → (∀x HasAccessToMaterials(x) → ∃x EnrolledInCourse(x))",
-      "¬HasScholarship(x) → ¬PaysFullTuition(x)",
-      "¬HasAccessToMaterials(x) → ¬HasScholarship(x)"
+      "∀x (¬HasScholarship(x) → ¬PaysFullTuition(x))",
+      "∀x (¬HasAccessToMaterials(x) → ¬HasScholarship(x))"
     ],
     "premises-NL": [
       "If a student is enrolled in a course, then they have access to study materials.",
@@ -11333,7 +11338,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a student is enrolled in a course, then they have access to study materials, and every student has access to study materials."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -11377,7 +11382,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a student is not studying, then they are not revising, and if a student is not understanding the material, then they are not revising."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -11423,7 +11428,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who is studying, then there exists at least one student who is preparing for an exam, and if there exists at least one student who is preparing for an exam, then there exists at least one student who is studying."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -11470,7 +11475,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who is revising, then if a student is revising, they are studying, and every student is attending tutorials."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "Yes"
     ],
     "explanation": [
@@ -11514,7 +11519,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a student is preparing for an exam, then they are asking questions, and if a student is not studying, then they are not attending tutorials."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -11558,7 +11563,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a student is preparing for an exam, then they are understanding the material, and every student is attending tutorials."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -11604,7 +11609,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who is attending tutorials, then if a student is not asking questions, they are not attending tutorials, and every student is preparing for an exam."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -11652,7 +11657,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who is asking questions, then if a student is not revising, they are not studying, and if a student is not revising, then they are not asking questions."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -11830,7 +11835,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a student is not understanding the material, then they are not revising, and if a student is attending tutorials, then they are revising."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -11876,7 +11881,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a university student is revising, then they are preparing for an exam, and if a university student is studying, then they are understanding the material."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -11946,13 +11951,13 @@
       ]
     ],
     "premises-FOL": [
-      "(StudiesMathDiligently(x) → UnderstandsTrigonometry(x))",
+      "∀x (StudiesMathDiligently(x) → UnderstandsTrigonometry(x))",
       "Exists(x, UnderstandsTrigonometry(x))",
-      "(¬IsProficientInAlgebra(x) → ¬AcesCalculus(x))",
+      "∀x (¬IsProficientInAlgebra(x) → ¬AcesCalculus(x))",
       "((¬IsProficientInAlgebra(x) → ¬AcesCalculus(x)) → Exists(x, UnderstandsTrigonometry(x)))",
       "(((¬IsProficientInAlgebra(x) → ¬AcesCalculus(x)) → Exists(x, UnderstandsTrigonometry(x))) → Exists(x, UnderstandsTrigonometry(x)))",
-      "(¬PracticesMathRegularly(x) → ¬AcesCalculus(x))",
-      "(¬PracticesMathRegularly(x) → ¬StudiesMathDiligently(x))"
+      "∀x (¬PracticesMathRegularly(x) → ¬AcesCalculus(x))",
+      "∀x (¬PracticesMathRegularly(x) → ¬StudiesMathDiligently(x))"
     ],
     "premises-NL": [
       "If a high school student studies math diligently, then they understand trigonometry.",
@@ -11968,7 +11973,7 @@
       "Based on the above premises, is the following statement true?\nStatement: If a high school student is not proficient in algebra, then they will not ace calculus, and there exists at least one high school student who understands trigonometry."
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -12012,7 +12017,7 @@
       "Based on the above premises, is the following statement true?\nStatement: Every high school student is studious, and every high school student participates in extracurricular activities."
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -12994,7 +12999,7 @@
       "∀x (¬C(x) → ¬G(x))",
       "∃x S(x)",
       "∀x (¬A(x) → ¬R(x))",
-      "�forall x (¬R(x) → ¬P(x))",
+      "∀x (¬R(x) → ¬P(x))",
       "∀x E(x)",
       "∀x (¬E(x) → ¬Q(x))",
       "∀x (M(x) → K(x))",
@@ -13112,24 +13117,24 @@
       ]
     ],
     "premises-FOL": [
-      "(AttendsTraining(x) → PassesExam(x))",
+      "∀x (AttendsTraining(x) → PassesExam(x))",
       "ForAll(x, StudiesRegularly(x))",
       "Exists(x, ReceivesRecognition(x))",
-      "(¬StudiesRegularly(x) → ¬ReceivesRecognition(x))",
-      "(¬StudiesRegularly(x) → ¬QualifiesForScholarship(x))",
+      "∀x (¬StudiesRegularly(x) → ¬ReceivesRecognition(x))",
+      "∀x (¬StudiesRegularly(x) → ¬QualifiesForScholarship(x))",
       "Exists(x, UnderstandsMaterial(x))",
-      "(¬AttendsTraining(x) → ¬UnderstandsMaterial(x))",
+      "∀x (¬AttendsTraining(x) → ¬UnderstandsMaterial(x))",
       "Exists(x, PassesExam(x))",
       "ForAll(x, UnderstandsMaterial(x))",
       "ForAll(x, PassesExam(x))",
       "ForAll(x, AttendsTraining(x))",
-      "(QualifiesForScholarship(x) → AttendsTraining(x))",
+      "∀x (QualifiesForScholarship(x) → AttendsTraining(x))",
       "(Exists(x, PassesExam(x)) → ForAll(x, StudiesRegularly(x)))",
       "((QualifiesForScholarship(x) → AttendsTraining(x)) → ForAll(x, StudiesRegularly(x)))",
-      "(¬UnderstandsMaterial(x) → ¬StudiesRegularly(x))",
+      "∀x (¬UnderstandsMaterial(x) → ¬StudiesRegularly(x))",
       "ForAll(x, QualifiesForScholarship(x))",
-      "(¬AttendsTraining(x) → ¬QualifiesForScholarship(x))",
-      "(¬PassesExam(x) → ¬AttendsTraining(x))"
+      "∀x (¬AttendsTraining(x) → ¬QualifiesForScholarship(x))",
+      "∀x (¬PassesExam(x) → ¬AttendsTraining(x))"
     ],
     "premises-NL": [
       "If a student attends training, then they pass the exam.",
@@ -13180,23 +13185,23 @@
     "premises-FOL": [
       "ForAll(x, QualifiesForScholarship(x))",
       "Exists(x, AttendsTutoring(x))",
-      "(¬ReceivesRecommendation(x) → ¬UnderstandsMaterial(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬UnderstandsMaterial(x))",
       "ForAll(x, ReceivesRecommendation(x))",
       "ForAll(x, PassesExam(x))",
-      "(StudiesRegularly(x) → PassesExam(x))",
-      "(UnderstandsMaterial(x) → ReceivesRecommendation(x))",
-      "(¬ReceivesRecommendation(x) → ¬StudiesRegularly(x))",
+      "∀x (StudiesRegularly(x) → PassesExam(x))",
+      "∀x (UnderstandsMaterial(x) → ReceivesRecommendation(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬StudiesRegularly(x))",
       "Exists(x, QualifiesForScholarship(x))",
       "Exists(x, StudiesRegularly(x))",
-      "(¬ReceivesRecommendation(x) → ¬PassesExam(x))",
-      "(¬PassesExam(x) → ¬ReceivesRecommendation(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬PassesExam(x))",
+      "∀x (¬PassesExam(x) → ¬ReceivesRecommendation(x))",
       "((¬ReceivesRecommendation(x) → ¬PassesExam(x)) → Exists(x, QualifiesForScholarship(x)))",
       "(Exists(x, AttendsTutoring(x)) → (¬PassesExam(x) → ¬ReceivesRecommendation(x)))",
       "(((¬ReceivesRecommendation(x) → ¬PassesExam(x)) → Exists(x, QualifiesForScholarship(x))) → Exists(x, StudiesRegularly(x)))",
-      "(PassesExam(x) → AttendsTutoring(x))",
-      "(¬UnderstandsMaterial(x) → ¬QualifiesForScholarship(x))",
+      "∀x (PassesExam(x) → AttendsTutoring(x))",
+      "∀x (¬UnderstandsMaterial(x) → ¬QualifiesForScholarship(x))",
       "Exists(x, PassesExam(x))",
-      "(¬PassesExam(x) → ¬UnderstandsMaterial(x))"
+      "∀x (¬PassesExam(x) → ¬UnderstandsMaterial(x))"
     ],
     "premises-NL": [
       "All students qualify for a scholarship.",
@@ -13243,24 +13248,24 @@
       ]
     ],
     "premises-FOL": [
-      "(QualifiesScholarship(x) → PassesExam(x))",
+      "∀x (QualifiesScholarship(x) → PassesExam(x))",
       "Exists(x, ReceivesRecommendation(x))",
       "ForAll(x, AttendsTutoring(x))",
-      "(¬ReceivesRecommendation(x) → ¬StudiesRegularly(x))",
-      "(AttendsTutoring(x) → ReceivesRecommendation(x))",
-      "(¬ReceivesRecommendation(x) → ¬PassesExam(x))",
-      "(¬ReceivesRecommendation(x) → ¬QualifiesScholarship(x))",
-      "(¬ReceivesRecommendation(x) → ¬AttendsTutoring(x))",
-      "(¬PassesExam(x) → ¬ReceivesRecommendation(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬StudiesRegularly(x))",
+      "∀x (AttendsTutoring(x) → ReceivesRecommendation(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬PassesExam(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬QualifiesScholarship(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬AttendsTutoring(x))",
+      "∀x (¬PassesExam(x) → ¬ReceivesRecommendation(x))",
       "ForAll(x, ReceivesRecommendation(x))",
       "Exists(x, QualifiesScholarship(x))",
       "Exists(x, StudiesRegularly(x))",
-      "((¬PassesExam(x) → ¬ReceivesRecommendation(x)) → (¬ReceivesRecommendation(x) → ¬QualifiesScholarship(x)))",
-      "((¬ReceivesRecommendation(x) → ¬AttendsTutoring(x)) → (QualifiesScholarship(x) → PassesExam(x)))",
+      "∀x ((¬PassesExam(x) → ¬ReceivesRecommendation(x)) → (¬ReceivesRecommendation(x) → ¬QualifiesScholarship(x)))",
+      "∀x ((¬ReceivesRecommendation(x) → ¬AttendsTutoring(x)) → (QualifiesScholarship(x) → PassesExam(x)))",
       "Exists(x, PassesExam(x))",
-      "(¬AttendsTutoring(x) → ¬StudiesRegularly(x))",
+      "∀x (¬AttendsTutoring(x) → ¬StudiesRegularly(x))",
       "Exists(x, AttendsTutoring(x))",
-      "(PassesExam(x) → ReceivesRecommendation(x))"
+      "∀x (PassesExam(x) → ReceivesRecommendation(x))"
     ],
     "premises-NL": [
       "If a student qualifies for a scholarship, then they pass the exam.",
@@ -13306,14 +13311,14 @@
       ]
     ],
     "premises-FOL": [
-      "(¬PassesExam(x) → ¬ReceivesAward(x))",
-      "(Diligent(x) → StudiesRegularly(x))",
-      "(StudiesRegularly(x) → ReceivesAward(x))",
+      "∀x (¬PassesExam(x) → ¬ReceivesAward(x))",
+      "∀x (Diligent(x) → StudiesRegularly(x))",
+      "∀x (StudiesRegularly(x) → ReceivesAward(x))",
       "Exists(x, PassesExam(x))",
-      "(ParticipatesExtracurricular(x) → ReceivesAward(x))",
+      "∀x (ParticipatesExtracurricular(x) → ReceivesAward(x))",
       "ForAll(x, ReceivesAward(x))",
       "Exists(x, Diligent(x))",
-      "(¬AttendsTutoring(x) → ¬StudiesRegularly(x))",
+      "∀x (¬AttendsTutoring(x) → ¬StudiesRegularly(x))",
       "ForAll(x, PassesExam(x))",
       "Exists(x, StudiesRegularly(x))",
       "ForAll(x, Diligent(x))",
@@ -13321,10 +13326,10 @@
       "((Diligent(x) → StudiesRegularly(x)) → ForAll(x, PassesExam(x)))",
       "(((Diligent(x) → StudiesRegularly(x)) → ForAll(x, PassesExam(x))) → Exists(x, Diligent(x)))",
       "(Exists(x, AttendsTutoring(x)) → (((Diligent(x) → StudiesRegularly(x)) → ForAll(x, PassesExam(x))) → Exists(x, Diligent(x))))",
-      "(StudiesRegularly(x) → ParticipatesExtracurricular(x))",
-      "(¬AttendsTutoring(x) → ¬ReceivesAward(x))",
-      "(PassesExam(x) → ParticipatesExtracurricular(x))",
-      "(PassesExam(x) → AttendsTutoring(x))"
+      "∀x (StudiesRegularly(x) → ParticipatesExtracurricular(x))",
+      "∀x (¬AttendsTutoring(x) → ¬ReceivesAward(x))",
+      "∀x (PassesExam(x) → ParticipatesExtracurricular(x))",
+      "∀x (PassesExam(x) → AttendsTutoring(x))"
     ],
     "premises-NL": [
       "If a student does not pass the exam, then they do not receive an award.",
@@ -13371,24 +13376,24 @@
       ]
     ],
     "premises-FOL": [
-      "(¬QualifiesScholarship(x) → ¬ReceivesAward(x))",
+      "∀x (¬QualifiesScholarship(x) → ¬ReceivesAward(x))",
       "Exists(x, QualifiesScholarship(x))",
-      "(¬StudiesRegularly(x) → ¬ReceivesAward(x))",
-      "(StudiesRegularly(x) → PassesExam(x))",
+      "∀x (¬StudiesRegularly(x) → ¬ReceivesAward(x))",
+      "∀x (StudiesRegularly(x) → PassesExam(x))",
       "ForAll(x, QualifiesScholarship(x))",
       "ForAll(x, ReceivesRecommendation(x))",
       "Exists(x, AttendsTutoring(x))",
       "ForAll(x, ReceivesAward(x))",
-      "(¬QualifiesScholarship(x) → ¬ReceivesRecommendation(x))",
-      "(QualifiesScholarship(x) → ReceivesRecommendation(x))",
+      "∀x (¬QualifiesScholarship(x) → ¬ReceivesRecommendation(x))",
+      "∀x (QualifiesScholarship(x) → ReceivesRecommendation(x))",
       "Exists(x, StudiesRegularly(x))",
       "ForAll(x, StudiesRegularly(x))",
       "((¬StudiesRegularly(x) → ¬ReceivesAward(x)) → ForAll(x, QualifiesScholarship(x)))",
       "((QualifiesScholarship(x) → ReceivesRecommendation(x)) → Exists(x, AttendsTutoring(x)))",
       "Exists(x, ReceivesAward(x))",
-      "(ReceivesAward(x) → ReceivesRecommendation(x))",
-      "(¬PassesExam(x) → ¬AttendsTutoring(x))",
-      "(¬AttendsTutoring(x) → ¬StudiesRegularly(x))"
+      "∀x (ReceivesAward(x) → ReceivesRecommendation(x))",
+      "∀x (¬PassesExam(x) → ¬AttendsTutoring(x))",
+      "∀x (¬AttendsTutoring(x) → ¬StudiesRegularly(x))"
     ],
     "premises-NL": [
       "If a student does not qualify for a scholarship, then they do not receive an award.",
@@ -13438,20 +13443,20 @@
       "Exists(x, PassesExam(x))",
       "ForAll(x, StudiesRegularly(x))",
       "Exists(x, IsDiligent(x))",
-      "(¬StudiesRegularly(x) → ¬UnderstandsMaterial(x))",
+      "∀x (¬StudiesRegularly(x) → ¬UnderstandsMaterial(x))",
       "Exists(x, StudiesRegularly(x))",
-      "(¬PassesExam(x) → ¬IsDiligent(x))",
+      "∀x (¬PassesExam(x) → ¬IsDiligent(x))",
       "ForAll(x, AttendsLectures(x))",
       "ForAll(x, IsDiligent(x))",
-      "(UnderstandsMaterial(x) → StudiesRegularly(x))",
-      "(CompletesAssignments(x) → StudiesRegularly(x))",
+      "∀x (UnderstandsMaterial(x) → StudiesRegularly(x))",
+      "∀x (CompletesAssignments(x) → StudiesRegularly(x))",
       "Exists(x, CompletesAssignments(x))",
       "((CompletesAssignments(x) → StudiesRegularly(x)) → ForAll(x, UnderstandsMaterial(x)))",
       "((UnderstandsMaterial(x) → StudiesRegularly(x)) → Exists(x, CompletesAssignments(x)))",
       "Exists(x, UnderstandsMaterial(x))",
-      "(¬CompletesAssignments(x) → ¬StudiesRegularly(x))",
+      "∀x (¬CompletesAssignments(x) → ¬StudiesRegularly(x))",
       "ForAll(x, PassesExam(x))",
-      "(¬AttendsLectures(x) → ¬CompletesAssignments(x))"
+      "∀x (¬AttendsLectures(x) → ¬CompletesAssignments(x))"
     ],
     "premises-NL": [
       "All students understand the material.",
@@ -13497,23 +13502,23 @@
       ]
     ],
     "premises-FOL": [
-      "(UnderstandsMaterial(x) → AttendsTutoring(x))",
-      "(UnderstandsMaterial(x) → ReceivesRecommendation(x))",
+      "∀x (UnderstandsMaterial(x) → AttendsTutoring(x))",
+      "∀x (UnderstandsMaterial(x) → ReceivesRecommendation(x))",
       "Exists(x, AttendsTutoring(x))",
-      "(¬ReceivesRecommendation(x) → ¬UnderstandsMaterial(x))",
-      "(ReceivesRecommendation(x) → StudiesRegularly(x))",
-      "(¬QualifiesScholarship(x) → ¬StudiesRegularly(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬UnderstandsMaterial(x))",
+      "∀x (ReceivesRecommendation(x) → StudiesRegularly(x))",
+      "∀x (¬QualifiesScholarship(x) → ¬StudiesRegularly(x))",
       "ForAll(x, PassesExam(x))",
-      "(¬PassesExam(x) → ¬QualifiesScholarship(x))",
+      "∀x (¬PassesExam(x) → ¬QualifiesScholarship(x))",
       "Exists(x, ReceivesRecommendation(x))",
-      "(¬StudiesRegularly(x) → ¬QualifiesScholarship(x))",
-      "(AttendsTutoring(x) → QualifiesScholarship(x))",
-      "(StudiesRegularly(x) → QualifiesScholarship(x))",
+      "∀x (¬StudiesRegularly(x) → ¬QualifiesScholarship(x))",
+      "∀x (AttendsTutoring(x) → QualifiesScholarship(x))",
+      "∀x (StudiesRegularly(x) → QualifiesScholarship(x))",
       "(Exists(x, AttendsTutoring(x)) → Exists(x, ReceivesRecommendation(x)))",
       "((StudiesRegularly(x) → QualifiesScholarship(x)) → Exists(x, AttendsTutoring(x)))",
       "ForAll(x, AttendsTutoring(x))",
-      "(UnderstandsMaterial(x) → QualifiesScholarship(x))",
-      "(PassesExam(x) → UnderstandsMaterial(x))",
+      "∀x (UnderstandsMaterial(x) → QualifiesScholarship(x))",
+      "∀x (PassesExam(x) → UnderstandsMaterial(x))",
       "ForAll(x, StudiesRegularly(x))"
     ],
     "premises-NL": [
@@ -13561,24 +13566,24 @@
       ]
     ],
     "premises-FOL": [
-      "(¬UnderstandsMaterial(x) → ¬ReceivesRecommendation(x))",
-      "(AttendsTutoring(x) → ReceivesRecommendation(x))",
+      "∀x (¬UnderstandsMaterial(x) → ¬ReceivesRecommendation(x))",
+      "∀x (AttendsTutoring(x) → ReceivesRecommendation(x))",
       "Exists(x, UnderstandsMaterial(x))",
       "ForAll(x, PassesExam(x))",
-      "(¬AttendsTutoring(x) → ¬QualifiesForScholarship(x))",
-      "(StudiesRegularly(x) → AttendsTutoring(x))",
-      "(QualifiesForScholarship(x) → AttendsTutoring(x))",
-      "(PassesExam(x) → UnderstandsMaterial(x))",
-      "(¬PassesExam(x) → ¬AttendsTutoring(x))",
-      "(UnderstandsMaterial(x) → AttendsTutoring(x))",
-      "(¬PassesExam(x) → ¬StudiesRegularly(x))",
-      "(¬StudiesRegularly(x) → ¬QualifiesForScholarship(x))",
+      "∀x (¬AttendsTutoring(x) → ¬QualifiesForScholarship(x))",
+      "∀x (StudiesRegularly(x) → AttendsTutoring(x))",
+      "∀x (QualifiesForScholarship(x) → AttendsTutoring(x))",
+      "∀x (PassesExam(x) → UnderstandsMaterial(x))",
+      "∀x (¬PassesExam(x) → ¬AttendsTutoring(x))",
+      "∀x (UnderstandsMaterial(x) → AttendsTutoring(x))",
+      "∀x (¬PassesExam(x) → ¬StudiesRegularly(x))",
+      "∀x (¬StudiesRegularly(x) → ¬QualifiesForScholarship(x))",
       "((¬UnderstandsMaterial(x) → ¬ReceivesRecommendation(x)) → Exists(x, UnderstandsMaterial(x)))",
-      "((UnderstandsMaterial(x) → AttendsTutoring(x)) → (¬PassesExam(x) → ¬AttendsTutoring(x)))",
-      "(ReceivesRecommendation(x) → AttendsTutoring(x))",
-      "(ReceivesRecommendation(x) → StudiesRegularly(x))",
+      "∀x ((UnderstandsMaterial(x) → AttendsTutoring(x)) → (¬PassesExam(x) → ¬AttendsTutoring(x)))",
+      "∀x (ReceivesRecommendation(x) → AttendsTutoring(x))",
+      "∀x (ReceivesRecommendation(x) → StudiesRegularly(x))",
       "ForAll(x, ReceivesRecommendation(x))",
-      "(StudiesRegularly(x) → ReceivesRecommendation(x))"
+      "∀x (StudiesRegularly(x) → ReceivesRecommendation(x))"
     ],
     "premises-NL": [
       "If a student does not understand the material, then they do not receive a recommendation letter.",
@@ -13626,23 +13631,23 @@
     "premises-FOL": [
       "Exists(x, Prepared(x))",
       "Exists(x, AsksQuestions(x))",
-      "(Prepared(x) → ReceivesRecommendation(x))",
+      "∀x (Prepared(x) → ReceivesRecommendation(x))",
       "ForAll(x, TakesTest(x))",
       "ForAll(x, StudiesRegularly(x))",
-      "(¬ReceivesRecommendation(x) → ¬AsksQuestions(x))",
-      "(¬Prepared(x) → ¬ReceivesRecommendation(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬AsksQuestions(x))",
+      "∀x (¬Prepared(x) → ¬ReceivesRecommendation(x))",
       "ForAll(x, AsksQuestions(x))",
-      "(AsksQuestions(x) → Prepared(x))",
-      "(StudiesRegularly(x) → AttendsUniversity(x))",
-      "(¬TakesTest(x) → ¬AsksQuestions(x))",
-      "(¬TakesTest(x) → ¬AttendsUniversity(x))",
+      "∀x (AsksQuestions(x) → Prepared(x))",
+      "∀x (StudiesRegularly(x) → AttendsUniversity(x))",
+      "∀x (¬TakesTest(x) → ¬AsksQuestions(x))",
+      "∀x (¬TakesTest(x) → ¬AttendsUniversity(x))",
       "(Exists(x, AsksQuestions(x)) → (StudiesRegularly(x) → AttendsUniversity(x)))",
       "(ForAll(x, TakesTest(x)) → Exists(x, Prepared(x)))",
       "(((Exists(x, AsksQuestions(x)) → (StudiesRegularly(x) → AttendsUniversity(x))) → Exists(x, Prepared(x))) → Exists(x, Prepared(x)))",
       "ForAll(x, Prepared(x))",
-      "(¬Prepared(x) → ¬StudiesRegularly(x))",
+      "∀x (¬Prepared(x) → ¬StudiesRegularly(x))",
       "Exists(x, AttendsUniversity(x))",
-      "(AsksQuestions(x) → StudiesRegularly(x))"
+      "∀x (AsksQuestions(x) → StudiesRegularly(x))"
     ],
     "premises-NL": [
       "There exists at least one student who is prepared.",
@@ -13689,25 +13694,25 @@
       ]
     ],
     "premises-FOL": [
-      "(StudiesRegularly(x) → PassesExam(x))",
+      "∀x (StudiesRegularly(x) → PassesExam(x))",
       "ForAll(x, ReceivesAward(x))",
-      "(¬ReceivesRecommendation(x) → ¬QualifiesForScholarship(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬QualifiesForScholarship(x))",
       "Exists(x, ReceivesAward(x))",
       "Exists(x, StudiesRegularly(x))",
       "ForAll(x, PassesExam(x))",
       "ForAll(x, StudiesRegularly(x))",
-      "(StudiesRegularly(x) → QualifiesForScholarship(x))",
-      "(StudiesRegularly(x) → ReceivesRecommendation(x))",
+      "∀x (StudiesRegularly(x) → QualifiesForScholarship(x))",
+      "∀x (StudiesRegularly(x) → ReceivesRecommendation(x))",
       "Exists(x, AttendsTutoring(x))",
-      "(¬AttendsTutoring(x) → ¬PassesExam(x))",
-      "(QualifiesForScholarship(x) → PassesExam(x))",
+      "∀x (¬AttendsTutoring(x) → ¬PassesExam(x))",
+      "∀x (QualifiesForScholarship(x) → PassesExam(x))",
       "(ForAll(x, PassesExam(x)) → ForAll(x, StudiesRegularly(x)))",
       "((QualifiesForScholarship(x) → PassesExam(x)) → Exists(x, StudiesRegularly(x)))",
-      "((QualifiesForScholarship(x) → PassesExam(x)) → (StudiesRegularly(x) → PassesExam(x)))",
-      "(¬QualifiesForScholarship(x) → ¬StudiesRegularly(x))",
-      "(AttendsTutoring(x) → QualifiesForScholarship(x))",
-      "(QualifiesForScholarship(x) → ReceivesRecommendation(x))",
-      "(¬ReceivesRecommendation(x) → ¬PassesExam(x))"
+      "∀x ((QualifiesForScholarship(x) → PassesExam(x)) → (StudiesRegularly(x) → PassesExam(x)))",
+      "∀x (¬QualifiesForScholarship(x) → ¬StudiesRegularly(x))",
+      "∀x (AttendsTutoring(x) → QualifiesForScholarship(x))",
+      "∀x (QualifiesForScholarship(x) → ReceivesRecommendation(x))",
+      "∀x (¬ReceivesRecommendation(x) → ¬PassesExam(x))"
     ],
     "premises-NL": [
       "If a student studies regularly, then they pass the exam.",
@@ -13787,7 +13792,7 @@
       "If all students complete the end-of-term research paper, does it follow that if a broader understanding implies mentoring, then investing time in project-based learning implies a broader understanding?"
     ],
     "answers": [
-      "Unknown",
+      "D",
       "No"
     ],
     "explanation": [
@@ -14644,7 +14649,7 @@
       "Can students with excessive competition mitigate stress through self-reflection?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -14692,7 +14697,7 @@
       "Do well-structured curricula improve learning outcomes?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -14740,7 +14745,7 @@
       "Do modern facilities enhance learning environments?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -14789,7 +14794,7 @@
       "Do students who practice excel in exams?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -14837,7 +14842,7 @@
       "Do well-ranked universities improve student satisfaction?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -14885,7 +14890,7 @@
       "Can students avoid burnout by managing time effectively?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -14933,7 +14938,7 @@
       "Can students with metacognitive skills avoid academic pressure’s negative effects?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -14981,7 +14986,7 @@
       "Can students with open-ended projects avoid rigid curriculum struggles?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -15029,7 +15034,7 @@
       "Can students in flexible learning environments improve decision-making?"
     ],
     "answers": [
-      "Unknown",
+      "D",
       "No"
     ],
     "explanation": [
@@ -15077,7 +15082,7 @@
       "Can students in problem-based learning improve self-learning?"
     ],
     "answers": [
-      "Unknown",
+      "D",
       "No"
     ],
     "explanation": [
@@ -15096,15 +15101,15 @@
       ]
     ],
     "premises-FOL": [
-      "(InstallsSoftware(x) → FunctionalSoftware(x))",
+      "∀x (InstallsSoftware(x) → FunctionalSoftware(x))",
       "Exists(x, InstallsSoftware(x))",
       "Exists(x, UsesSoftware(x))",
-      "(¬UpdatesSoftware(x) → ¬SecureSoftware(x))",
-      "(¬InstallsSoftware(x) → ¬FunctionalSoftware(x))",
-      "(InstallsSoftware(x) → (¬UpdatesSoftware(x) → ¬SecureSoftware(x)))",
-      "(InstallsSoftware(x) → HasAccessToLatestFeatures(x))",
+      "∀x (¬UpdatesSoftware(x) → ¬SecureSoftware(x))",
+      "∀x (¬InstallsSoftware(x) → ¬FunctionalSoftware(x))",
+      "∀x (InstallsSoftware(x) → (¬UpdatesSoftware(x) → ¬SecureSoftware(x)))",
+      "∀x (InstallsSoftware(x) → HasAccessToLatestFeatures(x))",
       "Exists(x, UpdatesSoftware(x))",
-      "(¬UpdatesSoftware(x) → ¬HasAccessToLatestFeatures(x))"
+      "∀x (¬UpdatesSoftware(x) → ¬HasAccessToLatestFeatures(x))"
     ],
     "premises-NL": [
       "If a student installs the software from the university’s repository, then the software is functional.",
@@ -15146,7 +15151,7 @@
       "ForAll(x, (¬StudiesConsistently(x) → ¬PerformsWell(x)))",
       "ForAll(x, Enrolled(x))",
       "ForAll(x, (¬AttendsLectures(x) → ¬CompletesAssignments(x)))",
-      "((ForAll(x, (StudiesConsistently(x) → UnderstandsSubject(x))) → ForAll(x, Enrolled(x)))",
+      "((ForAll(x, (StudiesConsistently(x) → UnderstandsSubject(x))) → ForAll(x, Enrolled(x))))",
       "ForAll(x, CompletesAssignments(x))",
       "ForAll(x, (¬PerformsWell(x) → ¬StudiesConsistently(x)))",
       "ForAll(x, (¬Enrolled(x) → ¬CompletesAssignments(x)))"
@@ -15193,7 +15198,7 @@
       "ForAll(x, FollowsRules(x))",
       "Exists(x, Available(x))",
       "ForAll(x, (ReferenceSection(x) → ¬Borrowable(x)))",
-      "((ForAll(x, (ReferenceSection(x) → ¬Borrowable(x))) → Exists(x, Available(x)))",
+      "((ForAll(x, (ReferenceSection(x) → ¬Borrowable(x))) → Exists(x, Available(x))))",
       "ForAll(x, (¬Reserved(x) → Cataloged(x)))",
       "ForAll(x, (Available(x) → Cataloged(x)))",
       "ForAll(x, (¬Cataloged(x) → ¬ReferenceSection(x)))"
@@ -15244,7 +15249,7 @@
       "ForAll(x, (PracticeExercises(x) → PerformWell(x)))",
       "ForAll(x, SubmitAssignments(x))",
       "ForAll(x, (¬TakeNotes(x) → ¬PracticeExercises(x)))",
-      "((ForAll(x, (¬AttendLectures(x) → ¬UnderstandDefinitions(x))) → ForAll(x, MasterCalculus(x)))",
+      "((ForAll(x, (¬AttendLectures(x) → ¬UnderstandDefinitions(x))) → ForAll(x, MasterCalculus(x))))",
       "ForAll(x, (¬AttendLectures(x) → ¬MasterCalculus(x)))",
       "ForAll(x, (TakeNotes(x) → PerformWell(x)))",
       "ForAll(x, (¬PracticeExercises(x) → ¬TakeNotes(x)))",
@@ -15400,7 +15405,7 @@
       "Exists(x, (PythonProject(x) ∧ BestPractices(x)))",
       "ForAll(x, ReliableOutputs(x))",
       "ForAll(x, (PythonProject(x) → (BestPractices(x) → ReliableOutputs(x))))",
-      "((ForAll(x, (WellStructured(x) → Optimized(x))) → ForAll(x, (PythonScript(x) → (¬HasErrorHandling(x) → ¬HandlesExceptions(x)))))",
+      "((ForAll(x, (WellStructured(x) → Optimized(x))) → ForAll(x, (PythonScript(x) → (¬HasErrorHandling(x) → ¬HandlesExceptions(x))))))",
       "ForAll(x, (¬Optimized(x) → ¬BestPractices(x)))",
       "ForAll(x, (PythonScript(x) → (¬HasErrorHandling(x) → ¬FollowsPEP8(x))))",
       "ForAll(x, (ReliableOutputs(x) → Optimized(x)))"
@@ -15568,7 +15573,7 @@
       "Based on the above premises, is the statement true?\nStatement: Frieren must register for the BKA program."
     ],
     "answers": [
-      "Unknown",
+      "D",
       "No"
     ],
     "explanation": [
@@ -15606,7 +15611,7 @@
       "Did Sarifi avoid failing by not being absent?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -15649,7 +15654,7 @@
       "Did Mia pass due to not helping others?"
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -15692,7 +15697,7 @@
       "Did Mia rely on her own performance to pass?"
     ],
     "answers": [
-      "Unknown",
+      "D",
       "No"
     ],
     "explanation": [
@@ -15732,7 +15737,7 @@
       "Can Iruma do a graduation project?"
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -15778,7 +15783,7 @@
       "Did Yashiro redo the assignment?"
     ],
     "answers": [
-      "Unknown",
+      "D",
       "Yes"
     ],
     "explanation": [
@@ -15818,7 +15823,7 @@
       "Will Ponko fail the class?"
     ],
     "answers": [
-      "Unknown",
+      "C",
       "Yes"
     ],
     "explanation": [
@@ -15858,7 +15863,7 @@
       "Did Dio pass by reading books?"
     ],
     "answers": [
-      "Unknown",
+      "D",
       "No"
     ],
     "explanation": [
@@ -15902,7 +15907,7 @@
       "Did Rillance’s basketball team status help qualify for a scholarship?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "Yes"
     ],
     "explanation": [
@@ -15934,7 +15939,7 @@
       "ForAll(x, School(x) → Exists(y, Student(y) ∧ EnrolledIn(y, x)))",
       "ForAll(x, Student(x) → Exists(y, School(y) ∧ EnrolledIn(x, y)))",
       "ForAll(x, Teacher(x) → Exists(y, School(y) ∧ WorksAt(x, y)))",
-      "ForAll(x, WorksAt(x, y) → ContributesToEducation(x))",
+      "∀y (ForAll(x, WorksAt(x, y) → ContributesToEducation(x)))",
       "ForAll(x, ForAll(y, EnrolledIn(x, y) ∧ School(y) → HasAccessToEducation(x)))",
       "ForAll(x, HasAccessToEducation(x) → GainsKnowledge(x))",
       "ForAll(x, GainsKnowledge(x) → CanApplyKnowledge(x))",
@@ -15967,7 +15972,7 @@
       "Do students guided by teachers contribute to society?"
     ],
     "answers": [
-      "Unknown",
+      "C",
       "No"
     ],
     "explanation": [
@@ -16016,7 +16021,7 @@
       "Did Ruri gain experience from the assignment?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -16082,7 +16087,7 @@
       "Does Mia have motivation?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -16148,7 +16153,7 @@
       "Do all students gain knowledge?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "No"
     ],
     "explanation": [
@@ -16217,7 +16222,7 @@
       "Do students contribute to society?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -16273,7 +16278,7 @@
       "How do supervised learning models function?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "Unknown"
     ],
     "explanation": [
@@ -16332,7 +16337,7 @@
       "What does the GROUP BY clause achieve in SQL queries?"
     ],
     "answers": [
-      "Unknown",
+      "A",
       "Unknown"
     ],
     "explanation": [
@@ -16476,7 +16481,7 @@
       "∀x (P(x) → S(x))",
       "∀x (¬T(x) → ¬S(x))",
       "∀x (¬Q(x) → ¬S(x))",
-      "�forall x (R(x) → S(x))",
+      "∀x (R(x) → S(x))",
       "∀x (R(x) → S(x))"
     ],
     "premises-NL": [
@@ -16677,12 +16682,9 @@
   {
     "idx": [
       [
-        1,
-        16
+        1
       ],
-      [
-        16
-      ]
+      []
     ],
     "premises-FOL": [
       "∀x (B(x) → U(x))",
@@ -17976,8 +17978,8 @@
       "Which activities contribute to students performing well in exams?\nA. Attending classes regularly, participating in extracurricular activities.\nB. Developing social skills, pursuing interests.\nC. Accessing quality education, understanding material.\nD. Participating in extracurricular activities, pursuing interests."
     ],
     "answers": [
-      "Unknown",
-      "Unknown"
+      "D",
+      "A"
     ],
     "explanation": [
       "Premise 2 states extracurricular activities lead to social skills, and premise 3 states understanding material leads to exam performance, so if the former holds, the latter does too, making option D correct.",
@@ -18154,7 +18156,7 @@
       "What qualifies a student for a scholarship?"
     ],
     "answers": [
-      "Unknown",
+      "C",
       "Unknown"
     ],
     "explanation": [
@@ -18181,7 +18183,7 @@
       "ForAll(x, Course(x) → ContainsKnowledge(x))",
       "ForAll(s, ForAll(c, (Enrolled(s, c) ∧ Passes(s, c)) → GainsKnowledge(s, c)))",
       "ForAll(s, ForAll(c, GainsKnowledge(s, c) → Understanding(s, c)))",
-      "ForAll(c, ForAll(d, Equivalent(c, d) → (Passes(s, d) → FulfillsPrerequisite(s, c))))",
+      "∀s (ForAll(c, ForAll(d, Equivalent(c, d) → (Passes(s, d) → FulfillsPrerequisite(s, c)))))",
       "ForAll(s, ForAll(c, (MeetsPrerequisites(s, c) ∧ Enrolled(s, c)) → AllowedToTake(s, c)))",
       "Enrolled(Tuan, ML101, 243)",
       "ForAll(s, AllowedToTake(s, ML101) → Passes(s, LinearAlgebra))",
@@ -18204,7 +18206,7 @@
       "What allows a student to take a course?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "Unknown"
     ],
     "explanation": [
@@ -18256,7 +18258,7 @@
       "Can Nam register for Advanced Algorithms?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -18282,9 +18284,9 @@
       "ForAll(s, ForAll(x, Knowledge(s, x) → Explain(s, x, Friends)))",
       "ForAll(s, ForAll(x, (Explain(s, x, Friends) ∧ Understand(Friends, x)) → Mastered(s, x)))",
       "ForAll(s, ForAll(x, Mastered(s, x) → (GradeA(s, x) ∨ GradeAPlus(s, x))))",
-      "ForAll(s, (Count(GradeA(s, x) ∨ GradeAPlus(s, x), ≥5) → Scholarship(s)))",
-      "Count(GradeA(Tuan, x), 3)",
-      "Count(GradeAPlus(Tuan, x), 0)",
+      "ForAll(s, EnoughAGrades(s) → Scholarship(s))",
+      "∀x (Count(GradeA(Tuan, x), 3))",
+      "∀x (Count(GradeAPlus(Tuan, x), 0))",
       "ForAll(s, ForAll(x, GradeA(s, x) → Mastered(s, x)))",
       "ForAll(x, ¬Understand(Friends, x) → ¬Mastered(Tuan, x))",
       "ForAll(s, ForAll(x, ¬Explain(s, x, Friends) → ¬Knowledge(s, x)))"
@@ -18306,7 +18308,7 @@
       "Does Tuan have knowledge of his A-grade subjects?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "No"
     ],
     "explanation": [
@@ -18348,7 +18350,7 @@
       "What follows if a student earns an A?"
     ],
     "answers": [
-      "Unknown",
+      "B",
       "Unknown"
     ],
     "explanation": [
@@ -18391,7 +18393,7 @@
       "Do all students who want to understand the lesson pay attention?"
     ],
     "answers": [
-      "Unknown",
+      "D",
       "No"
     ],
     "explanation": [
@@ -18708,7 +18710,7 @@
       ]
     ],
     "premises-FOL": [
-      "∀x ((S(x) ∧ V(x)) → B(x))",
+      "ForAll(x, ((S(x) & V(x)) & ~F(x)) -> B(x))",
       "∀x (O(x) → F(x))",
       "∀x (F(x) → ¬B(x))",
       "S(An)",
@@ -18879,16 +18881,12 @@
       [
         1,
         2,
-        10,
-        17,
-        18
+        10
       ],
       [
         1,
         2,
-        10,
-        17,
-        18
+        10
       ]
     ],
     "premises-FOL": [
@@ -18896,7 +18894,7 @@
       "ComponentScore(Kelvin, CH3002, Lab) ≥ 4.0",
       "∀i ComponentScore(Kelvin, CH3002, i) > 0",
       "∀s ∀c (Enrolled(s, c) ∧ ¬TaughtBy(c, ProfessorX) → MustSubmitProject(s, c))",
-      "Components(CH3002, {Lab, Quiz, Homework})",
+      "Component(CH3002, Lab) ∧ Component(CH3002, Quiz) ∧ Component(CH3002, Homework)",
       "∀s ∀c (Age(s) > 20 → ¬Required(ComponentScore(s, c, Quiz)))",
       "Age(Kelvin) = 19",
       "ComponentScore(Kelvin, CH3001, Homework) = 7.0",
@@ -18960,13 +18958,13 @@
       "∀s (AllowedToEnterLab(s) ↔ (HasHealthInsurance(s) ∧ HasAccidentInsurance(s)))",
       "HasHealthInsurance(Lan)",
       "HasAccidentInsurance(Lan)",
-      "∀s ((LabOpen(Weekdays, 9AM-5PM) ∧ ¬SpecialEvent) → CanAccessLab(s))",
+      "∀s ((LabOpen(Weekdays, Time_9AM_to_5PM) ∧ ¬SpecialEvent) → CanAccessLab(s))",
       "∀s (InLab(s) ∧ ¬VirtualLab → MustWearGoggles(s))",
       "Enrolled(Lan, Chemistry101)",
       "RequiresLabAccess(Chemistry101, Tuesdays)",
       "HasHealthInsurance(Kai)",
       "¬HasAccidentInsurance(Kai)",
-      "∀s (GroupSize(s) > 3 → MustReserveEquipment(s, 24Hours))",
+      "∀s (GroupSize(s) > 3 → MustReserveEquipment(s, Duration_24Hours))",
       "GroupSize(Lan) = 1",
       "CompletedSafetyTraining(Lan)",
       "∀s ((GPA(s) > 3.5 ∧ Approved(DrZee, s)) → ExtraLabHours(s))",
@@ -19026,7 +19024,7 @@
       "Enrolled(Linh, LectureCourse1) ∧ Credits(LectureCourse1) = 4",
       "Enrolled(Linh, LectureCourse2) ∧ Credits(LectureCourse2) = 4",
       "PartTimeStudent(Minh) ∧ SpecialCase(Minh) ∧ Credits(Minh) = 10",
-      "∀c (Credits(c) > 3 → AttendanceRequired(c, 80%))",
+      "∀c (Credits(c) > 3 → AttendanceRequired(c, Percent_80))",
       "∀s (Credits(s) = 12 → EligibleForDiscount(s))",
       "SemesterCountSpecialCase(Linh) ≤ 2",
       "WorkHours(Minh) = 20",
@@ -19087,7 +19085,7 @@
       "∀s (GPA(s) < 2.5 → RequiresRemedialCourse(s))",
       "GPA(Hà) = 3.2",
       "¬RequiresRemedialCourse(Hà)",
-      "InternshipCycles = {Summer, Fall}",
+      "InternshipCycle(Summer) ∧ InternshipCycle(Fall)",
       "Priority(Summer, Seniors)",
       "Status(Hà) = Junior ∧ ApplyingFor(Hà, Fall)",
       "∀s (EligibleForInternship(s) → ApprovedByAdvisor(s))",
@@ -19194,7 +19192,7 @@
       ]
     ],
     "premises-FOL": [
-      "∀s (SecondYear(s) ↔ ((M ≤ AccumulatedCredits(s) < 2M) ∧ MeetsLanguageStandard(s, YearTwo)))",
+      "∀s (SecondYear(s) ↔ ((AccumulatedCredits(s) ≥ M_credits) ∧ (AccumulatedCredits(s) < 2 * M_credits) ∧ MeetsLanguageStandard(s, YearTwo)))",
       "M = 33",
       "AccumulatedCredits(Tâm) = 40 ∧ MeetsLanguageStandard(Tâm, YearTwo)",
       "M_accelerated = 40",
@@ -19229,7 +19227,7 @@
       "If Tâm has met the foreign language standard for year two, does it follow that Tâm is eligible for the mentorship program?"
     ],
     "answers": [
-      "B",
+      "A",
       "Yes"
     ],
     "explanation": [
@@ -19245,12 +19243,11 @@
         3
       ],
       [
-        3,
-        14
+        3
       ]
     ],
     "premises-FOL": [
-      "∀s (ThirdYear(s) ↔ ((2M ≤ AccumulatedCredits(s) < 3M) ∧ MeetsLanguageStandard(s, YearThree)))",
+      "∀s (ThirdYear(s) ↔ ((AccumulatedCredits(s) ≥ 2 * M_credits) ∧ (AccumulatedCredits(s) < 3 * M_credits) ∧ MeetsLanguageStandard(s, YearThree)))",
       "M = 33",
       "AccumulatedCredits(Phong) = 70 ∧ MeetsLanguageStandard(Phong, YearThree)",
       "∀s (MeetsLanguageStandard(s, YearThree) ↔ IELTS(s) ≥ 6.0)",
@@ -19373,8 +19370,8 @@
       "If every teacher is respected, does it follow that someone is prepared?"
     ],
     "answers": [
-      "Unknown",
-      "No"
+      "D",
+      "Yes"
     ],
     "explanation": [
       "From premise 2 (If a person is a teacher, then that person is respected), we know ∀x (T(x) → R(x)). From premise 7, if all teachers being respected implies that someone is prepared, then that implication holds (∀x (T(x) → R(x)) → ∃x P(x)). Since premise 2 states that if a person is a teacher, then that person is respected, premise 7's antecedent is true, so the consequent must be true. Therefore, if every teacher is respected, then someone must be prepared (option D).",
@@ -19817,7 +19814,7 @@
     ],
     "answers": [
       "No",
-      "Unknown"
+      "A"
     ],
     "explanation": [
       "Premise 3 states all students complete the training module, premise 5 states all earn a certification, premise 4 implies all participate in a project, premise 6 states participating implies giving a seminar, and premise 1 states giving a seminar implies receiving a recommendation, so all students receive a recommendation.",
@@ -19860,7 +19857,7 @@
     ],
     "answers": [
       "No",
-      "Unknown"
+      "A"
     ],
     "explanation": [
       "Premise 3 states all students complete the training module, premise 5 states all earn a certification, premise 4 implies all participate in a project, premise 6 states participating implies giving a seminar, and premise 1 states giving a seminar implies receiving a recommendation, so all students receive a recommendation.",
@@ -20303,7 +20300,7 @@
       "∀x (G(x) → W(x))",
       "∀x (W(x) → R(x))",
       "∀x (¬A(x) → ¬W(x))",
-      "∀ x (A(x) → G(x))",
+      "∀x (∀ x (A(x) → G(x)))",
       "∀x G(x)",
       "∀x (¬H(x) → ¬A(x))",
       "∃x G(x)",
@@ -20363,8 +20360,8 @@
       "Based on the above premises, is the statement true?\nStatement: ∀x (¬H(x) → ¬W(x))"
     ],
     "answers": [
-      "Unknown",
-      "Unknown"
+      "A",
+      "Yes"
     ],
     "explanation": [
       "The statement that if a book is frequently borrowed, it is well-catalogued and recommended follows because frequent borrowing implies it is well-catalogued (premise 17), and being well-catalogued implies it is recommended (premise 5).",
@@ -20491,7 +20488,7 @@
       "∀x (E(x) → L(x))",
       "∃x N(x)",
       "∀x (N(x) → S(x))",
-      "�forall x (L(x) → N(x))"
+      "∀x (L(x) → N(x))"
     ],
     "premises-NL": [
       "There is at least one electric vehicle that is eco-friendly.",
@@ -20758,7 +20755,7 @@
       "∀x (G(x) → O(x))",
       "∀x (S(x) → R(x))",
       "∀x S(x)",
-      "�forall x C(x)",
+      "∀x C(x)",
       "∀x (R(x) → O(x))",
       "∃x B(x)",
       "∀x (O(x) → R(x))",
