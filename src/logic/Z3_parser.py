@@ -28,6 +28,7 @@ from z3 import (
 	IntVal,
 	Not,
 	Or,
+	RealVal,
 	StringSort,
 	StringVal,
 	BoolRef,
@@ -209,6 +210,8 @@ class FolParser:
 		if tok.startswith("'") and tok.endswith("'"):
 			return StringVal(tok[1:-1])
 		if tok.replace(".", "", 1).isdigit():
+			if "." in tok:
+				return RealVal(tok)
 			return IntVal(tok)
 		var = self._lookup_var(tok)
 		if var is not None:
