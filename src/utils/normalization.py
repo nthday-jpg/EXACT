@@ -1,4 +1,4 @@
-"""Normalization utilities for the physics QA dataset."""
+"""Normalization utilities for the QA datasets."""
 
 from __future__ import annotations
 
@@ -46,8 +46,102 @@ _UNIT_NORMALIZATION = {
 }
 
 
-def normalize_input(text: str) -> str:
-    """Conservative normalization for input prompts."""
+def normalize_logic_premise_text(text: str) -> str:
+    """Normalize logic premises to avoid parser-hostile tokens."""
+    if not text:
+        return ""
+
+    text = unicodedata.normalize("NFKC", text)
+    text = text.replace("\u2192", "->")
+    text = text.replace("\u2194", "<->")
+    text = text.replace("\u2019", "'").replace("\u2018", "'")
+    def join_title(match: re.Match) -> str:
+        parts = match.group(2).split()
+        return f"{match.group(1)}{''.join(parts)}"
+
+    text = re.sub(
+        r"\b(Dr|Prof|Mr|Mrs|Ms)\.?\s+([A-Za-z][A-Za-z-]*(?:\s+[A-Za-z][A-Za-z-]*)*)",
+        join_title,
+        text,
+    )
+    text = re.sub(r"\b(\d+(?:\.\d+)?)\s*\u00b0C\b", r"\1C", text)
+
+    def normalize_time(match: re.Match) -> str:
+        hour = match.group(1)
+        minute = match.group(2) or ""
+        ampm = match.group(3).upper()
+        return f"Time{hour}{minute}{ampm}"
+
+    text = re.sub(r"\b(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\b", normalize_time, text)
+    text = re.sub(r"\b(\d+(?:\.\d+)?)\s*hours?\b", r"Duration\1Hours", text)
+    text = text.replace("'", "")
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def normalize_logic_fol_entry(text: str) -> str:
+    """Normalize FOL strings to align with the Z3 parser expectations."""
+    if not text:
+        return text
+
+    text = unicodedata.normalize("NFKC", text)
+    text = re.sub(r"\ufffd\s*forall\b", "forall", text, flags=re.IGNORECASE)
+    text = re.sub(r"\ufffd\s*exists\b", "exists", text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"\bforall\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*",
+        r"ForAll(\1, ",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\bexists\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*",
+        r"Exists(\1, ",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\bforall\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*",
+        r"ForAll(\1, ",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\bexists\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*",
+        r"Exists(\1, ",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"\u2200\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*", r"ForAll(\1, ", text)
+    text = re.sub(r"\u2203\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*", r"Exists(\1, ", text)
+    text = re.sub(r"\u2200\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*", r"ForAll(\1, ", text)
+    text = re.sub(r"\u2203\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*", r"Exists(\1, ", text)
+    text = re.sub(r"\u2200\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*", r"ForAll(\1, ", text)
+    text = re.sub(r"\u2203\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*", r"Exists(\1, ", text)
+
+    replacements = {
+        "\u2192": "->",
+        "\u2227": "AND",
+        "\u2228": "OR",
+        "\u00ac": "NOT ",
+        "\u2194": "<->",
+        "\u2265": ">=",
+        "\u2264": "<=",
+        "\u2260": "!=",
+        "\u2208": "IN",
+    }
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+
+    text = re.sub(r"\bNOT\(", "NOT (", text)
+    open_count = text.count("(")
+    close_count = text.count(")")
+    if close_count < open_count:
+        text = text + ")" * (open_count - close_count)
+    return text
+
+
+def normalize_physics_input(text: str) -> str:
+    """Conservative normalization for physics input prompts."""
     if not text:
         return ""
 
@@ -61,8 +155,8 @@ def normalize_input(text: str) -> str:
     return text
 
 
-def normalize_output(text: str) -> str:
-    """Aggressive normalization for output/evaluation targets."""
+def normalize_physics_output(text: str) -> str:
+    """Aggressive normalization for physics output/evaluation targets."""
     if not text:
         return ""
 
@@ -81,7 +175,7 @@ def normalize_output(text: str) -> str:
 
 def extract_value_unit_explanation(text: str) -> Dict[str, Optional[str]]:
     """Extract a numeric value, unit, and explanation from a normalized output."""
-    normalized = normalize_output(text)
+    normalized = normalize_physics_output(text)
     match = _NUMBER_PATTERN.search(normalized)
     if not match:
         return {"value": None, "unit": None, "explanation": normalized.strip() or None}
@@ -131,6 +225,20 @@ def _normalize_scientific_notation(text: str) -> str:
 
     text = re.sub(r"(\d)([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079\u207a\u207b]+)", repl, text)
     return text
+
+
+def normalize_physics_scientific_text(text: str) -> str:
+    """Normalize scientific notation for physics dataset strings."""
+    if not text:
+        return ""
+
+    text = _normalize_scientific_notation(text)
+    text = re.sub(r"\s*[\u00d7\u00b7]\s*", " * ", text)
+    text = re.sub(r"(\d)\s*\.\s*(10\^)", r"\1 * \2", text)
+    text = re.sub(r"(\d)\s*\*\s*(10\^)", r"\1 * \2", text)
+    text = re.sub(r"10\^([+-]?\d+)", r"10^{\1}", text)
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    return text.strip()
 
 
 def _normalize_units(text: str) -> str:
