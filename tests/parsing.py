@@ -4,11 +4,13 @@ import random
 from pathlib import Path
 from typing import Any, Dict, List
 from dotenv import load_dotenv
+from time import time
 
 from z3 import DeclareSort, Solver
 
 from llm.llm_client import LLMClient
 from src.logic.Z3_parser import FolParser, Z3Symbols
+from src.utils.normalization import normalize_logic_premise_text
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -57,19 +59,28 @@ def run_pipeline(
 	ontology_prompt_template: str,
 	logic_prompt_template: str,
 ) -> Dict[str, Any]:
-	result: Dict[str, Any] = {}
+	result: Dict[str, Any] = {
+		"premises-NL": sample.get("premises-NL", []),
+		"ontology_output_raw": None,
+		"ontology_output": None,
+		"logic_output_raw": None,
+		"logic_output": None,
+	}
 	try:
 		premises = sample.get("premises-NL", [])
 		if not isinstance(premises, list):
 			raise TypeError("premises-NL must be a list")
-		premises_text = "\n".join(premises)
+		normalized_premises = [normalize_logic_premise_text(premise) for premise in premises]
+		premises_text = "\n".join(normalized_premises)
 
 		ontology_prompt = render_template(
 			ontology_prompt_template,
 			premises=premises_text,
 		)
 		ontology_raw = ontology_builder.generate(ontology_prompt)
+		result["ontology_output_raw"] = ontology_raw
 		ontology = parse_json(ontology_raw)
+		result["ontology_output"] = ontology
 
 		ontology_json = json.dumps(ontology, ensure_ascii=True, indent=2)
 		logic_prompt = render_template(
@@ -78,7 +89,9 @@ def run_pipeline(
 			premises=premises_text,
 		)
 		logic_raw = logic_compiler.generate(logic_prompt)
+		result["logic_output_raw"] = logic_raw
 		logic = parse_json(logic_raw)
+		result["logic_output"] = logic
 
 		facts = ensure_str_list(logic.get("facts"), "facts")
 		rules = ensure_str_list(logic.get("rules"), "rules")
@@ -92,89 +105,82 @@ def run_pipeline(
 
 		solver = Solver()
 		solver.add(*fact_exprs, *rule_exprs, *exist_exprs)
-		result.update(
-			{
-				"premises-NL": premises,
-				"ontology_output_raw": ontology_raw,
-				"ontology_output": ontology,
-				"logic_output_raw": logic_raw,
-				"logic_output": logic,
-				"status": str(solver.check()),
-			}
-		)
+		result["status"] = str(solver.check())
 		return result
 	except Exception as exc:
-		result.update(
-			{
-				"premises-NL": result.get("premises-NL", sample.get("premises-NL", [])),
-				"ontology_output_raw": result.get("ontology_output_raw"),
-				"ontology_output": result.get("ontology_output"),
-				"logic_output_raw": result.get("logic_output_raw"),
-				"logic_output": result.get("logic_output"),
-				"status": f"error: {type(exc).__name__}: {exc}",
-			}
-		)
+		result["status"] = f"error: {type(exc).__name__}: {exc}"
 		return result
 
 
 def main() -> None:
-    load_dotenv()
-    logic_model_name = os.getenv("LOGIC_COMPILER_MODEL")
-    ontology_model_name = os.getenv("ONTOLOGY_BUILDER_MODEL")
-    api_key = os.getenv("HF_API_KEY")
-    if not api_key:
-        raise RuntimeError("HF_API_KEY is not set")
-	
-    if not logic_model_name or not ontology_model_name:
-        raise RuntimeError(
-            "Set LOGIC_COMPILER_MODEL and ONTOLOGY_BUILDER_MODEL in the environment."
-        )
+	load_dotenv()
+	logic_model_name = os.getenv("LOGIC_COMPILER_MODEL")
+	ontology_model_name = os.getenv("ONTOLOGY_BUILDER_MODEL")
+	api_key = os.getenv("HF_API_KEY")
+	if not api_key:
+		raise RuntimeError("HF_API_KEY is not set")
 
-    ontology_instruction = load_text(INSTRUCTIONS_DIR / "ontology_builder.md")
-    logic_instruction = load_text(INSTRUCTIONS_DIR / "logic_compiler.md")
-    ontology_prompt_template = load_text(PROMPTS_DIR / "ontology_builder.md")
-    logic_prompt_template = load_text(PROMPTS_DIR / "logic_compiler.md")
+	if not logic_model_name or not ontology_model_name:
+		raise RuntimeError(
+			"Set LOGIC_COMPILER_MODEL and ONTOLOGY_BUILDER_MODEL in the environment."
+		)
 
-    ontology_builder = LLMClient(
-        model_name=ontology_model_name,
-        api_key=api_key,
-        system_prompt=ontology_instruction,
-        temperature=0.0,
-    )
-    logic_compiler = LLMClient(
-        model_name=logic_model_name,
-        api_key=api_key,
-        system_prompt=logic_instruction,
-        temperature=0.0,
-    )
+	ontology_instruction = load_text(INSTRUCTIONS_DIR / "ontology_builder.md")
+	logic_instruction = load_text(INSTRUCTIONS_DIR / "logic_compiler.md")
+	ontology_prompt_template = load_text(PROMPTS_DIR / "ontology_builder.md")
+	logic_prompt_template = load_text(PROMPTS_DIR / "logic_compiler.md")
 
-    data = json.loads(load_text(DATA_PATH))
-    if not isinstance(data, list):
-        raise TypeError("Expected a list in logic_based.json")
+	ontology_builder = LLMClient(
+		model_name=ontology_model_name,
+		api_key=api_key,
+		system_prompt=ontology_instruction,
+		temperature=0.1,
+		extra_body={
+			"chat_template_kwargs": {"enable_thinking": True},
+			"thinking_token_budget": 512  # Optional: limit reasoning token overhead
+		}
+	)
+	logic_compiler = LLMClient(
+		model_name=logic_model_name,
+		api_key=api_key,
+		system_prompt=logic_instruction,
+		temperature=0.1,
+		extra_body={
+			"chat_template_kwargs": {"enable_thinking": True},
+			"thinking_token_budget": 1536  # Optional: limit reasoning token overhead
+		}
+	)
 
-    sample_count = min(10, len(data))
-    indices = random.sample(range(len(data)), k=sample_count)
-    results: List[Dict[str, Any]] = []
-    print(f"Processing {sample_count} samples...")
+	data = json.loads(load_text(DATA_PATH))
+	if not isinstance(data, list):
+		raise TypeError("Expected a list in logic_based.json")
 
-    for idx in indices:
-        sample = data[idx]
-        print(f"Processing sample index={idx}...")
-        result = run_pipeline(
-            sample,
-            ontology_builder,
-            logic_compiler,
-            ontology_prompt_template,
-            logic_prompt_template,
-        )
-        results.append(result)
-        print(f"sample_index={idx} status={result['status']}")
+	sample_count = min(10, len(data))
+	indices = random.sample(range(len(data)), k=sample_count)
+	results: List[Dict[str, Any]] = []
+	print(f"Processing {sample_count} samples...")
 
-    output_path = ROOT_DIR / "tests" / "parsing_outputs.json"
-    output_path.write_text(
-        json.dumps(results, ensure_ascii=True, indent=2),
-        encoding="utf-8",
-    )
+	for idx in indices:
+		start = time()
+		sample = data[idx]
+		print(f"Processing sample index={idx}...")
+		result = run_pipeline(
+			sample,
+			ontology_builder,
+			logic_compiler,
+			ontology_prompt_template,
+			logic_prompt_template,
+		)
+		end = time()
+		result["processing_time_sec"] = end - start
+		results.append(result)
+		print(f"sample_index={idx} status={result['status']} time={result['processing_time_sec']:.2f} sec")
+
+	output_path = ROOT_DIR / "tests" / "parsing_outputs.json"
+	output_path.write_text(
+		json.dumps(results, ensure_ascii=True, indent=2),
+		encoding="utf-8",
+	)
 
 
 if __name__ == "__main__":
