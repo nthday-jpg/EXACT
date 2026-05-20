@@ -26,12 +26,12 @@ def main():
 
     results = []
     for i, row in sampled_df.iterrows():
-        print(f"Processing question {i+1}/20")
+        print(f"Processing question {i+1}")
         question = row["question"]
         correct_answer = row["answer"]
         correct_units = row["unit"]
 
-        response = llm_client.generate(question)
+        response = llm_client.generate(question, max_tokens=1024)
         response = json.loads(response)  # Assuming the model returns a JSON string
         results.append({
             "question": question,
