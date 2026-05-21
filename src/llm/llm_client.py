@@ -14,7 +14,7 @@ class LLMClient:
         self.base_url="https://router.huggingface.co/v1"
         self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
-    def generate(self, prompt: str, max_tokens: int = 2048) -> str:
+    def generate(self, prompt: str, max_tokens: int | None = None) -> dict[str, str]:
         messages = []
         if self.system_prompt:
             messages.append({"role": "system", "content": self.system_prompt})
@@ -27,6 +27,7 @@ class LLMClient:
             max_tokens=max_tokens,  
             extra_body=self.extra_body,
         )
+        total_tokens = response.usage.total_tokens
         msg = response.choices[0].message
         
         # Guard against truncated/incomplete text safely
@@ -35,10 +36,10 @@ class LLMClient:
         # If it cut off due to length, we might still have partial text we can use
         if response.choices[0].finish_reason == "length" and content:
             print("Warning: Response was truncated by max_tokens.")
-            return content.strip()
+            return {"content": content.strip(), "total_tokens": total_tokens}
             
         if not content:
             raise RuntimeError(f"Empty content. finish_reason={response.choices[0].finish_reason}")
             
-        return content.strip()
+        return {"content": content.strip(), "total_tokens": total_tokens}
     
