@@ -12,16 +12,20 @@ def main():
     "Answer questions in json format with the following keys: " \
     "- explanation: Step by step explanation of the answer. " \
     "- answer: The final answer, a number. " \
-    "- unit: The unit of the answer. " 
-
+    "- unit: The unit of the answer. " \
+    "Return only a JSON object. No prose. No code fences. Escape backslashes."\
     #randomly sample 20 questions from the physics dataset, store questions and correct answers and model answers, explanations in a json file
     df = pd.read_csv("data/physics.csv")
-    sampled_df = df.sample(n=20, random_state=42)
+    sampled_df = df.sample(n=10, random_state=42)
 
+    print(instructions)
     llm_client = LLMClient(
         model_name=model,
         api_key=api_key,
-        system_prompt=instructions
+        system_prompt=instructions,
+        extra_body={
+        "chat_template_kwargs": {"enable_thinking": False},
+        }
     )
 
     results = []
@@ -31,8 +35,15 @@ def main():
         correct_answer = row["answer"]
         correct_units = row["unit"]
 
+        print(f"Question: {question}")
+
         response = llm_client.generate(question, max_tokens=1024)
-        response = json.loads(response)  # Assuming the model returns a JSON string
+        try:
+            response = json.loads(response)  # Assuming the model returns a JSON string
+        except json.JSONDecodeError:
+            print(f"Error decoding JSON for question {i+1}")
+            print(f"Raw response: {response}")
+            continue
         results.append({
             "question": question,
             "correct_answer": correct_answer,
