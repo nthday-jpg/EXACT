@@ -24,7 +24,7 @@ class LLMClient:
             model=self.model_name,
             messages=messages,
             temperature=self.temperature,
-            max_tokens=max_tokens,  # <-- Added explicitly here
+            max_tokens=max_tokens,  
             extra_body=self.extra_body,
         )
         msg = response.choices[0].message
