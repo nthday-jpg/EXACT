@@ -150,8 +150,10 @@ def normalize_physics_input(text: str) -> str:
     text = _normalize_whitespace(text)
     text = _normalize_minus(text)
     text = _normalize_multiply(text)
+    text = _normalize_exponent_notation(text)
     text = _normalize_fractions_ascii(text)
     text = _normalize_scientific_notation(text)
+    text = _normalize_exponent_notation(text)
     return text
 
 
@@ -165,8 +167,10 @@ def normalize_physics_output(text: str) -> str:
     text = _normalize_whitespace(text)
     text = _normalize_minus(text)
     text = _normalize_multiply(text)
+    text = _normalize_exponent_notation(text)
     text = _normalize_fractions_ascii(text)
     text = _normalize_scientific_notation(text)
+    text = _normalize_exponent_notation(text)
     text = _normalize_units(text)
     text = _normalize_equation_spacing(text)
     text = _fractions_to_decimal(text)
@@ -222,7 +226,22 @@ def _normalize_scientific_notation(text: str) -> str:
         exp = "".join(_SUPERSCRIPT_TO_ASCII[ch] for ch in match.group(1))
         return f"^{exp}"
 
-    text = re.sub(r"([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079\u207a\u207b]+)", repl, text)
+    text = re.sub(
+        r"([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079\u207a\u207b]+)",
+        repl,
+        text,
+    )
+    return text
+
+
+def _normalize_exponent_notation(text: str) -> str:
+    # Convert 10^exponent expressions into e-notation.
+    text = re.sub(
+        r"(?<!\w)(\d+(?:\.\d+)?)(?:\s*[*xX]\s*)?10\^([+-]?\d+)",
+        r"\1e\2",
+        text,
+    )
+    text = re.sub(r"\b10\^([+-]?\d+)\b", r"1e\1", text)
     return text
 
 
@@ -235,7 +254,7 @@ def normalize_physics_scientific_text(text: str) -> str:
     text = re.sub(r"\s*[\u00d7\u00b7]\s*", " * ", text)
     text = re.sub(r"(\d)\s*\.\s*(10\^)", r"\1 * \2", text)
     text = re.sub(r"(\d)\s*\*\s*(10\^)", r"\1 * \2", text)
-    text = re.sub(r"10\^([+-]?\d+)", r"10^{\1}", text)
+    text = _normalize_exponent_notation(text)
     text = re.sub(r"[ \t]{2,}", " ", text)
     return text.strip()
 
