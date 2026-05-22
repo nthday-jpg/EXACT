@@ -219,11 +219,10 @@ def _normalize_fractions_ascii(text: str) -> str:
 def _normalize_scientific_notation(text: str) -> str:
     # Replace superscript powers like 10^(-3) written with superscripts.
     def repl(match: re.Match) -> str:
-        base = match.group(1)
-        exp = "".join(_SUPERSCRIPT_TO_ASCII[ch] for ch in match.group(2))
-        return f"{base}^{exp}"
+        exp = "".join(_SUPERSCRIPT_TO_ASCII[ch] for ch in match.group(1))
+        return f"^{exp}"
 
-    text = re.sub(r"(\d)([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079\u207a\u207b]+)", repl, text)
+    text = re.sub(r"([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079\u207a\u207b]+)", repl, text)
     return text
 
 
