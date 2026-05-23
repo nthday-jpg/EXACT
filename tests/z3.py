@@ -1,88 +1,125 @@
-from logic.Z3_parser import prepare_z3_objects
-from z3 import Solver, sat
+import sys
+from pathlib import Path
 
+# Add project root to sys.path
+root_dir = Path(__file__).resolve().parents[1]
+sys.path.append(str(root_dir))
 
-def run_case(name: str, facts: list[str], rules: list[str], expect_sat: bool = True) -> None:
-    symbols, fact_exprs, rule_exprs = prepare_z3_objects(facts, rules)
+# Remove the directory containing this script (tests/) from sys.path 
+# to prevent shadowing the global 'z3' package
+for path in list(sys.path):
+    if path and Path(path).resolve() == Path(__file__).resolve().parent:
+        sys.path.remove(path)
+
+from src.logic.Z3_parser import parse_formulas, FolParser, Z3Symbols
+from z3 import Solver, sat, unsat, Not, DeclareSort
+
+def run_case(name: str, formulas: list[str], expect_sat: bool = True) -> None:
+    symbols, exprs = parse_formulas(formulas)
     solver = Solver()
-    solver.add(*fact_exprs)
-    solver.add(*rule_exprs)
+    solver.add(*exprs)
     result = solver.check()
     if expect_sat:
         assert result == sat, f"{name} expected sat but got {result}"
     else:
         assert result != sat, f"{name} expected non-sat but got {result}"
 
-
-def run_parse_error_case(name: str, facts: list[str], rules: list[str]) -> None:
+def run_parse_error_case(name: str, formulas: list[str]) -> None:
     try:
-        prepare_z3_objects(facts, rules)
+        parse_formulas(formulas)
     except ValueError:
         return
     raise AssertionError(f"{name} expected ValueError")
 
+def check_entailment(premises: list[str], conclusion: str) -> bool:
+    """Check if the premises logically entail the conclusion."""
+    symbols, premise_exprs = parse_formulas(premises)
+    parser = FolParser(symbols)
+    conclusion_expr = parser.parse(conclusion)
+    
+    solver = Solver()
+    solver.add(*premise_exprs)
+    solver.add(Not(conclusion_expr))
+    
+    result = solver.check()
+    return result == unsat
 
-# Numeric-valued function comparisons
+# Test Case 1: Consistency (satisfiability) of numeric comparisons
 run_case(
     "numeric_comparison",
-    facts=["active_status(sarah)", "completed_courses(sarah) = 4", "has_approval(sarah)"],
-    rules=[
+    formulas=[
+        "active_status(sarah)", 
+        "completed_courses(sarah) = 4", 
+        "has_approval(sarah)",
         "ForAll(x, (active_status(x) AND completed_courses(x) >= 5) -> eligible_advanced(x))",
         "ForAll(x, eligible_advanced(x) -> requires_approval(x))",
     ],
 )
 
-# Membership IN
+# Test Case 2: Membership IN
 run_case(
     "membership_in",
-    facts=["alice IN group1"],
-    rules=["ForAll(x, (x IN group1) -> member(x))"],
+    formulas=[
+        "alice IN group1",
+        "ForAll(x, (x IN group1) -> member(x))",
+    ],
 )
 
-# Nested quantifiers
+# Test Case 3: Nested quantifiers
 run_case(
     "nested_quantifiers",
-    facts=["faculty_member(dr_john)", "has_degree(dr_john, PhD)", "higher(PhD, MSc)", "higher(MSc, BA)"],
-    rules=[
+    formulas=[
+        "faculty_member(dr_john)", 
+        "has_degree(dr_john, PhD)", 
+        "higher(PhD, MSc)", 
+        "higher(MSc, BA)",
         "ForAll(x, ForAll(d, (faculty_member(x) AND has_degree(x, d) AND higher(d, BA)) -> teach_undergrad(x)))"
     ],
 )
 
-# Implication between quantified statements
+# Test Case 4: Implication between quantified statements
 run_case(
     "quantified_implication",
-    facts=[],
-    rules=[
+    formulas=[
         "(ForAll(x, (IsPreparingForExam(x) -> IsAskingQuestions(x))) -> ForAll(y, (NOT IsUnderstandingMaterial(y) -> NOT IsAttendingTutorials(y))))"
     ],
 )
 
-# Unquantified implication
+# Test Case 5: Unquantified implication
 run_case(
     "plain_implication",
-    facts=[],
-    rules=["(Researching(x) -> ResearchCompleted(x))"],
+    formulas=["(Researching(x) -> ResearchCompleted(x))"],
 )
 
-# NOT in antecedent
+# Test Case 6: NOT in antecedent
 run_case(
     "not_implication",
-    facts=[],
-    rules=["NOT HasAccessToMaterials(x) -> NOT HasScholarship(x)"],
+    formulas=["NOT HasAccessToMaterials(x) -> NOT HasScholarship(x)"],
 )
 
-# Biconditional
+# Test Case 7: Biconditional
 run_case(
     "biconditional",
-    facts=[],
-    rules=["ForAll(x, (A(x) <-> B(x)))"],
+    formulas=["ForAll(x, (A(x) <-> B(x)))"],
 )
 
-# Malformed input (missing closing parenthesis)
+# Test Case 8: Malformed input (missing closing parenthesis)
 run_parse_error_case(
     "missing_paren",
-    facts=[],
-    rules=["ForAll(x, (IsPreparingForExam(x) -> IsAskingQuestions(x))"],
+    formulas=["ForAll(x, (IsPreparingForExam(x) -> IsAskingQuestions(x))"],
 )
 
-print("All Z3 parser tests passed.")
+# Test Case 9: Entailment (Socrates Syllogism - Valid)
+socrates_premises = [
+    "Human(Socrates)",
+    "ForAll(x, (Human(x) -> Mortal(x)))"
+]
+assert check_entailment(socrates_premises, "Mortal(Socrates)") is True, "Socrates syllogism should be valid"
+
+# Test Case 10: Entailment (Socrates Contradiction - Invalid/Not Entailed)
+assert check_entailment(socrates_premises, "NOT Mortal(Socrates)") is False, "Negated Socrates syllogism should not be entailed"
+
+# Test Case 11: Entailment (Plato - Not Entailed due to lack of information)
+assert check_entailment(socrates_premises, "Mortal(Plato)") is False, "Plato's mortality is not entailed by Socrates premises"
+
+print("All Z3 parser and entailment tests passed successfully.")

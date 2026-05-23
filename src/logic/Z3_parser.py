@@ -258,20 +258,18 @@ class FolParser:
 		return None
 
 
-def prepare_z3_objects(
-	facts: Iterable[str],
-	rules: Iterable[str],
+def parse_formulas(
+	formulas: Iterable[str],
 	sort_name: str = "U",
-) -> Tuple[Z3Symbols, List[BoolRef], List[BoolRef]]:
-	"""Parse lists of facts and rules into Z3 Bool expressions.
+) -> Tuple[Z3Symbols, List[BoolRef]]:
+	"""Parse a flat list of first-order logic formulas into Z3 Bool expressions.
 
-	Returns a tuple of (symbols, fact_exprs, rule_exprs).
+	Returns a tuple of (symbols, formula_exprs).
 	"""
 
 	symbols = Z3Symbols(sort=DeclareSort(sort_name))
 	parser = FolParser(symbols)
+	formula_exprs: List[BoolRef] = [parser.parse(f) for f in formulas]
 
-	fact_exprs: List[BoolRef] = [parser.parse(f) for f in facts]
-	rule_exprs: List[BoolRef] = [parser.parse(r) for r in rules]
+	return symbols, formula_exprs
 
-	return symbols, fact_exprs, rule_exprs
