@@ -237,11 +237,11 @@ def _normalize_scientific_notation(text: str) -> str:
 def _normalize_exponent_notation(text: str) -> str:
     # Convert 10^exponent expressions into e-notation.
     text = re.sub(
-        r"(?<!\w)(\d+(?:\.\d+)?)(?:\s*[*xX]\s*)?10\^([+-]?\d+)",
+        r"(?<!\w)(\d+(?:\.\d+)?)(?:\s*[*xX]\s*)?10\^(?:\{)?([+-]?\d+)(?:\})?",
         r"\1e\2",
         text,
     )
-    text = re.sub(r"\b10\^([+-]?\d+)\b", r"1e\1", text)
+    text = re.sub(r"\b10\^(?:\{)?([+-]?\d+)(?:\})?\b", r"1e\1", text)
     return text
 
 
