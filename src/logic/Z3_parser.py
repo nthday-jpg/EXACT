@@ -37,7 +37,7 @@ from z3 import (
 
 
 _TOKEN_RE = re.compile(
-	r"\s*(->|<->|AND|OR|NOT|IN|ForAll|Exists|>=|<=|!=|=|>|<|\(|\)|,|\d+\.\d+|\d+|'[^']*'|[A-Za-z_][A-Za-z0-9_]*)"
+	r"\s*(->|<->|AND|OR|NOT|IN|ForAll|Exists|>=|<=|!=|=|>|<|\(|\)|,|\d+\.\d+|\d+|'[^']*'|[^\W\d][\w-]*)"
 )
 
 

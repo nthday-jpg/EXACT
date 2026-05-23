@@ -128,16 +128,47 @@ def normalize_logic_fol_entry(text: str) -> str:
         "\u2264": "<=",
         "\u2260": "!=",
         "\u2208": "IN",
+        "\u2295": "OR",
     }
     for old, new in replacements.items():
         text = text.replace(old, new)
 
     text = re.sub(r"\bNOT\(", "NOT (", text)
+    text = re.sub(r"\bimplies\b", "->", text, flags=re.IGNORECASE)
+    text = text.replace("&", " AND ")
+    text = text.replace("~", " NOT ")
+    text = text.replace("^", " AND ")
+    
+    def normalize_args(match: re.Match) -> str:
+        pred_name = match.group(1)
+        args_str = match.group(2)
+        args = [arg.strip() for arg in args_str.split(",")]
+        normalized_args = [arg.replace(" ", "_").replace(".", "_") for arg in args]
+        return f"{pred_name}({', '.join(normalized_args)})"
+
+    text = re.sub(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*\(([^()]+)\)", normalize_args, text)
+    
+    # Standardize spaces around logical operators, comparisons, commas and parentheses
+    text = re.sub(r"\s*<->\s*", " <-> ", text)
+    text = re.sub(r"(?<!<)\s*->\s*", " -> ", text)
+    text = re.sub(r"\s*\bAND\b\s*", " AND ", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*\bOR\b\s*", " OR ", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*\bNOT\b\s*", " NOT ", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*(>=|<=|!=)\s*", r" \1 ", text)
+    text = re.sub(r"(?<![<>!=])\s*=\s*(?![=>])", " = ", text)
+    text = re.sub(r"(?<![-<])\s*>\s*(?!=)", " > ", text)
+    text = re.sub(r"\s*<\s*(?![-=])", " < ", text)
+    text = re.sub(r"\s*,\s*", ", ", text)
+    text = re.sub(r"\(\s+", "(", text)
+    text = re.sub(r"\s+\)", ")", text)
+    
+    text = re.sub(r"\s+", " ", text)
+    
     open_count = text.count("(")
     close_count = text.count(")")
     if close_count < open_count:
         text = text + ")" * (open_count - close_count)
-    return text
+    return text.strip()
 
 
 def normalize_physics_input(text: str) -> str:

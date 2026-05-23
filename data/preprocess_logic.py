@@ -1,7 +1,12 @@
 import json
 import os
 import re
+import sys
 from pathlib import Path
+
+# Add project root to sys.path to allow absolute imports of src
+root = Path(__file__).resolve().parents[1]
+sys.path.append(str(root))
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -95,6 +100,8 @@ def standardize_samples(
 	if max_samples != -1 and max_samples < 0:
 		raise ValueError("max_samples must be -1 or a non-negative integer")
 
+	import time
+
 	processed = []
 	limit = len(data) if max_samples == -1 else min(max_samples, len(data))
 	for position, (index, sample) in enumerate(data[:limit]):
@@ -115,6 +122,8 @@ def standardize_samples(
 			raise ValueError(f"Invalid JSON response at index {index}: {content}") from exc
 
 		processed.append((index, rewrite_sample(sample, cleaned)))
+		if position < limit - 1:
+			time.sleep(4.5)
 	return processed
 
 

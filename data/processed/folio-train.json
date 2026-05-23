@@ -12,10 +12,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Drinks(x) -> Dependent(x)))",
-      "ForAll(x, (Drinks(x) ⊕ Jokes(x)))",
+      "ForAll(x, (Drinks(x) OR Jokes(x)))",
       "ForAll(x, (Jokes(x) -> NOT Unaware(x)))",
-      "(Student(rina) AND Unaware(rina)) ⊕ NOT (Student(rina) OR Unaware(rina))",
-      "NOT (Dependent(rina) AND Student(rina)) -> (Dependent(rina) AND Student(rina)) ⊕ NOT (Dependent(rina) OR Student(rina))"
+      "(Student(rina) AND Unaware(rina)) OR NOT (Student(rina) OR Unaware(rina))",
+      "NOT (Dependent(rina) AND Student(rina)) -> (Dependent(rina) AND Student(rina)) OR NOT (Dependent(rina) OR Student(rina))"
     ],
     "label": "True",
     "source": "hyb"
@@ -33,10 +33,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Drinks(x) -> Dependent(x)))",
-      "ForAll(x, (Drinks(x) ⊕ Jokes(x)))",
+      "ForAll(x, (Drinks(x) OR Jokes(x)))",
       "ForAll(x, (Jokes(x) -> NOT Unaware(x)))",
-      "(Student(rina) AND Unaware(rina)) ⊕ NOT (Student(rina) OR Unaware(rina))",
-      "NOT (Dependent(rina) AND Student(rina)) -> (Dependent(rina) AND Student(rina)) ⊕ NOT (Dependent(rina) OR Student(rina))"
+      "(Student(rina) AND Unaware(rina)) OR NOT (Student(rina) OR Unaware(rina))",
+      "NOT (Dependent(rina) AND Student(rina)) -> (Dependent(rina) AND Student(rina)) OR NOT (Dependent(rina) OR Student(rina))"
     ],
     "label": "True",
     "source": "hyb"
@@ -54,10 +54,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Drinks(x) -> Dependent(x)))",
-      "ForAll(x, (Drinks(x) ⊕ Jokes(x)))",
+      "ForAll(x, (Drinks(x) OR Jokes(x)))",
       "ForAll(x, (Jokes(x) -> NOT Unaware(x)))",
-      "(Student(rina) AND Unaware(rina)) ⊕ NOT (Student(rina) OR Unaware(rina))",
-      "NOT (Dependent(rina) AND Student(rina)) -> (Dependent(rina) AND Student(rina)) ⊕ NOT (Dependent(rina) OR Student(rina))"
+      "(Student(rina) AND Unaware(rina)) OR NOT (Student(rina) OR Unaware(rina))",
+      "NOT (Dependent(rina) AND Student(rina)) -> (Dependent(rina) AND Student(rina)) OR NOT (Dependent(rina) OR Student(rina))"
     ],
     "label": "False",
     "source": "hyb"
@@ -75,10 +75,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Drinks(x) -> Dependent(x)))",
-      "ForAll(x, (Drinks(x) ⊕ Jokes(x)))",
+      "ForAll(x, (Drinks(x) OR Jokes(x)))",
       "ForAll(x, (Jokes(x) -> NOT Unaware(x)))",
-      "(Student(rina) AND Unaware(rina)) ⊕ NOT (Student(rina) OR Unaware(rina))",
-      "NOT (Dependent(rina) AND Student(rina)) -> (Dependent(rina) AND Student(rina)) ⊕ NOT (Dependent(rina) OR Student(rina))"
+      "(Student(rina) AND Unaware(rina)) OR NOT (Student(rina) OR Unaware(rina))",
+      "NOT (Dependent(rina) AND Student(rina)) -> (Dependent(rina) AND Student(rina)) OR NOT (Dependent(rina) OR Student(rina))"
     ],
     "label": "True",
     "source": "hyb"
@@ -153,12 +153,12 @@
       "If a sea eel is either an eel or a plant, then a sea eel is an eel or an animal."
     ],
     "premises-FOL": [
-      "ForAll(x, (Eel (x)->  Fish (x)))",
-      "ForAll(x, (Fish (x)-> NOT  Plant (x)))",
-      "ForAll(x, ( Plant (x) OR  Animal (x)))",
-      "ForAll(x, (Breathe (x)-> NOT  Paper (x)))",
-      "ForAll(x, (Animal (x)->  Breathe (x)))",
-      "Eel (seaEel) ⊕ Plant (seaEel) -> Eel (seaEel) OR Animal (seaEel)"
+      "ForAll(x, (Eel(x) -> Fish(x)))",
+      "ForAll(x, (Fish(x) -> NOT Plant(x)))",
+      "ForAll(x, (Plant(x) OR Animal(x)))",
+      "ForAll(x, (Breathe(x) -> NOT Paper(x)))",
+      "ForAll(x, (Animal(x) -> Breathe(x)))",
+      "Eel(seaEel) OR Plant(seaEel) -> Eel(seaEel) OR Animal(seaEel)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -176,12 +176,12 @@
       "If a sea eel is either an eel or a plant, then a sea eel is an eel or an animal."
     ],
     "premises-FOL": [
-      "ForAll(x, (Eel (x)->  Fish (x)))",
-      "ForAll(x, (Fish (x)-> NOT  Plant (x)))",
-      "ForAll(x, ( Plant (x) OR  Animal (x)))",
-      "ForAll(x, (Breathe (x)-> NOT  Paper (x)))",
-      "ForAll(x, (Animal (x)->  Breathe (x)))",
-      "Eel (seaEel) ⊕ Plant (seaEel) -> Eel (seaEel) OR Animal (seaEel)"
+      "ForAll(x, (Eel(x) -> Fish(x)))",
+      "ForAll(x, (Fish(x) -> NOT Plant(x)))",
+      "ForAll(x, (Plant(x) OR Animal(x)))",
+      "ForAll(x, (Breathe(x) -> NOT Paper(x)))",
+      "ForAll(x, (Animal(x) -> Breathe(x)))",
+      "Eel(seaEel) OR Plant(seaEel) -> Eel(seaEel) OR Animal(seaEel)"
     ],
     "label": "False",
     "source": "hyb"
@@ -199,12 +199,12 @@
       "If a sea eel is either an eel or a plant, then a sea eel is an eel or an animal."
     ],
     "premises-FOL": [
-      "ForAll(x, (Eel (x)->  Fish (x)))",
-      "ForAll(x, (Fish (x)-> NOT  Plant (x)))",
-      "ForAll(x, ( Plant (x) OR  Animal (x)))",
-      "ForAll(x, (Breathe (x)-> NOT  Paper (x)))",
-      "ForAll(x, (Animal (x)->  Breathe (x)))",
-      "Eel (seaEel) ⊕ Plant (seaEel) -> Eel (seaEel) OR Animal (seaEel)"
+      "ForAll(x, (Eel(x) -> Fish(x)))",
+      "ForAll(x, (Fish(x) -> NOT Plant(x)))",
+      "ForAll(x, (Plant(x) OR Animal(x)))",
+      "ForAll(x, (Breathe(x) -> NOT Paper(x)))",
+      "ForAll(x, (Animal(x) -> Breathe(x)))",
+      "Eel(seaEel) OR Plant(seaEel) -> Eel(seaEel) OR Animal(seaEel)"
     ],
     "label": "True",
     "source": "hyb"
@@ -677,7 +677,7 @@
       "To treat stonefish stings, apply heat to the affected area or use an antivenom."
     ],
     "premises-FOL": [
-      "Exists(x, Exists(y, (Fish(x) -> Sting(x,y))))",
+      "Exists(x, Exists(y, (Fish(x) -> Sting(x, y))))",
       "Fish(stonefish)",
       "ForAll(x, (StepOn(stonefish, x) -> Sting(stonefish, x)))",
       "ForAll(x, (Sting(stonefish, x) AND NOT Treated(x) -> CauseDeath(x)))",
@@ -698,7 +698,7 @@
       "To treat stonefish stings, apply heat to the affected area or use an antivenom."
     ],
     "premises-FOL": [
-      "Exists(x, Exists(y, (Fish(x) -> Sting(x,y))))",
+      "Exists(x, Exists(y, (Fish(x) -> Sting(x, y))))",
       "Fish(stonefish)",
       "ForAll(x, (StepOn(stonefish, x) -> Sting(stonefish, x)))",
       "ForAll(x, (Sting(stonefish, x) AND NOT Treated(x) -> CauseDeath(x)))",
@@ -719,7 +719,7 @@
       "To treat stonefish stings, apply heat to the affected area or use an antivenom."
     ],
     "premises-FOL": [
-      "Exists(x, Exists(y, (Fish(x) -> Sting(x,y))))",
+      "Exists(x, Exists(y, (Fish(x) -> Sting(x, y))))",
       "Fish(stonefish)",
       "ForAll(x, (StepOn(stonefish, x) -> Sting(stonefish, x)))",
       "ForAll(x, (Sting(stonefish, x) AND NOT Treated(x) -> CauseDeath(x)))",
@@ -743,8 +743,8 @@
       "Exists(x, (LG(x) AND TypeC(x)))",
       "ForAll(x, (TypeC(x) -> NOT AOC(x)))",
       "ForAll(x, (Library(x) -> AOC(x)))",
-      "Library(l-2021) ⊕ TypeC(l-2021)",
-      "NOT (AOC(l-2021) ⊕ LG(l-2021))"
+      "Library(l-2021) OR TypeC(l-2021)",
+      "NOT (AOC(l-2021) OR LG(l-2021))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -764,8 +764,8 @@
       "Exists(x, (LG(x) AND TypeC(x)))",
       "ForAll(x, (TypeC(x) -> NOT AOC(x)))",
       "ForAll(x, (Library(x) -> AOC(x)))",
-      "Library(l-2021) ⊕ TypeC(l-2021)",
-      "NOT (AOC(l-2021) ⊕ LG(l-2021))"
+      "Library(l-2021) OR TypeC(l-2021)",
+      "NOT (AOC(l-2021) OR LG(l-2021))"
     ],
     "label": "False",
     "source": "hyb"
@@ -785,8 +785,8 @@
       "Exists(x, (LG(x) AND TypeC(x)))",
       "ForAll(x, (TypeC(x) -> NOT AOC(x)))",
       "ForAll(x, (Library(x) -> AOC(x)))",
-      "Library(l-2021) ⊕ TypeC(l-2021)",
-      "NOT (AOC(l-2021) ⊕ LG(l-2021))"
+      "Library(l-2021) OR TypeC(l-2021)",
+      "NOT (AOC(l-2021) OR LG(l-2021))"
     ],
     "label": "True",
     "source": "hyb"
@@ -806,8 +806,8 @@
       "Exists(x, (LG(x) AND TypeC(x)))",
       "ForAll(x, (TypeC(x) -> NOT AOC(x)))",
       "ForAll(x, (Library(x) -> AOC(x)))",
-      "Library(l-2021) ⊕ TypeC(l-2021)",
-      "NOT (AOC(l-2021) ⊕ LG(l-2021))"
+      "Library(l-2021) OR TypeC(l-2021)",
+      "NOT (AOC(l-2021) OR LG(l-2021))"
     ],
     "label": "False",
     "source": "hyb"
@@ -827,8 +827,8 @@
       "Exists(x, (LG(x) AND TypeC(x)))",
       "ForAll(x, (TypeC(x) -> NOT AOC(x)))",
       "ForAll(x, (Library(x) -> AOC(x)))",
-      "Library(l-2021) ⊕ TypeC(l-2021)",
-      "NOT (AOC(l-2021) ⊕ LG(l-2021))"
+      "Library(l-2021) OR TypeC(l-2021)",
+      "NOT (AOC(l-2021) OR LG(l-2021))"
     ],
     "label": "False",
     "source": "hyb"
@@ -916,7 +916,7 @@
     ],
     "premises-FOL": [
       "Exists(x, (Project(x) AND Do(sam, x)))",
-      "ForAll(x, (Project(x) -> (WrittenIn(x, python) ⊕ WrittenIn(x, c++))))",
+      "ForAll(x, (Project(x) -> (WrittenIn(x, python) OR WrittenIn(x, c++))))",
       "ForAll(x, (Project(x) AND WrittenIn(x, python) AND Do(sam, x) -> NOT Use(sam, mac)))",
       "Use(sam, mac)",
       "Use(sam, mac) -> Exists(x, (Song(x) AND Play(sam, x)))",
@@ -939,7 +939,7 @@
     ],
     "premises-FOL": [
       "Exists(x, (Project(x) AND Do(sam, x)))",
-      "ForAll(x, (Project(x) -> (WrittenIn(x, python) ⊕ WrittenIn(x, c++))))",
+      "ForAll(x, (Project(x) -> (WrittenIn(x, python) OR WrittenIn(x, c++))))",
       "ForAll(x, (Project(x) AND WrittenIn(x, python) AND Do(sam, x) -> NOT Use(sam, mac)))",
       "Use(sam, mac)",
       "Use(sam, mac) -> Exists(x, (Song(x) AND Play(sam, x)))",
@@ -962,7 +962,7 @@
     ],
     "premises-FOL": [
       "Exists(x, (Project(x) AND Do(sam, x)))",
-      "ForAll(x, (Project(x) -> (WrittenIn(x, python) ⊕ WrittenIn(x, c++))))",
+      "ForAll(x, (Project(x) -> (WrittenIn(x, python) OR WrittenIn(x, c++))))",
       "ForAll(x, (Project(x) AND WrittenIn(x, python) AND Do(sam, x) -> NOT Use(sam, mac)))",
       "Use(sam, mac)",
       "Use(sam, mac) -> Exists(x, (Song(x) AND Play(sam, x)))",
@@ -1214,7 +1214,7 @@
     ],
     "premises-FOL": [
       "Play(vicdicara, guitar) AND Play(vicdicara, bass)",
-      "NOT (Exists(x, (Music (vicdicara, punk) AND Music (vicdicara, x))))",
+      "NOT (Exists(x, (Music(vicdicara, punk) AND Music(vicdicara, x))))",
       "Band(vicdicara, insideOut)"
     ],
     "label": "Unknown",
@@ -1231,7 +1231,7 @@
     ],
     "premises-FOL": [
       "Play(vicdicara, guitar) AND Play(vicdicara, bass)",
-      "NOT (Exists(x, (Music (vicdicara, punk) AND Music (vicdicara, x))))",
+      "NOT (Exists(x, (Music(vicdicara, punk) AND Music(vicdicara, x))))",
       "Band(vicdicara, insideOut)"
     ],
     "label": "True",
@@ -1562,7 +1562,7 @@
       "James does not have class during the weekend."
     ],
     "premises-FOL": [
-      "ForAll(x, (Park(x) ⊕ Movies(x)))",
+      "ForAll(x, (Park(x) OR Movies(x)))",
       "ForAll(x, (Nature(x) -> NOT FreeTime(x)))",
       "ForAll(x, (Movies(x) -> Nature(x)))",
       "ForAll(x, (NoClass(x) -> FreeTime(x)))",
@@ -1585,7 +1585,7 @@
       "James does not have class during the weekend."
     ],
     "premises-FOL": [
-      "ForAll(x, (Park(x) ⊕ Movies(x)))",
+      "ForAll(x, (Park(x) OR Movies(x)))",
       "ForAll(x, (Nature(x) -> NOT FreeTime(x)))",
       "ForAll(x, (Movies(x) -> Nature(x)))",
       "ForAll(x, (NoClass(x) -> FreeTime(x)))",
@@ -1626,7 +1626,7 @@
       "ForAll(x, (Chemistry(x) -> Experiment(x)))",
       "ForAll(x, (Experiment(x) -> Planning(x)))",
       "ForAll(x, (Planning(x) -> NOT Award(x)))",
-      "NOT (Chemistry(james) ⊕ Award(james))"
+      "NOT (Chemistry(james) OR Award(james))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -1647,7 +1647,7 @@
       "ForAll(x, (Chemistry(x) -> Experiment(x)))",
       "ForAll(x, (Experiment(x) -> Planning(x)))",
       "ForAll(x, (Planning(x) -> NOT Award(x)))",
-      "NOT (Chemistry(james) ⊕ Award(james))"
+      "NOT (Chemistry(james) OR Award(james))"
     ],
     "label": "False",
     "source": "hyb"
@@ -1668,7 +1668,7 @@
       "ForAll(x, (Chemistry(x) -> Experiment(x)))",
       "ForAll(x, (Experiment(x) -> Planning(x)))",
       "ForAll(x, (Planning(x) -> NOT Award(x)))",
-      "NOT (Chemistry(james) ⊕ Award(james))"
+      "NOT (Chemistry(james) OR Award(james))"
     ],
     "label": "False",
     "source": "hyb"
@@ -1689,7 +1689,7 @@
       "ForAll(x, (Chemistry(x) -> Experiment(x)))",
       "ForAll(x, (Experiment(x) -> Planning(x)))",
       "ForAll(x, (Planning(x) -> NOT Award(x)))",
-      "NOT (Chemistry(james) ⊕ Award(james))"
+      "NOT (Chemistry(james) OR Award(james))"
     ],
     "label": "True",
     "source": "hyb"
@@ -1709,7 +1709,7 @@
     "premises-FOL": [
       "ForAll(x, (Easy(x) -> LowerAC(x)))",
       "ForAll(x, (Recommended(x) -> Easy(x)))",
-      "ForAll(x, (Easy(x) ⊕ Hard(x)))",
+      "ForAll(x, (Easy(x) OR Hard(x)))",
       "ForAll(x, (Starred(x) -> Hard(x)))",
       "Recommended(twosum)",
       "Starred(foursum)"
@@ -1732,7 +1732,7 @@
     "premises-FOL": [
       "ForAll(x, (Easy(x) -> LowerAC(x)))",
       "ForAll(x, (Recommended(x) -> Easy(x)))",
-      "ForAll(x, (Easy(x) ⊕ Hard(x)))",
+      "ForAll(x, (Easy(x) OR Hard(x)))",
       "ForAll(x, (Starred(x) -> Hard(x)))",
       "Recommended(twosum)",
       "Starred(foursum)"
@@ -1755,7 +1755,7 @@
     "premises-FOL": [
       "ForAll(x, (Easy(x) -> LowerAC(x)))",
       "ForAll(x, (Recommended(x) -> Easy(x)))",
-      "ForAll(x, (Easy(x) ⊕ Hard(x)))",
+      "ForAll(x, (Easy(x) OR Hard(x)))",
       "ForAll(x, (Starred(x) -> Hard(x)))",
       "Recommended(twosum)",
       "Starred(foursum)"
@@ -1779,7 +1779,7 @@
     "premises-FOL": [
       "ForAll(x, (Rent(x, car) -> Spend(x, money)))",
       "GoesTo(sarah, vermont) -> DriveTo(sarah, vermont)",
-      "ForAll(x, ForAll(y, (NOT Own(x, car) AND DriveTo(x, y) -> Borrow(x, car) ⊕ Rent(x, car))))",
+      "ForAll(x, ForAll(y, (NOT Own(x, car) AND DriveTo(x, y) -> Borrow(x, car) OR Rent(x, car))))",
       "NOT Own(sarah, car)",
       "ForAll(x, (Camping(sarah, x) -> NOT (Borrow(sarah, car))))",
       "Camping(sarah, vermont)",
@@ -1873,7 +1873,7 @@
       "ForAll(x, (Republicans(x) OR Democrats(x)))",
       "ForAll(x, (Democrats(x) -> NOT Conservative(x)))",
       "ForAll(x, (Conservative(x) OR Liberal(x)))",
-      "Conservative(anU.SGovernmentOfficial) ⊕ Republicans(anU.SGovernmentOfficial)"
+      "Conservative(anU_SGovernmentOfficial) OR Republicans(anU_SGovernmentOfficial)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -1894,7 +1894,7 @@
       "ForAll(x, (Republicans(x) OR Democrats(x)))",
       "ForAll(x, (Democrats(x) -> NOT Conservative(x)))",
       "ForAll(x, (Conservative(x) OR Liberal(x)))",
-      "Conservative(anU.SGovernmentOfficial) ⊕ Republicans(anU.SGovernmentOfficial)"
+      "Conservative(anU_SGovernmentOfficial) OR Republicans(anU_SGovernmentOfficial)"
     ],
     "label": "True",
     "source": "hyb"
@@ -1915,7 +1915,7 @@
       "ForAll(x, (Republicans(x) OR Democrats(x)))",
       "ForAll(x, (Democrats(x) -> NOT Conservative(x)))",
       "ForAll(x, (Conservative(x) OR Liberal(x)))",
-      "Conservative(anU.SGovernmentOfficial) ⊕ Republicans(anU.SGovernmentOfficial)"
+      "Conservative(anU_SGovernmentOfficial) OR Republicans(anU_SGovernmentOfficial)"
     ],
     "label": "False",
     "source": "hyb"
@@ -1936,7 +1936,7 @@
       "ForAll(x, (Republicans(x) OR Democrats(x)))",
       "ForAll(x, (Democrats(x) -> NOT Conservative(x)))",
       "ForAll(x, (Conservative(x) OR Liberal(x)))",
-      "Conservative(anU.SGovernmentOfficial) ⊕ Republicans(anU.SGovernmentOfficial)"
+      "Conservative(anU_SGovernmentOfficial) OR Republicans(anU_SGovernmentOfficial)"
     ],
     "label": "True",
     "source": "hyb"
@@ -1957,7 +1957,7 @@
       "ForAll(x, (Republicans(x) OR Democrats(x)))",
       "ForAll(x, (Democrats(x) -> NOT Conservative(x)))",
       "ForAll(x, (Conservative(x) OR Liberal(x)))",
-      "Conservative(anU.SGovernmentOfficial) ⊕ Republicans(anU.SGovernmentOfficial)"
+      "Conservative(anU_SGovernmentOfficial) OR Republicans(anU_SGovernmentOfficial)"
     ],
     "label": "False",
     "source": "hyb"
@@ -1978,7 +1978,7 @@
       "ForAll(x, (Republicans(x) OR Democrats(x)))",
       "ForAll(x, (Democrats(x) -> NOT Conservative(x)))",
       "ForAll(x, (Conservative(x) OR Liberal(x)))",
-      "Conservative(anU.SGovernmentOfficial) ⊕ Republicans(anU.SGovernmentOfficial)"
+      "Conservative(anU_SGovernmentOfficial) OR Republicans(anU_SGovernmentOfficial)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -1999,7 +1999,7 @@
       "ForAll(x, (Republicans(x) OR Democrats(x)))",
       "ForAll(x, (Democrats(x) -> NOT Conservative(x)))",
       "ForAll(x, (Conservative(x) OR Liberal(x)))",
-      "Conservative(anU.SGovernmentOfficial) ⊕ Republicans(anU.SGovernmentOfficial)"
+      "Conservative(anU_SGovernmentOfficial) OR Republicans(anU_SGovernmentOfficial)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -2020,7 +2020,7 @@
       "ForAll(x, (Republicans(x) OR Democrats(x)))",
       "ForAll(x, (Democrats(x) -> NOT Conservative(x)))",
       "ForAll(x, (Conservative(x) OR Liberal(x)))",
-      "Conservative(anU.SGovernmentOfficial) ⊕ Republicans(anU.SGovernmentOfficial)"
+      "Conservative(anU_SGovernmentOfficial) OR Republicans(anU_SGovernmentOfficial)"
     ],
     "label": "False",
     "source": "hyb"
@@ -2056,7 +2056,7 @@
       "ForAll(x, (ProfessionalBasketballPlayer(x) -> Athlete(x)))",
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (KnicksPlayer(x) -> NBAPlayer(x)))",
-      "NOT (ProfessionalBasketballPlayer(jim) ⊕ SlowRunner(jim))"
+      "NOT (ProfessionalBasketballPlayer(jim) OR SlowRunner(jim))"
     ],
     "label": "False",
     "source": "hyb"
@@ -2077,7 +2077,7 @@
       "ForAll(x, (ProfessionalBasketballPlayer(x) -> Athlete(x)))",
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (KnicksPlayer(x) -> NBAPlayer(x)))",
-      "NOT (ProfessionalBasketballPlayer(jim) ⊕ SlowRunner(jim))"
+      "NOT (ProfessionalBasketballPlayer(jim) OR SlowRunner(jim))"
     ],
     "label": "True",
     "source": "hyb"
@@ -2098,7 +2098,7 @@
       "ForAll(x, (ProfessionalBasketballPlayer(x) -> Athlete(x)))",
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (KnicksPlayer(x) -> NBAPlayer(x)))",
-      "NOT (ProfessionalBasketballPlayer(jim) ⊕ SlowRunner(jim))"
+      "NOT (ProfessionalBasketballPlayer(jim) OR SlowRunner(jim))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -2282,7 +2282,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Leader(x) -> InMonarchy(x)))",
-      "ForAll(x, (Leader(x) -> King(x) ⊕ Queen(x)))",
+      "ForAll(x, (Leader(x) -> King(x) OR Queen(x)))",
       "ForAll(x, (Queen(x) -> Female(x)))",
       "ForAll(x, (King(x) -> Male(x)))",
       "Queen(elizabeth)",
@@ -2305,7 +2305,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Leader(x) -> InMonarchy(x)))",
-      "ForAll(x, (Leader(x) -> King(x) ⊕ Queen(x)))",
+      "ForAll(x, (Leader(x) -> King(x) OR Queen(x)))",
       "ForAll(x, (Queen(x) -> Female(x)))",
       "ForAll(x, (King(x) -> Male(x)))",
       "Queen(elizabeth)",
@@ -2328,7 +2328,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Leader(x) -> InMonarchy(x)))",
-      "ForAll(x, (Leader(x) -> King(x) ⊕ Queen(x)))",
+      "ForAll(x, (Leader(x) -> King(x) OR Queen(x)))",
       "ForAll(x, (Queen(x) -> Female(x)))",
       "ForAll(x, (King(x) -> Male(x)))",
       "Queen(elizabeth)",
@@ -2355,7 +2355,7 @@
       "ForAll(x, (Celebrities(x) -> Late(x)))",
       "ForAll(x, (Jobs(x) -> Celebrities(x)))",
       "ForAll(x, (WorkHome(x) -> Jobs(x)))",
-      "(WorkHome(clay) AND Matcha(clay)) ⊕ (NOT WorkHome(clay) AND NOT Matcha(clay))"
+      "(WorkHome(clay) AND Matcha(clay)) OR (NOT WorkHome(clay) AND NOT Matcha(clay))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -2378,7 +2378,7 @@
       "ForAll(x, (Celebrities(x) -> Late(x)))",
       "ForAll(x, (Jobs(x) -> Celebrities(x)))",
       "ForAll(x, (WorkHome(x) -> Jobs(x)))",
-      "(WorkHome(clay) AND Matcha(clay)) ⊕ (NOT WorkHome(clay) AND NOT Matcha(clay))"
+      "(WorkHome(clay) AND Matcha(clay)) OR (NOT WorkHome(clay) AND NOT Matcha(clay))"
     ],
     "label": "False",
     "source": "hyb"
@@ -2401,7 +2401,7 @@
       "ForAll(x, (Celebrities(x) -> Late(x)))",
       "ForAll(x, (Jobs(x) -> Celebrities(x)))",
       "ForAll(x, (WorkHome(x) -> Jobs(x)))",
-      "(WorkHome(clay) AND Matcha(clay)) ⊕ (NOT WorkHome(clay) AND NOT Matcha(clay))"
+      "(WorkHome(clay) AND Matcha(clay)) OR (NOT WorkHome(clay) AND NOT Matcha(clay))"
     ],
     "label": "True",
     "source": "hyb"
@@ -2693,7 +2693,7 @@
       "ForAll(x, (Paper(x) -> Woodware(x)))",
       "ForAll(x, (Good(x) -> NOT Bad(x)))",
       "ForAll(x, (EnvironmentFriendly(x) -> Good(x)))",
-      "Paper(worksheet) ⊕ EnvironmentFriendly(worksheet)"
+      "Paper(worksheet) OR EnvironmentFriendly(worksheet)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -2716,7 +2716,7 @@
       "ForAll(x, (Paper(x) -> Woodware(x)))",
       "ForAll(x, (Good(x) -> NOT Bad(x)))",
       "ForAll(x, (EnvironmentFriendly(x) -> Good(x)))",
-      "Paper(worksheet) ⊕ EnvironmentFriendly(worksheet)"
+      "Paper(worksheet) OR EnvironmentFriendly(worksheet)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -2739,7 +2739,7 @@
       "ForAll(x, (Paper(x) -> Woodware(x)))",
       "ForAll(x, (Good(x) -> NOT Bad(x)))",
       "ForAll(x, (EnvironmentFriendly(x) -> Good(x)))",
-      "Paper(worksheet) ⊕ EnvironmentFriendly(worksheet)"
+      "Paper(worksheet) OR EnvironmentFriendly(worksheet)"
     ],
     "label": "False",
     "source": "hyb"
@@ -2762,7 +2762,7 @@
       "ForAll(x, (Paper(x) -> Woodware(x)))",
       "ForAll(x, (Good(x) -> NOT Bad(x)))",
       "ForAll(x, (EnvironmentFriendly(x) -> Good(x)))",
-      "Paper(worksheet) ⊕ EnvironmentFriendly(worksheet)"
+      "Paper(worksheet) OR EnvironmentFriendly(worksheet)"
     ],
     "label": "True",
     "source": "hyb"
@@ -3150,7 +3150,7 @@
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (Defender(x) -> SoccerPlayer(x)))",
       "ForAll(x, (Centerback(x) -> Defender(x)))",
-      "(NBAPlayer(stephencurry) ⊕ SoccerPlayer(stephencurry)) -> ProfessionalBasketballPlayer(stephencurry)"
+      "(NBAPlayer(stephencurry) OR SoccerPlayer(stephencurry)) -> ProfessionalBasketballPlayer(stephencurry)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -3171,7 +3171,7 @@
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (Defender(x) -> SoccerPlayer(x)))",
       "ForAll(x, (Centerback(x) -> Defender(x)))",
-      "(NBAPlayer(stephencurry) ⊕ SoccerPlayer(stephencurry)) -> ProfessionalBasketballPlayer(stephencurry)"
+      "(NBAPlayer(stephencurry) OR SoccerPlayer(stephencurry)) -> ProfessionalBasketballPlayer(stephencurry)"
     ],
     "label": "False",
     "source": "hyb"
@@ -3192,7 +3192,7 @@
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (Defender(x) -> SoccerPlayer(x)))",
       "ForAll(x, (Centerback(x) -> Defender(x)))",
-      "(NBAPlayer(stephencurry) ⊕ SoccerPlayer(stephencurry)) -> ProfessionalBasketballPlayer(stephencurry)"
+      "(NBAPlayer(stephencurry) OR SoccerPlayer(stephencurry)) -> ProfessionalBasketballPlayer(stephencurry)"
     ],
     "label": "True",
     "source": "hyb"
@@ -3376,7 +3376,7 @@
       "ForAll(x, (TopPlayer(x) OR ThreePointer(x)))",
       "ForAll(x, (ThreePointer(x) -> TwoPointer(x)))",
       "ForAll(x, (TwoPointer(x) -> NOT BadMid(x)))",
-      "LowScore(candace) ⊕ ThreePointer(candace)"
+      "LowScore(candace) OR ThreePointer(candace)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -3397,7 +3397,7 @@
       "ForAll(x, (TopPlayer(x) OR ThreePointer(x)))",
       "ForAll(x, (ThreePointer(x) -> TwoPointer(x)))",
       "ForAll(x, (TwoPointer(x) -> NOT BadMid(x)))",
-      "LowScore(candace) ⊕ ThreePointer(candace)"
+      "LowScore(candace) OR ThreePointer(candace)"
     ],
     "label": "False",
     "source": "hyb"
@@ -3418,7 +3418,7 @@
       "ForAll(x, (TopPlayer(x) OR ThreePointer(x)))",
       "ForAll(x, (ThreePointer(x) -> TwoPointer(x)))",
       "ForAll(x, (TwoPointer(x) -> NOT BadMid(x)))",
-      "LowScore(candace) ⊕ ThreePointer(candace)"
+      "LowScore(candace) OR ThreePointer(candace)"
     ],
     "label": "True",
     "source": "hyb"
@@ -3439,7 +3439,7 @@
       "ForAll(x, (TopPlayer(x) OR ThreePointer(x)))",
       "ForAll(x, (ThreePointer(x) -> TwoPointer(x)))",
       "ForAll(x, (TwoPointer(x) -> NOT BadMid(x)))",
-      "LowScore(candace) ⊕ ThreePointer(candace)"
+      "LowScore(candace) OR ThreePointer(candace)"
     ],
     "label": "True",
     "source": "hyb"
@@ -3460,7 +3460,7 @@
       "ForAll(x, (TopPlayer(x) OR ThreePointer(x)))",
       "ForAll(x, (ThreePointer(x) -> TwoPointer(x)))",
       "ForAll(x, (TwoPointer(x) -> NOT BadMid(x)))",
-      "LowScore(candace) ⊕ ThreePointer(candace)"
+      "LowScore(candace) OR ThreePointer(candace)"
     ],
     "label": "False",
     "source": "hyb"
@@ -3481,7 +3481,7 @@
       "ForAll(x, (TopPlayer(x) OR ThreePointer(x)))",
       "ForAll(x, (ThreePointer(x) -> TwoPointer(x)))",
       "ForAll(x, (TwoPointer(x) -> NOT BadMid(x)))",
-      "LowScore(candace) ⊕ ThreePointer(candace)"
+      "LowScore(candace) OR ThreePointer(candace)"
     ],
     "label": "False",
     "source": "hyb"
@@ -3502,7 +3502,7 @@
       "ForAll(x, (TopPlayer(x) OR ThreePointer(x)))",
       "ForAll(x, (ThreePointer(x) -> TwoPointer(x)))",
       "ForAll(x, (TwoPointer(x) -> NOT BadMid(x)))",
-      "LowScore(candace) ⊕ ThreePointer(candace)"
+      "LowScore(candace) OR ThreePointer(candace)"
     ],
     "label": "True",
     "source": "hyb"
@@ -3523,7 +3523,7 @@
       "ForAll(x, (TopPlayer(x) OR ThreePointer(x)))",
       "ForAll(x, (ThreePointer(x) -> TwoPointer(x)))",
       "ForAll(x, (TwoPointer(x) -> NOT BadMid(x)))",
-      "LowScore(candace) ⊕ ThreePointer(candace)"
+      "LowScore(candace) OR ThreePointer(candace)"
     ],
     "label": "False",
     "source": "hyb"
@@ -3544,7 +3544,7 @@
       "ForAll(x, (TopPlayer(x) OR ThreePointer(x)))",
       "ForAll(x, (ThreePointer(x) -> TwoPointer(x)))",
       "ForAll(x, (TwoPointer(x) -> NOT BadMid(x)))",
-      "LowScore(candace) ⊕ ThreePointer(candace)"
+      "LowScore(candace) OR ThreePointer(candace)"
     ],
     "label": "False",
     "source": "hyb"
@@ -3973,7 +3973,7 @@
       "If the air conditioner is running and someone is cooking in the downstairs kitchen, all the smoke travels to the second floor."
     ],
     "premises-FOL": [
-      "ForAll(x, (Kitchen(x) -> Up(x) ⊕ Down(x)))",
+      "ForAll(x, (Kitchen(x) -> Up(x) OR Down(x)))",
       "(Cook(downstairs) AND NOT Run(ac)) -> Smokey(firstFloor)",
       "(Cook(downstairs) AND Run(ac)) -> Smokey(secondFloor)"
     ],
@@ -3990,7 +3990,7 @@
       "If the air conditioner is running and someone is cooking in the downstairs kitchen, all the smoke travels to the second floor."
     ],
     "premises-FOL": [
-      "ForAll(x, (Kitchen(x) -> Up(x) ⊕ Down(x)))",
+      "ForAll(x, (Kitchen(x) -> Up(x) OR Down(x)))",
       "(Cook(downstairs) AND NOT Run(ac)) -> Smokey(firstFloor)",
       "(Cook(downstairs) AND Run(ac)) -> Smokey(secondFloor)"
     ],
@@ -4007,7 +4007,7 @@
       "If the air conditioner is running and someone is cooking in the downstairs kitchen, all the smoke travels to the second floor."
     ],
     "premises-FOL": [
-      "ForAll(x, (Kitchen(x) -> Up(x) ⊕ Down(x)))",
+      "ForAll(x, (Kitchen(x) -> Up(x) OR Down(x)))",
       "(Cook(downstairs) AND NOT Run(ac)) -> Smokey(firstFloor)",
       "(Cook(downstairs) AND Run(ac)) -> Smokey(secondFloor)"
     ],
@@ -4437,10 +4437,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Orchestra(x) -> NOT Touring(x)))",
-      "ForAll(x, (Orchestra(x) ⊕ Unique(x)))",
+      "ForAll(x, (Orchestra(x) OR Unique(x)))",
       "ForAll(x, (Unique(x) -> Interesting(x)))",
       "ForAll(x, (Interesting(x) -> Capable(x)))",
-      "(Interesting(ryan) AND Unique(ryan)) -> NOT (Touring(ryan) ⊕ Capable(ryan))"
+      "(Interesting(ryan) AND Unique(ryan)) -> NOT (Touring(ryan) OR Capable(ryan))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -4458,10 +4458,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Orchestra(x) -> NOT Touring(x)))",
-      "ForAll(x, (Orchestra(x) ⊕ Unique(x)))",
+      "ForAll(x, (Orchestra(x) OR Unique(x)))",
       "ForAll(x, (Unique(x) -> Interesting(x)))",
       "ForAll(x, (Interesting(x) -> Capable(x)))",
-      "(Interesting(ryan) AND Unique(ryan)) -> NOT (Touring(ryan) ⊕ Capable(ryan))"
+      "(Interesting(ryan) AND Unique(ryan)) -> NOT (Touring(ryan) OR Capable(ryan))"
     ],
     "label": "True",
     "source": "hyb"
@@ -4479,10 +4479,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Orchestra(x) -> NOT Touring(x)))",
-      "ForAll(x, (Orchestra(x) ⊕ Unique(x)))",
+      "ForAll(x, (Orchestra(x) OR Unique(x)))",
       "ForAll(x, (Unique(x) -> Interesting(x)))",
       "ForAll(x, (Interesting(x) -> Capable(x)))",
-      "(Interesting(ryan) AND Unique(ryan)) -> NOT (Touring(ryan) ⊕ Capable(ryan))"
+      "(Interesting(ryan) AND Unique(ryan)) -> NOT (Touring(ryan) OR Capable(ryan))"
     ],
     "label": "True",
     "source": "hyb"
@@ -4506,7 +4506,7 @@
       "ForAll(x, (Fly(x) -> Cool(x)))",
       "ForAll(x, (KnowMagic(x) -> Fly(x)))",
       "ForAll(x, (Wizard(x) -> KnowMagic(x)))",
-      "(Yell(harry) AND Fly(harry)) ⊕ (NOT Yell(harry) AND NOT Fly(harry))",
+      "(Yell(harry) AND Fly(harry)) OR (NOT Yell(harry) AND NOT Fly(harry))",
       "Wizard(potter) AND Fly(potter)"
     ],
     "label": "Unknown",
@@ -4531,7 +4531,7 @@
       "ForAll(x, (Fly(x) -> Cool(x)))",
       "ForAll(x, (KnowMagic(x) -> Fly(x)))",
       "ForAll(x, (Wizard(x) -> KnowMagic(x)))",
-      "(Yell(harry) AND Fly(harry)) ⊕ (NOT Yell(harry) AND NOT Fly(harry))",
+      "(Yell(harry) AND Fly(harry)) OR (NOT Yell(harry) AND NOT Fly(harry))",
       "Wizard(potter) AND Fly(potter)"
     ],
     "label": "Unknown",
@@ -4556,7 +4556,7 @@
       "ForAll(x, (Fly(x) -> Cool(x)))",
       "ForAll(x, (KnowMagic(x) -> Fly(x)))",
       "ForAll(x, (Wizard(x) -> KnowMagic(x)))",
-      "(Yell(harry) AND Fly(harry)) ⊕ (NOT Yell(harry) AND NOT Fly(harry))",
+      "(Yell(harry) AND Fly(harry)) OR (NOT Yell(harry) AND NOT Fly(harry))",
       "Wizard(potter) AND Fly(potter)"
     ],
     "label": "False",
@@ -4581,7 +4581,7 @@
       "ForAll(x, (Fly(x) -> Cool(x)))",
       "ForAll(x, (KnowMagic(x) -> Fly(x)))",
       "ForAll(x, (Wizard(x) -> KnowMagic(x)))",
-      "(Yell(harry) AND Fly(harry)) ⊕ (NOT Yell(harry) AND NOT Fly(harry))",
+      "(Yell(harry) AND Fly(harry)) OR (NOT Yell(harry) AND NOT Fly(harry))",
       "Wizard(potter) AND Fly(potter)"
     ],
     "label": "True",
@@ -4602,14 +4602,14 @@
       "G-910 is either displayed on the homepage or cheaper."
     ],
     "premises-FOL": [
-      "ForAll(x, (China(x) ⊕ US(x)))",
+      "ForAll(x, (China(x) OR US(x)))",
       "ForAll(x, (China(x) -> Labeled(x)))",
       "ForAll(x, (US(x) -> SoldInUS(x)))",
       "ForAll(x, (Labeled(x) -> Cheaper(x)))",
       "ForAll(x, (SoldInUS(x) -> SoldInWalmart(x)))",
       "ForAll(x, (DisplayedInHomepage(x) -> SoldInWalmart(x)))",
       "ForAll(x, (ReturnedByCustomer(x) -> NOT SoldInWalmart(x)))",
-      "NOT (DisplayedInHomepage(g910) ⊕ Cheaper(g910))"
+      "NOT (DisplayedInHomepage(g910) OR Cheaper(g910))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -4629,14 +4629,14 @@
       "G-910 is either displayed on the homepage or cheaper."
     ],
     "premises-FOL": [
-      "ForAll(x, (China(x) ⊕ US(x)))",
+      "ForAll(x, (China(x) OR US(x)))",
       "ForAll(x, (China(x) -> Labeled(x)))",
       "ForAll(x, (US(x) -> SoldInUS(x)))",
       "ForAll(x, (Labeled(x) -> Cheaper(x)))",
       "ForAll(x, (SoldInUS(x) -> SoldInWalmart(x)))",
       "ForAll(x, (DisplayedInHomepage(x) -> SoldInWalmart(x)))",
       "ForAll(x, (ReturnedByCustomer(x) -> NOT SoldInWalmart(x)))",
-      "NOT (DisplayedInHomepage(g910) ⊕ Cheaper(g910))"
+      "NOT (DisplayedInHomepage(g910) OR Cheaper(g910))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -4656,14 +4656,14 @@
       "G-910 is either displayed on the homepage or cheaper."
     ],
     "premises-FOL": [
-      "ForAll(x, (China(x) ⊕ US(x)))",
+      "ForAll(x, (China(x) OR US(x)))",
       "ForAll(x, (China(x) -> Labeled(x)))",
       "ForAll(x, (US(x) -> SoldInUS(x)))",
       "ForAll(x, (Labeled(x) -> Cheaper(x)))",
       "ForAll(x, (SoldInUS(x) -> SoldInWalmart(x)))",
       "ForAll(x, (DisplayedInHomepage(x) -> SoldInWalmart(x)))",
       "ForAll(x, (ReturnedByCustomer(x) -> NOT SoldInWalmart(x)))",
-      "NOT (DisplayedInHomepage(g910) ⊕ Cheaper(g910))"
+      "NOT (DisplayedInHomepage(g910) OR Cheaper(g910))"
     ],
     "label": "False",
     "source": "hyb"
@@ -4683,14 +4683,14 @@
       "G-910 is either displayed on the homepage or cheaper."
     ],
     "premises-FOL": [
-      "ForAll(x, (China(x) ⊕ US(x)))",
+      "ForAll(x, (China(x) OR US(x)))",
       "ForAll(x, (China(x) -> Labeled(x)))",
       "ForAll(x, (US(x) -> SoldInUS(x)))",
       "ForAll(x, (Labeled(x) -> Cheaper(x)))",
       "ForAll(x, (SoldInUS(x) -> SoldInWalmart(x)))",
       "ForAll(x, (DisplayedInHomepage(x) -> SoldInWalmart(x)))",
       "ForAll(x, (ReturnedByCustomer(x) -> NOT SoldInWalmart(x)))",
-      "NOT (DisplayedInHomepage(g910) ⊕ Cheaper(g910))"
+      "NOT (DisplayedInHomepage(g910) OR Cheaper(g910))"
     ],
     "label": "True",
     "source": "hyb"
@@ -4710,14 +4710,14 @@
       "G-910 is either displayed on the homepage or cheaper."
     ],
     "premises-FOL": [
-      "ForAll(x, (China(x) ⊕ US(x)))",
+      "ForAll(x, (China(x) OR US(x)))",
       "ForAll(x, (China(x) -> Labeled(x)))",
       "ForAll(x, (US(x) -> SoldInUS(x)))",
       "ForAll(x, (Labeled(x) -> Cheaper(x)))",
       "ForAll(x, (SoldInUS(x) -> SoldInWalmart(x)))",
       "ForAll(x, (DisplayedInHomepage(x) -> SoldInWalmart(x)))",
       "ForAll(x, (ReturnedByCustomer(x) -> NOT SoldInWalmart(x)))",
-      "NOT (DisplayedInHomepage(g910) ⊕ Cheaper(g910))"
+      "NOT (DisplayedInHomepage(g910) OR Cheaper(g910))"
     ],
     "label": "True",
     "source": "hyb"
@@ -4735,12 +4735,12 @@
       "If Marcy either gets a lot of mail and is very involved with her neighborhood or if she does not order a lot of Amazon packages nor is very involved with her neighborhood, then Marcy does not both get a lot of daily mail and order a lot of Amazon packages."
     ],
     "premises-FOL": [
-      "ForAll(x, (Amazon(x) ⊕ Environmental(x)))",
+      "ForAll(x, (Amazon(x) OR Environmental(x)))",
       "ForAll(x, (Amazon(x) -> DailyMail(x)))",
       "ForAll(x, (Environmental(x) -> Solar(x)))",
       "ForAll(x, (DailyMail(x) -> Neighborhood(x)))",
       "ForAll(x, (Solar(x) -> SaveMoney(x)))",
-      "NOT (DailyMail(marcy) ⊕ Neighborhood(marcy)) -> (NOT DailyMail(marcy) OR NOT Amazon(marcy))"
+      "NOT (DailyMail(marcy) OR Neighborhood(marcy)) -> (NOT DailyMail(marcy) OR NOT Amazon(marcy))"
     ],
     "label": "True",
     "source": "hyb"
@@ -4758,12 +4758,12 @@
       "If Marcy either gets a lot of mail and is very involved with her neighborhood or if she does not order a lot of Amazon packages nor is very involved with her neighborhood, then Marcy does not both get a lot of daily mail and order a lot of Amazon packages."
     ],
     "premises-FOL": [
-      "ForAll(x, (Amazon(x) ⊕ Environmental(x)))",
+      "ForAll(x, (Amazon(x) OR Environmental(x)))",
       "ForAll(x, (Amazon(x) -> DailyMail(x)))",
       "ForAll(x, (Environmental(x) -> Solar(x)))",
       "ForAll(x, (DailyMail(x) -> Neighborhood(x)))",
       "ForAll(x, (Solar(x) -> SaveMoney(x)))",
-      "NOT (DailyMail(marcy) ⊕ Neighborhood(marcy)) -> (NOT DailyMail(marcy) OR NOT Amazon(marcy))"
+      "NOT (DailyMail(marcy) OR Neighborhood(marcy)) -> (NOT DailyMail(marcy) OR NOT Amazon(marcy))"
     ],
     "label": "False",
     "source": "hyb"
@@ -4785,7 +4785,7 @@
       "Exists(x, Exists(y, (Country(indonesia) AND Prosecutor(x) AND Crime(y) -> InvestigatePersonally(x, y))))",
       "Crime(corruption)",
       "ForAll(x, ForAll(y, (Crime(y) AND PoliceCompInves(y) AND Prosecutor(x) -> Evidence(y) AND HandToProsecutor(x, y))))",
-      "ForAll(x, (Crime(x) AND Evidence(x) AND (Satisfactory(x) ⊕ Unsatisfactory(x))))",
+      "ForAll(x, (Crime(x) AND Evidence(x) AND (Satisfactory(x) OR Unsatisfactory(x))))",
       "ForAll(x, ForAll(y, (Evidence(y) AND HandToProsecutor(x, y) AND Satisfactory(y) -> ProsecuteTheOffender(x, y))))"
     ],
     "label": "Unknown",
@@ -4808,7 +4808,7 @@
       "Exists(x, Exists(y, (Country(indonesia) AND Prosecutor(x) AND Crime(y) -> InvestigatePersonally(x, y))))",
       "Crime(corruption)",
       "ForAll(x, ForAll(y, (Crime(y) AND PoliceCompInves(y) AND Prosecutor(x) -> Evidence(y) AND HandToProsecutor(x, y))))",
-      "ForAll(x, (Crime(x) AND Evidence(x) AND (Satisfactory(x) ⊕ Unsatisfactory(x))))",
+      "ForAll(x, (Crime(x) AND Evidence(x) AND (Satisfactory(x) OR Unsatisfactory(x))))",
       "ForAll(x, ForAll(y, (Evidence(y) AND HandToProsecutor(x, y) AND Satisfactory(y) -> ProsecuteTheOffender(x, y))))"
     ],
     "label": "Unknown",
@@ -4831,7 +4831,7 @@
       "Exists(x, Exists(y, (Country(indonesia) AND Prosecutor(x) AND Crime(y) -> InvestigatePersonally(x, y))))",
       "Crime(corruption)",
       "ForAll(x, ForAll(y, (Crime(y) AND PoliceCompInves(y) AND Prosecutor(x) -> Evidence(y) AND HandToProsecutor(x, y))))",
-      "ForAll(x, (Crime(x) AND Evidence(x) AND (Satisfactory(x) ⊕ Unsatisfactory(x))))",
+      "ForAll(x, (Crime(x) AND Evidence(x) AND (Satisfactory(x) OR Unsatisfactory(x))))",
       "ForAll(x, ForAll(y, (Evidence(y) AND HandToProsecutor(x, y) AND Satisfactory(y) -> ProsecuteTheOffender(x, y))))"
     ],
     "label": "Unknown",
@@ -4853,7 +4853,7 @@
       "ForAll(x, (DigitalWatch(x) -> BatteryPoweredWatch(x)))",
       "Exists(x, (MechanicalWatch(x) AND AutomaticWatch(x)))",
       "ForAll(x, (SmartWatch(x) -> DigitalWatch(x)))",
-      "NOT DigitalWatch(moonwatch) ⊕ AutomaticWatch(moonwatch)"
+      "NOT DigitalWatch(moonwatch) OR AutomaticWatch(moonwatch)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -4874,7 +4874,7 @@
       "ForAll(x, (DigitalWatch(x) -> BatteryPoweredWatch(x)))",
       "Exists(x, (MechanicalWatch(x) AND AutomaticWatch(x)))",
       "ForAll(x, (SmartWatch(x) -> DigitalWatch(x)))",
-      "NOT DigitalWatch(moonwatch) ⊕ AutomaticWatch(moonwatch)"
+      "NOT DigitalWatch(moonwatch) OR AutomaticWatch(moonwatch)"
     ],
     "label": "False",
     "source": "hyb"
@@ -4895,7 +4895,7 @@
       "ForAll(x, (DigitalWatch(x) -> BatteryPoweredWatch(x)))",
       "Exists(x, (MechanicalWatch(x) AND AutomaticWatch(x)))",
       "ForAll(x, (SmartWatch(x) -> DigitalWatch(x)))",
-      "NOT DigitalWatch(moonwatch) ⊕ AutomaticWatch(moonwatch)"
+      "NOT DigitalWatch(moonwatch) OR AutomaticWatch(moonwatch)"
     ],
     "label": "True",
     "source": "hyb"
@@ -4916,7 +4916,7 @@
       "ForAll(x, (DigitalWatch(x) -> BatteryPoweredWatch(x)))",
       "Exists(x, (MechanicalWatch(x) AND AutomaticWatch(x)))",
       "ForAll(x, (SmartWatch(x) -> DigitalWatch(x)))",
-      "NOT DigitalWatch(moonwatch) ⊕ AutomaticWatch(moonwatch)"
+      "NOT DigitalWatch(moonwatch) OR AutomaticWatch(moonwatch)"
     ],
     "label": "True",
     "source": "hyb"
@@ -5022,8 +5022,8 @@
       "ForAll(x, (Iphone(x) -> Cellphone(x)))",
       "ForAll(x, (Engineer(x) -> Worker(x)))",
       "ForAll(x, (Worker(x) -> Human(x)))",
-      "Engineer(jack) ⊕ Worker(jack)",
-      "Human(jack) ⊕ Phone(jack)"
+      "Engineer(jack) OR Worker(jack)",
+      "Human(jack) OR Phone(jack)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -5047,8 +5047,8 @@
       "ForAll(x, (Iphone(x) -> Cellphone(x)))",
       "ForAll(x, (Engineer(x) -> Worker(x)))",
       "ForAll(x, (Worker(x) -> Human(x)))",
-      "Engineer(jack) ⊕ Worker(jack)",
-      "Human(jack) ⊕ Phone(jack)"
+      "Engineer(jack) OR Worker(jack)",
+      "Human(jack) OR Phone(jack)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -5072,8 +5072,8 @@
       "ForAll(x, (Iphone(x) -> Cellphone(x)))",
       "ForAll(x, (Engineer(x) -> Worker(x)))",
       "ForAll(x, (Worker(x) -> Human(x)))",
-      "Engineer(jack) ⊕ Worker(jack)",
-      "Human(jack) ⊕ Phone(jack)"
+      "Engineer(jack) OR Worker(jack)",
+      "Human(jack) OR Phone(jack)"
     ],
     "label": "False",
     "source": "hyb"
@@ -5097,8 +5097,8 @@
       "ForAll(x, (Iphone(x) -> Cellphone(x)))",
       "ForAll(x, (Engineer(x) -> Worker(x)))",
       "ForAll(x, (Worker(x) -> Human(x)))",
-      "Engineer(jack) ⊕ Worker(jack)",
-      "Human(jack) ⊕ Phone(jack)"
+      "Engineer(jack) OR Worker(jack)",
+      "Human(jack) OR Phone(jack)"
     ],
     "label": "True",
     "source": "hyb"
@@ -5197,7 +5197,7 @@
       "ForAll(x, (Francophile(x) -> NOT SpainFav(x)))",
       "ForAll(x, (SpainFav(x) OR Cheese(x)))",
       "NOT (Cheese(benji) AND Spanish(benji))",
-      "NOT (Spanish(benji) OR French(benji)) -> NOT (Cheese(benji) ⊕ French(benji))"
+      "NOT (Spanish(benji) OR French(benji)) -> NOT (Cheese(benji) OR French(benji))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -5218,7 +5218,7 @@
       "ForAll(x, (Francophile(x) -> NOT SpainFav(x)))",
       "ForAll(x, (SpainFav(x) OR Cheese(x)))",
       "NOT (Cheese(benji) AND Spanish(benji))",
-      "NOT (Spanish(benji) OR French(benji)) -> NOT (Cheese(benji) ⊕ French(benji))"
+      "NOT (Spanish(benji) OR French(benji)) -> NOT (Cheese(benji) OR French(benji))"
     ],
     "label": "True",
     "source": "hyb"
@@ -5239,7 +5239,7 @@
       "ForAll(x, (Francophile(x) -> NOT SpainFav(x)))",
       "ForAll(x, (SpainFav(x) OR Cheese(x)))",
       "NOT (Cheese(benji) AND Spanish(benji))",
-      "NOT (Spanish(benji) OR French(benji)) -> NOT (Cheese(benji) ⊕ French(benji))"
+      "NOT (Spanish(benji) OR French(benji)) -> NOT (Cheese(benji) OR French(benji))"
     ],
     "label": "False",
     "source": "hyb"
@@ -5317,11 +5317,11 @@
       "Grebes are not platypuses and also not echidnas."
     ],
     "premises-FOL": [
-      "ForAll(x, ((Mammal(x) AND LayEgg(x)) -> (Platypuses(x) ⊕ Echidnas(x))))",
+      "ForAll(x, ((Mammal(x) AND LayEgg(x)) -> (Platypuses(x) OR Echidnas(x))))",
       "ForAll(x, (Platypuses(x) -> NOT Hyrax(x)))",
       "ForAll(x, (Echidnas(x) -> NOT Hyrax(x)))",
       "ForAll(x, (Mammal(x) -> NOT Invertebrate(x)))",
-      "ForAll(x, (Animal(x) -> Invertebrate(x) ⊕ Vertebrate(x)))",
+      "ForAll(x, (Animal(x) -> Invertebrate(x) OR Vertebrate(x)))",
       "ForAll(x, (Mammal(x) -> Animal(x)))",
       "ForAll(x, (Hyrax(x) -> Mammal(x)))",
       "ForAll(x, (Grebes(x) -> LayEgg(x)))",
@@ -5346,11 +5346,11 @@
       "Grebes are not platypuses and also not echidnas."
     ],
     "premises-FOL": [
-      "ForAll(x, ((Mammal(x) AND LayEgg(x)) -> (Platypuses(x) ⊕ Echidnas(x))))",
+      "ForAll(x, ((Mammal(x) AND LayEgg(x)) -> (Platypuses(x) OR Echidnas(x))))",
       "ForAll(x, (Platypuses(x) -> NOT Hyrax(x)))",
       "ForAll(x, (Echidnas(x) -> NOT Hyrax(x)))",
       "ForAll(x, (Mammal(x) -> NOT Invertebrate(x)))",
-      "ForAll(x, (Animal(x) -> Invertebrate(x) ⊕ Vertebrate(x)))",
+      "ForAll(x, (Animal(x) -> Invertebrate(x) OR Vertebrate(x)))",
       "ForAll(x, (Mammal(x) -> Animal(x)))",
       "ForAll(x, (Hyrax(x) -> Mammal(x)))",
       "ForAll(x, (Grebes(x) -> LayEgg(x)))",
@@ -5375,11 +5375,11 @@
       "Grebes are not platypuses and also not echidnas."
     ],
     "premises-FOL": [
-      "ForAll(x, ((Mammal(x) AND LayEgg(x)) -> (Platypuses(x) ⊕ Echidnas(x))))",
+      "ForAll(x, ((Mammal(x) AND LayEgg(x)) -> (Platypuses(x) OR Echidnas(x))))",
       "ForAll(x, (Platypuses(x) -> NOT Hyrax(x)))",
       "ForAll(x, (Echidnas(x) -> NOT Hyrax(x)))",
       "ForAll(x, (Mammal(x) -> NOT Invertebrate(x)))",
-      "ForAll(x, (Animal(x) -> Invertebrate(x) ⊕ Vertebrate(x)))",
+      "ForAll(x, (Animal(x) -> Invertebrate(x) OR Vertebrate(x)))",
       "ForAll(x, (Mammal(x) -> Animal(x)))",
       "ForAll(x, (Hyrax(x) -> Mammal(x)))",
       "ForAll(x, (Grebes(x) -> LayEgg(x)))",
@@ -5949,8 +5949,8 @@
       "ForAll(x, (Army(x) -> HaveVisitWithoutAnyFees(x)))",
       "ForAll(x, (Thief(x) -> Prison(x)))",
       "ForAll(x, (Prison(x) -> BadRecord(x)))",
-      "Thief(james) ⊕ Prison(james)",
-      "BadRecord(james) ⊕ Respected(james)"
+      "Thief(james) OR Prison(james)",
+      "BadRecord(james) OR Respected(james)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -5976,8 +5976,8 @@
       "ForAll(x, (Army(x) -> HaveVisitWithoutAnyFees(x)))",
       "ForAll(x, (Thief(x) -> Prison(x)))",
       "ForAll(x, (Prison(x) -> BadRecord(x)))",
-      "Thief(james) ⊕ Prison(james)",
-      "BadRecord(james) ⊕ Respected(james)"
+      "Thief(james) OR Prison(james)",
+      "BadRecord(james) OR Respected(james)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -6003,8 +6003,8 @@
       "ForAll(x, (Army(x) -> HaveVisitWithoutAnyFees(x)))",
       "ForAll(x, (Thief(x) -> Prison(x)))",
       "ForAll(x, (Prison(x) -> BadRecord(x)))",
-      "Thief(james) ⊕ Prison(james)",
-      "BadRecord(james) ⊕ Respected(james)"
+      "Thief(james) OR Prison(james)",
+      "BadRecord(james) OR Respected(james)"
     ],
     "label": "False",
     "source": "hyb"
@@ -6030,8 +6030,8 @@
       "ForAll(x, (Army(x) -> HaveVisitWithoutAnyFees(x)))",
       "ForAll(x, (Thief(x) -> Prison(x)))",
       "ForAll(x, (Prison(x) -> BadRecord(x)))",
-      "Thief(james) ⊕ Prison(james)",
-      "BadRecord(james) ⊕ Respected(james)"
+      "Thief(james) OR Prison(james)",
+      "BadRecord(james) OR Respected(james)"
     ],
     "label": "True",
     "source": "hyb"
@@ -6256,7 +6256,7 @@
       "Airbus made more in revenue than Boeing last year."
     ],
     "premises-FOL": [
-      "ForAll(x, (CommercialAircraft(x) -> ProducedBy(x, boeing) ⊕ ProducedBy(x, airbus)))",
+      "ForAll(x, (CommercialAircraft(x) -> ProducedBy(x, boeing) OR ProducedBy(x, airbus)))",
       "ForAll(x, (AmericanAirlinesAircraft(x) -> CommercialAircraft(x)))",
       "MoreinRevenue(airbus, boeing)"
     ],
@@ -6273,7 +6273,7 @@
       "Airbus made more in revenue than Boeing last year."
     ],
     "premises-FOL": [
-      "ForAll(x, (CommercialAircraft(x) -> ProducedBy(x, boeing) ⊕ ProducedBy(x, airbus)))",
+      "ForAll(x, (CommercialAircraft(x) -> ProducedBy(x, boeing) OR ProducedBy(x, airbus)))",
       "ForAll(x, (AmericanAirlinesAircraft(x) -> CommercialAircraft(x)))",
       "MoreinRevenue(airbus, boeing)"
     ],
@@ -6290,7 +6290,7 @@
       "Airbus made more in revenue than Boeing last year."
     ],
     "premises-FOL": [
-      "ForAll(x, (CommercialAircraft(x) -> ProducedBy(x, boeing) ⊕ ProducedBy(x, airbus)))",
+      "ForAll(x, (CommercialAircraft(x) -> ProducedBy(x, boeing) OR ProducedBy(x, airbus)))",
       "ForAll(x, (AmericanAirlinesAircraft(x) -> CommercialAircraft(x)))",
       "MoreinRevenue(airbus, boeing)"
     ],
@@ -6307,7 +6307,7 @@
       "Airbus made more in revenue than Boeing last year."
     ],
     "premises-FOL": [
-      "ForAll(x, (CommercialAircraft(x) -> ProducedBy(x, boeing) ⊕ ProducedBy(x, airbus)))",
+      "ForAll(x, (CommercialAircraft(x) -> ProducedBy(x, boeing) OR ProducedBy(x, airbus)))",
       "ForAll(x, (AmericanAirlinesAircraft(x) -> CommercialAircraft(x)))",
       "MoreinRevenue(airbus, boeing)"
     ],
@@ -6451,7 +6451,7 @@
       "ForAll(x, (Student(x) AND LearningPiano(x) -> StrikeRightNotes(x)))",
       "ForAll(x, (Student(x) AND StrikeRightNotes(x) -> GetRhythmRight(x)))",
       "ForAll(x, (Student(x) AND GetRhythmRight(x) -> StartCoordination(x)))",
-      "ForAll(x, (Student(x) AND StartCoordination(x) -> GoodAtCoordination(x) ⊕ FindCoordinationChallenging(x)))",
+      "ForAll(x, (Student(x) AND StartCoordination(x) -> GoodAtCoordination(x) OR FindCoordinationChallenging(x)))",
       "StrikeRightNotes(john) AND GetRhythmRight(john) AND GoodAtCoordination(john) -> PutEmotion(john)",
       "Student(john) AND LearningPiano(john)",
       "NOT FindCoordinationChallenging(john)"
@@ -6476,7 +6476,7 @@
       "ForAll(x, (Student(x) AND LearningPiano(x) -> StrikeRightNotes(x)))",
       "ForAll(x, (Student(x) AND StrikeRightNotes(x) -> GetRhythmRight(x)))",
       "ForAll(x, (Student(x) AND GetRhythmRight(x) -> StartCoordination(x)))",
-      "ForAll(x, (Student(x) AND StartCoordination(x) -> GoodAtCoordination(x) ⊕ FindCoordinationChallenging(x)))",
+      "ForAll(x, (Student(x) AND StartCoordination(x) -> GoodAtCoordination(x) OR FindCoordinationChallenging(x)))",
       "StrikeRightNotes(john) AND GetRhythmRight(john) AND GoodAtCoordination(john) -> PutEmotion(john)",
       "Student(john) AND LearningPiano(john)",
       "NOT FindCoordinationChallenging(john)"
@@ -6613,7 +6613,7 @@
       "ForAll(x, (Physical(x) -> GoodWithPets(x)))",
       "ForAll(x, (GoodWithPets(x) -> NOT ScaredOfAnimals(x)))",
       "ForAll(x, (ScaredOfAnimals(x) OR LoveAnimals(x)))",
-      "Physical(adam) ⊕ LoveAnimals(adam)"
+      "Physical(adam) OR LoveAnimals(adam)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -6634,7 +6634,7 @@
       "ForAll(x, (Physical(x) -> GoodWithPets(x)))",
       "ForAll(x, (GoodWithPets(x) -> NOT ScaredOfAnimals(x)))",
       "ForAll(x, (ScaredOfAnimals(x) OR LoveAnimals(x)))",
-      "Physical(adam) ⊕ LoveAnimals(adam)"
+      "Physical(adam) OR LoveAnimals(adam)"
     ],
     "label": "True",
     "source": "hyb"
@@ -6655,7 +6655,7 @@
       "ForAll(x, (Physical(x) -> GoodWithPets(x)))",
       "ForAll(x, (GoodWithPets(x) -> NOT ScaredOfAnimals(x)))",
       "ForAll(x, (ScaredOfAnimals(x) OR LoveAnimals(x)))",
-      "Physical(adam) ⊕ LoveAnimals(adam)"
+      "Physical(adam) OR LoveAnimals(adam)"
     ],
     "label": "False",
     "source": "hyb"
@@ -6676,7 +6676,7 @@
       "ForAll(x, (Physical(x) -> GoodWithPets(x)))",
       "ForAll(x, (GoodWithPets(x) -> NOT ScaredOfAnimals(x)))",
       "ForAll(x, (ScaredOfAnimals(x) OR LoveAnimals(x)))",
-      "Physical(adam) ⊕ LoveAnimals(adam)"
+      "Physical(adam) OR LoveAnimals(adam)"
     ],
     "label": "True",
     "source": "hyb"
@@ -6697,7 +6697,7 @@
       "ForAll(x, (Physical(x) -> GoodWithPets(x)))",
       "ForAll(x, (GoodWithPets(x) -> NOT ScaredOfAnimals(x)))",
       "ForAll(x, (ScaredOfAnimals(x) OR LoveAnimals(x)))",
-      "Physical(adam) ⊕ LoveAnimals(adam)"
+      "Physical(adam) OR LoveAnimals(adam)"
     ],
     "label": "True",
     "source": "hyb"
@@ -6718,7 +6718,7 @@
       "ForAll(x, (Winged(x) -> NOT Reptile(x)))",
       "Exists(x, (Fly(x) AND Bird(x)))",
       "ForAll(x, (Iguana(x) -> Reptile(x)))",
-      "NOT Iguana(john) ⊕ Bird(john)"
+      "NOT Iguana(john) OR Bird(john)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -6739,7 +6739,7 @@
       "ForAll(x, (Winged(x) -> NOT Reptile(x)))",
       "Exists(x, (Fly(x) AND Bird(x)))",
       "ForAll(x, (Iguana(x) -> Reptile(x)))",
-      "NOT Iguana(john) ⊕ Bird(john)"
+      "NOT Iguana(john) OR Bird(john)"
     ],
     "label": "True",
     "source": "hyb"
@@ -6760,7 +6760,7 @@
       "ForAll(x, (Winged(x) -> NOT Reptile(x)))",
       "Exists(x, (Fly(x) AND Bird(x)))",
       "ForAll(x, (Iguana(x) -> Reptile(x)))",
-      "NOT Iguana(john) ⊕ Bird(john)"
+      "NOT Iguana(john) OR Bird(john)"
     ],
     "label": "False",
     "source": "hyb"
@@ -6950,13 +6950,13 @@
       "Jessee is either both an Indian and a human, or neither an Indian nor a human."
     ],
     "premises-FOL": [
-      "ForAll(x, ( Asian(x)->  Human(x)))",
-      "ForAll(x, ( Chinese(x)->  Asian(x)))",
-      "ForAll(x, ( Chinese(x) OR  British(x)))",
-      "ForAll(x, ( British(x)->  European(x)))",
-      "ForAll(x, ( Spanish(x)->  European(x)))",
-      "ForAll(x, ( Indian(x)-> NOT  European(x)))",
-      "( Indian(jesse) AND Human(jesse)) ⊕ (NOT  Indian(jesse) AND NOT  Human(jesse))"
+      "ForAll(x, (Asian(x) -> Human(x)))",
+      "ForAll(x, (Chinese(x) -> Asian(x)))",
+      "ForAll(x, (Chinese(x) OR British(x)))",
+      "ForAll(x, (British(x) -> European(x)))",
+      "ForAll(x, (Spanish(x) -> European(x)))",
+      "ForAll(x, (Indian(x) -> NOT European(x)))",
+      "(Indian(jesse) AND Human(jesse)) OR (NOT Indian(jesse) AND NOT Human(jesse))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -6975,13 +6975,13 @@
       "Jessee is either both an Indian and a human, or neither an Indian nor a human."
     ],
     "premises-FOL": [
-      "ForAll(x, ( Asian(x)->  Human(x)))",
-      "ForAll(x, ( Chinese(x)->  Asian(x)))",
-      "ForAll(x, ( Chinese(x) OR  British(x)))",
-      "ForAll(x, ( British(x)->  European(x)))",
-      "ForAll(x, ( Spanish(x)->  European(x)))",
-      "ForAll(x, ( Indian(x)-> NOT  European(x)))",
-      "( Indian(jesse) AND Human(jesse)) ⊕ (NOT  Indian(jesse) AND NOT  Human(jesse))"
+      "ForAll(x, (Asian(x) -> Human(x)))",
+      "ForAll(x, (Chinese(x) -> Asian(x)))",
+      "ForAll(x, (Chinese(x) OR British(x)))",
+      "ForAll(x, (British(x) -> European(x)))",
+      "ForAll(x, (Spanish(x) -> European(x)))",
+      "ForAll(x, (Indian(x) -> NOT European(x)))",
+      "(Indian(jesse) AND Human(jesse)) OR (NOT Indian(jesse) AND NOT Human(jesse))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -7000,13 +7000,13 @@
       "Jessee is either both an Indian and a human, or neither an Indian nor a human."
     ],
     "premises-FOL": [
-      "ForAll(x, ( Asian(x)->  Human(x)))",
-      "ForAll(x, ( Chinese(x)->  Asian(x)))",
-      "ForAll(x, ( Chinese(x) OR  British(x)))",
-      "ForAll(x, ( British(x)->  European(x)))",
-      "ForAll(x, ( Spanish(x)->  European(x)))",
-      "ForAll(x, ( Indian(x)-> NOT  European(x)))",
-      "( Indian(jesse) AND Human(jesse)) ⊕ (NOT  Indian(jesse) AND NOT  Human(jesse))"
+      "ForAll(x, (Asian(x) -> Human(x)))",
+      "ForAll(x, (Chinese(x) -> Asian(x)))",
+      "ForAll(x, (Chinese(x) OR British(x)))",
+      "ForAll(x, (British(x) -> European(x)))",
+      "ForAll(x, (Spanish(x) -> European(x)))",
+      "ForAll(x, (Indian(x) -> NOT European(x)))",
+      "(Indian(jesse) AND Human(jesse)) OR (NOT Indian(jesse) AND NOT Human(jesse))"
     ],
     "label": "True",
     "source": "hyb"
@@ -7451,10 +7451,10 @@
       "A superhero speaks English or Spanish."
     ],
     "premises-FOL": [
-      "ForAll(x, (Superhero(x) AND American(x) -> (ComeFrom(x, dc universe) ⊕ ComeFrom(x, marvel universe))))",
-      "Superhero(captain america)",
-      "American(captain america)",
-      "NOT ComeFrom(captain america, dc universe)",
+      "ForAll(x, (Superhero(x) AND American(x) -> (ComeFrom(x, dc_universe) OR ComeFrom(x, marvel_universe))))",
+      "Superhero(captain_america)",
+      "American(captain_america)",
+      "NOT ComeFrom(captain_america, dc_universe)",
       "ForAll(x, (Superhero(x) AND American(x) -> Speak(x, english)))",
       "ForAll(x, (Superhero(x) -> (Speak(x, english) OR Speak(x, spanish))))"
     ],
@@ -7474,10 +7474,10 @@
       "A superhero speaks English or Spanish."
     ],
     "premises-FOL": [
-      "ForAll(x, (Superhero(x) AND American(x) -> (ComeFrom(x, dc universe) ⊕ ComeFrom(x, marvel universe))))",
-      "Superhero(captain america)",
-      "American(captain america)",
-      "NOT ComeFrom(captain america, dc universe)",
+      "ForAll(x, (Superhero(x) AND American(x) -> (ComeFrom(x, dc_universe) OR ComeFrom(x, marvel_universe))))",
+      "Superhero(captain_america)",
+      "American(captain_america)",
+      "NOT ComeFrom(captain_america, dc_universe)",
       "ForAll(x, (Superhero(x) AND American(x) -> Speak(x, english)))",
       "ForAll(x, (Superhero(x) -> (Speak(x, english) OR Speak(x, spanish))))"
     ],
@@ -7497,10 +7497,10 @@
       "A superhero speaks English or Spanish."
     ],
     "premises-FOL": [
-      "ForAll(x, (Superhero(x) AND American(x) -> (ComeFrom(x, dc universe) ⊕ ComeFrom(x, marvel universe))))",
-      "Superhero(captain america)",
-      "American(captain america)",
-      "NOT ComeFrom(captain america, dc universe)",
+      "ForAll(x, (Superhero(x) AND American(x) -> (ComeFrom(x, dc_universe) OR ComeFrom(x, marvel_universe))))",
+      "Superhero(captain_america)",
+      "American(captain_america)",
+      "NOT ComeFrom(captain_america, dc_universe)",
       "ForAll(x, (Superhero(x) AND American(x) -> Speak(x, english)))",
       "ForAll(x, (Superhero(x) -> (Speak(x, english) OR Speak(x, spanish))))"
     ],
@@ -7605,7 +7605,7 @@
       "ForAll(x, (PhDStudent(x) -> GraduateStudent(x)))",
       "Exists(x, (PhDStudent(x) AND HighIQ(x)))",
       "NOT PhDStudent(john) -> NOT MemberOfUniversity(john)",
-      "HighIQ(john) -> PhDStudent(john) ⊕ GraduateStudent(john)"
+      "HighIQ(john) -> PhDStudent(john) OR GraduateStudent(john)"
     ],
     "label": "False",
     "source": "hyb"
@@ -7628,7 +7628,7 @@
       "ForAll(x, (PhDStudent(x) -> GraduateStudent(x)))",
       "Exists(x, (PhDStudent(x) AND HighIQ(x)))",
       "NOT PhDStudent(john) -> NOT MemberOfUniversity(john)",
-      "HighIQ(john) -> PhDStudent(john) ⊕ GraduateStudent(john)"
+      "HighIQ(john) -> PhDStudent(john) OR GraduateStudent(john)"
     ],
     "label": "True",
     "source": "hyb"
@@ -7651,7 +7651,7 @@
       "ForAll(x, (PhDStudent(x) -> GraduateStudent(x)))",
       "Exists(x, (PhDStudent(x) AND HighIQ(x)))",
       "NOT PhDStudent(john) -> NOT MemberOfUniversity(john)",
-      "HighIQ(john) -> PhDStudent(john) ⊕ GraduateStudent(john)"
+      "HighIQ(john) -> PhDStudent(john) OR GraduateStudent(john)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -8057,7 +8057,7 @@
       "ForAll(x, (Compete(x) -> DisposableIncome(x)))",
       "ForAll(x, (Compete(x) -> Invested(x)))",
       "ForAll(x, (RegularlyRide(x) -> NOT Cramped(x)))",
-      "(Ranch(manny) AND Cramped(manny)) ⊕ (NOT Ranch(manny) AND NOT Cramped(manny))"
+      "(Ranch(manny) AND Cramped(manny)) OR (NOT Ranch(manny) AND NOT Cramped(manny))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -8080,7 +8080,7 @@
       "ForAll(x, (Compete(x) -> DisposableIncome(x)))",
       "ForAll(x, (Compete(x) -> Invested(x)))",
       "ForAll(x, (RegularlyRide(x) -> NOT Cramped(x)))",
-      "(Ranch(manny) AND Cramped(manny)) ⊕ (NOT Ranch(manny) AND NOT Cramped(manny))"
+      "(Ranch(manny) AND Cramped(manny)) OR (NOT Ranch(manny) AND NOT Cramped(manny))"
     ],
     "label": "False",
     "source": "hyb"
@@ -8103,7 +8103,7 @@
       "ForAll(x, (Compete(x) -> DisposableIncome(x)))",
       "ForAll(x, (Compete(x) -> Invested(x)))",
       "ForAll(x, (RegularlyRide(x) -> NOT Cramped(x)))",
-      "(Ranch(manny) AND Cramped(manny)) ⊕ (NOT Ranch(manny) AND NOT Cramped(manny))"
+      "(Ranch(manny) AND Cramped(manny)) OR (NOT Ranch(manny) AND NOT Cramped(manny))"
     ],
     "label": "True",
     "source": "hyb"
@@ -8294,7 +8294,7 @@
       "ForAll(x, (NoShopping(x) -> Flannel(x)))",
       "ForAll(x, (Old(x) -> NoSurprises(x)))",
       "ForAll(x, (Impulsive(x) -> NOT NoSurprises(x)))",
-      "NOT (NoSurprises(mike) AND Impulsive(mike)) -> Consistent(mike) ⊕ NoSurprises(mike)"
+      "NOT (NoSurprises(mike) AND Impulsive(mike)) -> Consistent(mike) OR NoSurprises(mike)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -8317,7 +8317,7 @@
       "ForAll(x, (NoShopping(x) -> Flannel(x)))",
       "ForAll(x, (Old(x) -> NoSurprises(x)))",
       "ForAll(x, (Impulsive(x) -> NOT NoSurprises(x)))",
-      "NOT (NoSurprises(mike) AND Impulsive(mike)) -> Consistent(mike) ⊕ NoSurprises(mike)"
+      "NOT (NoSurprises(mike) AND Impulsive(mike)) -> Consistent(mike) OR NoSurprises(mike)"
     ],
     "label": "True",
     "source": "hyb"
@@ -8340,7 +8340,7 @@
       "ForAll(x, (NoShopping(x) -> Flannel(x)))",
       "ForAll(x, (Old(x) -> NoSurprises(x)))",
       "ForAll(x, (Impulsive(x) -> NOT NoSurprises(x)))",
-      "NOT (NoSurprises(mike) AND Impulsive(mike)) -> Consistent(mike) ⊕ NoSurprises(mike)"
+      "NOT (NoSurprises(mike) AND Impulsive(mike)) -> Consistent(mike) OR NoSurprises(mike)"
     ],
     "label": "False",
     "source": "hyb"
@@ -8402,7 +8402,7 @@
       "ForAll(x, (Manhattan(x) -> High(x)))",
       "ForAll(x, (Bloomberg(x) -> Manhattan(x)))",
       "ForAll(x, (BloombergLogo(x) -> Bloomberg(x)))",
-      "NOT (NewHaven(towera) ⊕ Manhattan(towera))",
+      "NOT (NewHaven(towera) OR Manhattan(towera))",
       "BloombergLogo(towerb) AND Manhattan(towerb)"
     ],
     "label": "Unknown",
@@ -8427,7 +8427,7 @@
       "ForAll(x, (Manhattan(x) -> High(x)))",
       "ForAll(x, (Bloomberg(x) -> Manhattan(x)))",
       "ForAll(x, (BloombergLogo(x) -> Bloomberg(x)))",
-      "NOT (NewHaven(towera) ⊕ Manhattan(towera))",
+      "NOT (NewHaven(towera) OR Manhattan(towera))",
       "BloombergLogo(towerb) AND Manhattan(towerb)"
     ],
     "label": "Unknown",
@@ -8452,7 +8452,7 @@
       "ForAll(x, (Manhattan(x) -> High(x)))",
       "ForAll(x, (Bloomberg(x) -> Manhattan(x)))",
       "ForAll(x, (BloombergLogo(x) -> Bloomberg(x)))",
-      "NOT (NewHaven(towera) ⊕ Manhattan(towera))",
+      "NOT (NewHaven(towera) OR Manhattan(towera))",
       "BloombergLogo(towerb) AND Manhattan(towerb)"
     ],
     "label": "False",
@@ -8477,7 +8477,7 @@
       "ForAll(x, (Manhattan(x) -> High(x)))",
       "ForAll(x, (Bloomberg(x) -> Manhattan(x)))",
       "ForAll(x, (BloombergLogo(x) -> Bloomberg(x)))",
-      "NOT (NewHaven(towera) ⊕ Manhattan(towera))",
+      "NOT (NewHaven(towera) OR Manhattan(towera))",
       "BloombergLogo(towerb) AND Manhattan(towerb)"
     ],
     "label": "True",
@@ -8499,7 +8499,7 @@
       "ForAll(x, (Osprey(x) -> Bird(x)))",
       "ForAll(x, (Carp(x) -> Fish(x)))",
       "ForAll(x, (Goldfish(x) -> Carp(x)))",
-      "Osprey(bubbles) ⊕ Carp(bubbles) -> NOT Fish(bubbles)"
+      "Osprey(bubbles) OR Carp(bubbles) -> NOT Fish(bubbles)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -8520,7 +8520,7 @@
       "ForAll(x, (Osprey(x) -> Bird(x)))",
       "ForAll(x, (Carp(x) -> Fish(x)))",
       "ForAll(x, (Goldfish(x) -> Carp(x)))",
-      "Osprey(bubbles) ⊕ Carp(bubbles) -> NOT Fish(bubbles)"
+      "Osprey(bubbles) OR Carp(bubbles) -> NOT Fish(bubbles)"
     ],
     "label": "False",
     "source": "hyb"
@@ -8541,7 +8541,7 @@
       "ForAll(x, (Osprey(x) -> Bird(x)))",
       "ForAll(x, (Carp(x) -> Fish(x)))",
       "ForAll(x, (Goldfish(x) -> Carp(x)))",
-      "Osprey(bubbles) ⊕ Carp(bubbles) -> NOT Fish(bubbles)"
+      "Osprey(bubbles) OR Carp(bubbles) -> NOT Fish(bubbles)"
     ],
     "label": "True",
     "source": "hyb"
@@ -8561,8 +8561,8 @@
       "ForAll(x, (WantToGo(x) -> (California(x) OR Florida(x)) AND (NeverGo(x))))",
       "ForAll(x, (((SanFrancisco(x) OR LosAngeles(x) OR SanDiego(x)) AND California(x)) -> WantToGo(x)))",
       "ForAll(x, ((Orlando(x) OR Miami(x)) AND Florida(x)) -> WantToGo(x))",
-      "CaliforniaCityVisited(mr.smith, two)",
-      "FloridaCityVisited(mrs.smith, one)"
+      "CaliforniaCityVisited(mr_smith, two)",
+      "FloridaCityVisited(mrs_smith, one)"
     ],
     "label": "Unknown",
     "source": "wiki"
@@ -8582,8 +8582,8 @@
       "ForAll(x, (WantToGo(x) -> (California(x) OR Florida(x)) AND (NeverGo(x))))",
       "ForAll(x, (((SanFrancisco(x) OR LosAngeles(x) OR SanDiego(x)) AND California(x)) -> WantToGo(x)))",
       "ForAll(x, ((Orlando(x) OR Miami(x)) AND Florida(x)) -> WantToGo(x))",
-      "CaliforniaCityVisited(mr.smith, two)",
-      "FloridaCityVisited(mrs.smith, one)"
+      "CaliforniaCityVisited(mr_smith, two)",
+      "FloridaCityVisited(mrs_smith, one)"
     ],
     "label": "Unknown",
     "source": "wiki"
@@ -8603,8 +8603,8 @@
       "ForAll(x, (WantToGo(x) -> (California(x) OR Florida(x)) AND (NeverGo(x))))",
       "ForAll(x, (((SanFrancisco(x) OR LosAngeles(x) OR SanDiego(x)) AND California(x)) -> WantToGo(x)))",
       "ForAll(x, ((Orlando(x) OR Miami(x)) AND Florida(x)) -> WantToGo(x))",
-      "CaliforniaCityVisited(mr.smith, two)",
-      "FloridaCityVisited(mrs.smith, one)"
+      "CaliforniaCityVisited(mr_smith, two)",
+      "FloridaCityVisited(mrs_smith, one)"
     ],
     "label": "Unknown",
     "source": "wiki"
@@ -8624,7 +8624,7 @@
       "A bird is not both heavy and still."
     ],
     "premises-FOL": [
-      "ForAll(x, (Big(x) ⊕ Small(x)))",
+      "ForAll(x, (Big(x) OR Small(x)))",
       "ForAll(x, (Big(x) -> Heavy(x)))",
       "ForAll(x, (Small(x) -> Light(x)))",
       "ForAll(x, (Heavy(x) -> Still(x)))",
@@ -8651,7 +8651,7 @@
       "A bird is not both heavy and still."
     ],
     "premises-FOL": [
-      "ForAll(x, (Big(x) ⊕ Small(x)))",
+      "ForAll(x, (Big(x) OR Small(x)))",
       "ForAll(x, (Big(x) -> Heavy(x)))",
       "ForAll(x, (Small(x) -> Light(x)))",
       "ForAll(x, (Heavy(x) -> Still(x)))",
@@ -8678,7 +8678,7 @@
       "A bird is not both heavy and still."
     ],
     "premises-FOL": [
-      "ForAll(x, (Big(x) ⊕ Small(x)))",
+      "ForAll(x, (Big(x) OR Small(x)))",
       "ForAll(x, (Big(x) -> Heavy(x)))",
       "ForAll(x, (Small(x) -> Light(x)))",
       "ForAll(x, (Heavy(x) -> Still(x)))",
@@ -8705,7 +8705,7 @@
       "A bird is not both heavy and still."
     ],
     "premises-FOL": [
-      "ForAll(x, (Big(x) ⊕ Small(x)))",
+      "ForAll(x, (Big(x) OR Small(x)))",
       "ForAll(x, (Big(x) -> Heavy(x)))",
       "ForAll(x, (Small(x) -> Light(x)))",
       "ForAll(x, (Heavy(x) -> Still(x)))",
@@ -8732,7 +8732,7 @@
       "A bird is not both heavy and still."
     ],
     "premises-FOL": [
-      "ForAll(x, (Big(x) ⊕ Small(x)))",
+      "ForAll(x, (Big(x) OR Small(x)))",
       "ForAll(x, (Big(x) -> Heavy(x)))",
       "ForAll(x, (Small(x) -> Light(x)))",
       "ForAll(x, (Heavy(x) -> Still(x)))",
@@ -8759,7 +8759,7 @@
       "A bird is not both heavy and still."
     ],
     "premises-FOL": [
-      "ForAll(x, (Big(x) ⊕ Small(x)))",
+      "ForAll(x, (Big(x) OR Small(x)))",
       "ForAll(x, (Big(x) -> Heavy(x)))",
       "ForAll(x, (Small(x) -> Light(x)))",
       "ForAll(x, (Heavy(x) -> Still(x)))",
@@ -8827,7 +8827,7 @@
       "ForAll(x, (Lawyer(x) -> Gentleman(x)))",
       "ForAll(x, (Woman(x) -> Human(x)))",
       "ForAll(x, (Sheep(x) -> NOT Human(x)))",
-      "(NOT Human(mike) OR NOT Sheep(mike)) -> Man(mike) ⊕ Human(mike)"
+      "(NOT Human(mike) OR NOT Sheep(mike)) -> Man(mike) OR Human(mike)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -8850,7 +8850,7 @@
       "ForAll(x, (Lawyer(x) -> Gentleman(x)))",
       "ForAll(x, (Woman(x) -> Human(x)))",
       "ForAll(x, (Sheep(x) -> NOT Human(x)))",
-      "(NOT Human(mike) OR NOT Sheep(mike)) -> Man(mike) ⊕ Human(mike)"
+      "(NOT Human(mike) OR NOT Sheep(mike)) -> Man(mike) OR Human(mike)"
     ],
     "label": "True",
     "source": "hyb"
@@ -8873,7 +8873,7 @@
       "ForAll(x, (Lawyer(x) -> Gentleman(x)))",
       "ForAll(x, (Woman(x) -> Human(x)))",
       "ForAll(x, (Sheep(x) -> NOT Human(x)))",
-      "(NOT Human(mike) OR NOT Sheep(mike)) -> Man(mike) ⊕ Human(mike)"
+      "(NOT Human(mike) OR NOT Sheep(mike)) -> Man(mike) OR Human(mike)"
     ],
     "label": "False",
     "source": "hyb"
@@ -9031,7 +9031,7 @@
       "ForAll(x, (MakeFood(x) -> Takeout(x)))",
       "ForAll(x, (KitchenAppliance(x) -> NOT Takeout(x)))",
       "ForAll(x, (Busy(x) -> MakeFood(x)))",
-      "(CaffeineAddict(sam) AND Busy(sam)) ⊕ (NOT CaffeineAddict(sam) AND NOT Busy(sam))"
+      "(CaffeineAddict(sam) AND Busy(sam)) OR (NOT CaffeineAddict(sam) AND NOT Busy(sam))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -9054,7 +9054,7 @@
       "ForAll(x, (MakeFood(x) -> Takeout(x)))",
       "ForAll(x, (KitchenAppliance(x) -> NOT Takeout(x)))",
       "ForAll(x, (Busy(x) -> MakeFood(x)))",
-      "(CaffeineAddict(sam) AND Busy(sam)) ⊕ (NOT CaffeineAddict(sam) AND NOT Busy(sam))"
+      "(CaffeineAddict(sam) AND Busy(sam)) OR (NOT CaffeineAddict(sam) AND NOT Busy(sam))"
     ],
     "label": "False",
     "source": "hyb"
@@ -9077,7 +9077,7 @@
       "ForAll(x, (MakeFood(x) -> Takeout(x)))",
       "ForAll(x, (KitchenAppliance(x) -> NOT Takeout(x)))",
       "ForAll(x, (Busy(x) -> MakeFood(x)))",
-      "(CaffeineAddict(sam) AND Busy(sam)) ⊕ (NOT CaffeineAddict(sam) AND NOT Busy(sam))"
+      "(CaffeineAddict(sam) AND Busy(sam)) OR (NOT CaffeineAddict(sam) AND NOT Busy(sam))"
     ],
     "label": "True",
     "source": "hyb"
@@ -9098,7 +9098,7 @@
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (Defender(x) -> SoccerPlayer(x)))",
       "ForAll(x, (Centerback(x) -> Defender(x)))",
-      "NOT (NBAPlayer(rogerfederer) ⊕ Defender(rogerfederer))"
+      "NOT (NBAPlayer(rogerfederer) OR Defender(rogerfederer))"
     ],
     "label": "False",
     "source": "hyb"
@@ -9119,7 +9119,7 @@
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (Defender(x) -> SoccerPlayer(x)))",
       "ForAll(x, (Centerback(x) -> Defender(x)))",
-      "NOT (NBAPlayer(rogerfederer) ⊕ Defender(rogerfederer))"
+      "NOT (NBAPlayer(rogerfederer) OR Defender(rogerfederer))"
     ],
     "label": "True",
     "source": "hyb"
@@ -9140,7 +9140,7 @@
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (Defender(x) -> SoccerPlayer(x)))",
       "ForAll(x, (Centerback(x) -> Defender(x)))",
-      "NOT (NBAPlayer(rogerfederer) ⊕ Defender(rogerfederer))"
+      "NOT (NBAPlayer(rogerfederer) OR Defender(rogerfederer))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -9655,7 +9655,7 @@
     "premises-FOL": [
       "ForAll(x, (WorkTeams(x) -> Colleagues(x)))",
       "ForAll(x, (PositiveAttitude(x) -> WorkTeams(x)))",
-      "ForAll(x, (PositiveAttitude(x) ⊕ Tired(x)) AND (ForAll(x, (Tired(x) -> BossPromotions(x)))))",
+      "ForAll(x, (PositiveAttitude(x) OR Tired(x)) AND (ForAll(x, (Tired(x) -> BossPromotions(x)))))",
       "ForAll(x, (BossPromotions(x) -> NOT NegativeFeedback(x)))",
       "(WorkTeams(kat) AND Tired(kat)) OR NOT WorkTeams(kat) AND NOT Tired(kat))"
     ],
@@ -9676,7 +9676,7 @@
     "premises-FOL": [
       "ForAll(x, (WorkTeams(x) -> Colleagues(x)))",
       "ForAll(x, (PositiveAttitude(x) -> WorkTeams(x)))",
-      "ForAll(x, (PositiveAttitude(x) ⊕ Tired(x)) AND (ForAll(x, (Tired(x) -> BossPromotions(x)))))",
+      "ForAll(x, (PositiveAttitude(x) OR Tired(x)) AND (ForAll(x, (Tired(x) -> BossPromotions(x)))))",
       "ForAll(x, (BossPromotions(x) -> NOT NegativeFeedback(x)))",
       "(WorkTeams(kat) AND Tired(kat)) OR NOT WorkTeams(kat) AND NOT Tired(kat))"
     ],
@@ -9697,7 +9697,7 @@
     "premises-FOL": [
       "ForAll(x, (WorkTeams(x) -> Colleagues(x)))",
       "ForAll(x, (PositiveAttitude(x) -> WorkTeams(x)))",
-      "ForAll(x, (PositiveAttitude(x) ⊕ Tired(x)) AND (ForAll(x, (Tired(x) -> BossPromotions(x)))))",
+      "ForAll(x, (PositiveAttitude(x) OR Tired(x)) AND (ForAll(x, (Tired(x) -> BossPromotions(x)))))",
       "ForAll(x, (BossPromotions(x) -> NOT NegativeFeedback(x)))",
       "(WorkTeams(kat) AND Tired(kat)) OR NOT WorkTeams(kat) AND NOT Tired(kat))"
     ],
@@ -10379,11 +10379,11 @@
       "Jojo is not dead."
     ],
     "premises-FOL": [
-      "ForAll(x, (Cat(x) ⊕ Dog(x)))",
+      "ForAll(x, (Cat(x) OR Dog(x)))",
       "ForAll(x, (Dog(x) -> Bark(x)))",
       "ForAll(x, (NOT Ghost(x)))",
       "ForAll(x, (Bark(x) -> NOT Alive(x)))",
-      "ForAll(x, (Alive(x) ⊕ Dead(x)))",
+      "ForAll(x, (Alive(x) OR Dead(x)))",
       "NOT Dead(jojo)"
     ],
     "label": "False",
@@ -10402,11 +10402,11 @@
       "Jojo is not dead."
     ],
     "premises-FOL": [
-      "ForAll(x, (Cat(x) ⊕ Dog(x)))",
+      "ForAll(x, (Cat(x) OR Dog(x)))",
       "ForAll(x, (Dog(x) -> Bark(x)))",
       "ForAll(x, (NOT Ghost(x)))",
       "ForAll(x, (Bark(x) -> NOT Alive(x)))",
-      "ForAll(x, (Alive(x) ⊕ Dead(x)))",
+      "ForAll(x, (Alive(x) OR Dead(x)))",
       "NOT Dead(jojo)"
     ],
     "label": "True",
@@ -10425,11 +10425,11 @@
       "Jojo is not dead."
     ],
     "premises-FOL": [
-      "ForAll(x, (Cat(x) ⊕ Dog(x)))",
+      "ForAll(x, (Cat(x) OR Dog(x)))",
       "ForAll(x, (Dog(x) -> Bark(x)))",
       "ForAll(x, (NOT Ghost(x)))",
       "ForAll(x, (Bark(x) -> NOT Alive(x)))",
-      "ForAll(x, (Alive(x) ⊕ Dead(x)))",
+      "ForAll(x, (Alive(x) OR Dead(x)))",
       "NOT Dead(jojo)"
     ],
     "label": "False",
@@ -10669,8 +10669,8 @@
     "premises-FOL": [
       "ForAll(x, (Women(x) OR Men(x)))",
       "ForAll(x, (Men(x) -> NOT BreastCancer(x)))",
-      "ForAll(x, (BreastCancer (x) OR Non-BreastCancer(x)))",
-      "ForAll(x, (ATypeOfCancer(x) -> NOT WithoutTumor (x)))",
+      "ForAll(x, (BreastCancer(x) OR Non-BreastCancer(x)))",
+      "ForAll(x, (ATypeOfCancer(x) -> NOT WithoutTumor(x)))",
       "ForAll(x, (Non-BreastCancer(x) -> ATypeOfCancer(x)))",
       "ATypeOfCancer(adenocarcinoma) OR WithoutTumor(adenocarcinoma) -> women(adenocarcinoma) OR WithoutTumor(adenocarcinoma)"
     ],
@@ -10692,8 +10692,8 @@
     "premises-FOL": [
       "ForAll(x, (Women(x) OR Men(x)))",
       "ForAll(x, (Men(x) -> NOT BreastCancer(x)))",
-      "ForAll(x, (BreastCancer (x) OR Non-BreastCancer(x)))",
-      "ForAll(x, (ATypeOfCancer(x) -> NOT WithoutTumor (x)))",
+      "ForAll(x, (BreastCancer(x) OR Non-BreastCancer(x)))",
+      "ForAll(x, (ATypeOfCancer(x) -> NOT WithoutTumor(x)))",
       "ForAll(x, (Non-BreastCancer(x) -> ATypeOfCancer(x)))",
       "ATypeOfCancer(adenocarcinoma) OR WithoutTumor(adenocarcinoma) -> women(adenocarcinoma) OR WithoutTumor(adenocarcinoma)"
     ],
@@ -10715,8 +10715,8 @@
     "premises-FOL": [
       "ForAll(x, (Women(x) OR Men(x)))",
       "ForAll(x, (Men(x) -> NOT BreastCancer(x)))",
-      "ForAll(x, (BreastCancer (x) OR Non-BreastCancer(x)))",
-      "ForAll(x, (ATypeOfCancer(x) -> NOT WithoutTumor (x)))",
+      "ForAll(x, (BreastCancer(x) OR Non-BreastCancer(x)))",
+      "ForAll(x, (ATypeOfCancer(x) -> NOT WithoutTumor(x)))",
       "ForAll(x, (Non-BreastCancer(x) -> ATypeOfCancer(x)))",
       "ATypeOfCancer(adenocarcinoma) OR WithoutTumor(adenocarcinoma) -> women(adenocarcinoma) OR WithoutTumor(adenocarcinoma)"
     ],
@@ -10802,7 +10802,7 @@
       "Exists(x, (SoldNewHaven(x) AND ShippedFromMexico(x)))",
       "ForAll(x, (ShippedFromColumbia(x) -> NOT SoldNewYork(x)))",
       "SoldNewYork(avocado) OR SoldBoston(avocado)",
-      "NOT (ShippedFromColumbia(avocado) ⊕ SoldNewHaven(avocado))"
+      "NOT (ShippedFromColumbia(avocado) OR SoldNewHaven(avocado))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -10823,7 +10823,7 @@
       "Exists(x, (SoldNewHaven(x) AND ShippedFromMexico(x)))",
       "ForAll(x, (ShippedFromColumbia(x) -> NOT SoldNewYork(x)))",
       "SoldNewYork(avocado) OR SoldBoston(avocado)",
-      "NOT (ShippedFromColumbia(avocado) ⊕ SoldNewHaven(avocado))"
+      "NOT (ShippedFromColumbia(avocado) OR SoldNewHaven(avocado))"
     ],
     "label": "True",
     "source": "hyb"
@@ -10844,7 +10844,7 @@
       "Exists(x, (SoldNewHaven(x) AND ShippedFromMexico(x)))",
       "ForAll(x, (ShippedFromColumbia(x) -> NOT SoldNewYork(x)))",
       "SoldNewYork(avocado) OR SoldBoston(avocado)",
-      "NOT (ShippedFromColumbia(avocado) ⊕ SoldNewHaven(avocado))"
+      "NOT (ShippedFromColumbia(avocado) OR SoldNewHaven(avocado))"
     ],
     "label": "False",
     "source": "hyb"
@@ -10865,7 +10865,7 @@
       "Exists(x, (SoldNewHaven(x) AND ShippedFromMexico(x)))",
       "ForAll(x, (ShippedFromColumbia(x) -> NOT SoldNewYork(x)))",
       "SoldNewYork(avocado) OR SoldBoston(avocado)",
-      "NOT (ShippedFromColumbia(avocado) ⊕ SoldNewHaven(avocado))"
+      "NOT (ShippedFromColumbia(avocado) OR SoldNewHaven(avocado))"
     ],
     "label": "False",
     "source": "hyb"
@@ -11244,7 +11244,7 @@
       "ForAll(x, (TakingClass(x) -> Student(x)))",
       "ForAll(x, (GraduateStudent(x) -> TakingClass(x)))",
       "ForAll(x, (PhDStudent(x) -> GraduateStudent(x)))",
-      "GraduateStudent(joe) ⊕  Doctor(joe) -> NOT (GraduateStudent(joe) ^ Student(joe))"
+      "GraduateStudent(joe) OR Doctor(joe) -> NOT (GraduateStudent(joe) AND Student(joe))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -11265,7 +11265,7 @@
       "ForAll(x, (TakingClass(x) -> Student(x)))",
       "ForAll(x, (GraduateStudent(x) -> TakingClass(x)))",
       "ForAll(x, (PhDStudent(x) -> GraduateStudent(x)))",
-      "GraduateStudent(joe) ⊕  Doctor(joe) -> NOT (GraduateStudent(joe) ^ Student(joe))"
+      "GraduateStudent(joe) OR Doctor(joe) -> NOT (GraduateStudent(joe) AND Student(joe))"
     ],
     "label": "False",
     "source": "hyb"
@@ -11286,7 +11286,7 @@
       "ForAll(x, (TakingClass(x) -> Student(x)))",
       "ForAll(x, (GraduateStudent(x) -> TakingClass(x)))",
       "ForAll(x, (PhDStudent(x) -> GraduateStudent(x)))",
-      "GraduateStudent(joe) ⊕  Doctor(joe) -> NOT (GraduateStudent(joe) ^ Student(joe))"
+      "GraduateStudent(joe) OR Doctor(joe) -> NOT (GraduateStudent(joe) AND Student(joe))"
     ],
     "label": "True",
     "source": "hyb"
@@ -11666,7 +11666,7 @@
       "ForAll(x, (Pokemon(x) -> Nintendo(x)))",
       "ForAll(x, (FIFA(x) -> SupportPS4(x)))",
       "ForAll(x, (SoccerOnline(x) -> FIFA(x)))",
-      "Pokemon(belionel) ⊕ SoccerOnline(belionel)"
+      "Pokemon(belionel) OR SoccerOnline(belionel)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -11687,7 +11687,7 @@
       "ForAll(x, (Pokemon(x) -> Nintendo(x)))",
       "ForAll(x, (FIFA(x) -> SupportPS4(x)))",
       "ForAll(x, (SoccerOnline(x) -> FIFA(x)))",
-      "Pokemon(belionel) ⊕ SoccerOnline(belionel)"
+      "Pokemon(belionel) OR SoccerOnline(belionel)"
     ],
     "label": "True",
     "source": "hyb"
@@ -11708,7 +11708,7 @@
       "ForAll(x, (Pokemon(x) -> Nintendo(x)))",
       "ForAll(x, (FIFA(x) -> SupportPS4(x)))",
       "ForAll(x, (SoccerOnline(x) -> FIFA(x)))",
-      "Pokemon(belionel) ⊕ SoccerOnline(belionel)"
+      "Pokemon(belionel) OR SoccerOnline(belionel)"
     ],
     "label": "False",
     "source": "hyb"
@@ -11729,7 +11729,7 @@
       "ForAll(x, (Pokemon(x) -> Nintendo(x)))",
       "ForAll(x, (FIFA(x) -> SupportPS4(x)))",
       "ForAll(x, (SoccerOnline(x) -> FIFA(x)))",
-      "Pokemon(belionel) ⊕ SoccerOnline(belionel)"
+      "Pokemon(belionel) OR SoccerOnline(belionel)"
     ],
     "label": "False",
     "source": "hyb"
@@ -11809,7 +11809,7 @@
     "premises-FOL": [
       "Chevrolet(luminaAPV)",
       "Chevrolet(astro) AND Van(astro)",
-      "ForAll(x, (Chevrolet(x) -> Car(x) ⊕ Van(x)))"
+      "ForAll(x, (Chevrolet(x) -> Car(x) OR Van(x)))"
     ],
     "label": "Unknown",
     "source": "wiki"
@@ -11826,7 +11826,7 @@
     "premises-FOL": [
       "Chevrolet(luminaAPV)",
       "Chevrolet(astro) AND Van(astro)",
-      "ForAll(x, (Chevrolet(x) -> Car(x) ⊕ Van(x)))"
+      "ForAll(x, (Chevrolet(x) -> Car(x) OR Van(x)))"
     ],
     "label": "True",
     "source": "wiki"
@@ -11843,7 +11843,7 @@
     "premises-FOL": [
       "Chevrolet(luminaAPV)",
       "Chevrolet(astro) AND Van(astro)",
-      "ForAll(x, (Chevrolet(x) -> Car(x) ⊕ Van(x)))"
+      "ForAll(x, (Chevrolet(x) -> Car(x) OR Van(x)))"
     ],
     "label": "True",
     "source": "wiki"
@@ -11860,7 +11860,7 @@
     "premises-FOL": [
       "Chevrolet(luminaAPV)",
       "Chevrolet(astro) AND Van(astro)",
-      "ForAll(x, (Chevrolet(x) -> Car(x) ⊕ Van(x)))"
+      "ForAll(x, (Chevrolet(x) -> Car(x) OR Van(x)))"
     ],
     "label": "False",
     "source": "wiki"
@@ -11878,10 +11878,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, (InPerson(x) -> Commuter(x)))",
-      "ForAll(x, (InPerson(x) ⊕ FromHome(x)))",
+      "ForAll(x, (InPerson(x) OR FromHome(x)))",
       "ForAll(x, (FromHome(x) -> Relaxed(x)))",
-      "Commuter(george) ⊕ HomeOffice(george)",
-      "FromHome(george) ⊕ HomeOffice(george) -> NOT (FromHome(george) AND Commuter(george))"
+      "Commuter(george) OR HomeOffice(george)",
+      "FromHome(george) OR HomeOffice(george) -> NOT (FromHome(george) AND Commuter(george))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -11899,10 +11899,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, (InPerson(x) -> Commuter(x)))",
-      "ForAll(x, (InPerson(x) ⊕ FromHome(x)))",
+      "ForAll(x, (InPerson(x) OR FromHome(x)))",
       "ForAll(x, (FromHome(x) -> Relaxed(x)))",
-      "Commuter(george) ⊕ HomeOffice(george)",
-      "FromHome(george) ⊕ HomeOffice(george) -> NOT (FromHome(george) AND Commuter(george))"
+      "Commuter(george) OR HomeOffice(george)",
+      "FromHome(george) OR HomeOffice(george) -> NOT (FromHome(george) AND Commuter(george))"
     ],
     "label": "False",
     "source": "hyb"
@@ -11920,10 +11920,10 @@
     ],
     "premises-FOL": [
       "ForAll(x, (InPerson(x) -> Commuter(x)))",
-      "ForAll(x, (InPerson(x) ⊕ FromHome(x)))",
+      "ForAll(x, (InPerson(x) OR FromHome(x)))",
       "ForAll(x, (FromHome(x) -> Relaxed(x)))",
-      "Commuter(george) ⊕ HomeOffice(george)",
-      "FromHome(george) ⊕ HomeOffice(george) -> NOT (FromHome(george) AND Commuter(george))"
+      "Commuter(george) OR HomeOffice(george)",
+      "FromHome(george) OR HomeOffice(george) -> NOT (FromHome(george) AND Commuter(george))"
     ],
     "label": "True",
     "source": "hyb"
@@ -12104,7 +12104,7 @@
       "Alfonso lives in Galicia."
     ],
     "premises-FOL": [
-      "ForAll(x, (Galicia(x) -> Spain(x) ⊕ Poland(x)))",
+      "ForAll(x, (Galicia(x) -> Spain(x) OR Poland(x)))",
       "ForAll(x, (Spain(x) -> Europe(x)))",
       "ForAll(x, (Poland(x) -> Europe(x)))",
       "ForAll(x, (RochelleLive(x) -> Europe(x)))",
@@ -12127,7 +12127,7 @@
       "Alfonso lives in Galicia."
     ],
     "premises-FOL": [
-      "ForAll(x, (Galicia(x) -> Spain(x) ⊕ Poland(x)))",
+      "ForAll(x, (Galicia(x) -> Spain(x) OR Poland(x)))",
       "ForAll(x, (Spain(x) -> Europe(x)))",
       "ForAll(x, (Poland(x) -> Europe(x)))",
       "ForAll(x, (RochelleLive(x) -> Europe(x)))",
@@ -12150,7 +12150,7 @@
       "Alfonso lives in Galicia."
     ],
     "premises-FOL": [
-      "ForAll(x, (Galicia(x) -> Spain(x) ⊕ Poland(x)))",
+      "ForAll(x, (Galicia(x) -> Spain(x) OR Poland(x)))",
       "ForAll(x, (Spain(x) -> Europe(x)))",
       "ForAll(x, (Poland(x) -> Europe(x)))",
       "ForAll(x, (RochelleLive(x) -> Europe(x)))",
@@ -12217,8 +12217,8 @@
       "ForAll(x, (WrittenByTomas(x) -> SoldOneMillion(x)))",
       "Exists(x, (WinningHugoAward(x) AND WrittenByTomas(x)))",
       "ForAll(x, (AboutFuture(x) -> InspiredFromShakespeare(x)))",
-      "InspiredFromShakespeare(y2001) ⊕ SoldOneMillion(y2001)",
-      "SoldOneMillion(y2001) ⊕ WrittenByTomas(y2001)"
+      "InspiredFromShakespeare(y2001) OR SoldOneMillion(y2001)",
+      "SoldOneMillion(y2001) OR WrittenByTomas(y2001)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -12238,8 +12238,8 @@
       "ForAll(x, (WrittenByTomas(x) -> SoldOneMillion(x)))",
       "Exists(x, (WinningHugoAward(x) AND WrittenByTomas(x)))",
       "ForAll(x, (AboutFuture(x) -> InspiredFromShakespeare(x)))",
-      "InspiredFromShakespeare(y2001) ⊕ SoldOneMillion(y2001)",
-      "SoldOneMillion(y2001) ⊕ WrittenByTomas(y2001)"
+      "InspiredFromShakespeare(y2001) OR SoldOneMillion(y2001)",
+      "SoldOneMillion(y2001) OR WrittenByTomas(y2001)"
     ],
     "label": "False",
     "source": "hyb"
@@ -12259,8 +12259,8 @@
       "ForAll(x, (WrittenByTomas(x) -> SoldOneMillion(x)))",
       "Exists(x, (WinningHugoAward(x) AND WrittenByTomas(x)))",
       "ForAll(x, (AboutFuture(x) -> InspiredFromShakespeare(x)))",
-      "InspiredFromShakespeare(y2001) ⊕ SoldOneMillion(y2001)",
-      "SoldOneMillion(y2001) ⊕ WrittenByTomas(y2001)"
+      "InspiredFromShakespeare(y2001) OR SoldOneMillion(y2001)",
+      "SoldOneMillion(y2001) OR WrittenByTomas(y2001)"
     ],
     "label": "True",
     "source": "hyb"
@@ -12770,7 +12770,7 @@
       "ForAll(x, (MaxListensToRap(x) -> SongsFromKanyeWest(x)))",
       "ForAll(x, (SongsFromKanyeWest(x) -> SongsFullOfLyrics(x)))",
       "ForAll(x, (SongsFullOfLyrics(x) -> NeedToBeWrittenWithWords(x)))",
-      "MaxListensToClassicalMusic(asItWasByHarryStyles) OR SongsFrom12thCentury(asItWasByHarryStyles) -> MaxListensToClassicalMusic(asItWasByHarryStyles) ⊕ SongsFrom12thCentury(asItWasByHarryStyles)"
+      "MaxListensToClassicalMusic(asItWasByHarryStyles) OR SongsFrom12thCentury(asItWasByHarryStyles) -> MaxListensToClassicalMusic(asItWasByHarryStyles) OR SongsFrom12thCentury(asItWasByHarryStyles)"
     ],
     "label": "True",
     "source": "hyb"
@@ -12793,7 +12793,7 @@
       "ForAll(x, (MaxListensToRap(x) -> SongsFromKanyeWest(x)))",
       "ForAll(x, (SongsFromKanyeWest(x) -> SongsFullOfLyrics(x)))",
       "ForAll(x, (SongsFullOfLyrics(x) -> NeedToBeWrittenWithWords(x)))",
-      "MaxListensToClassicalMusic(asItWasByHarryStyles) OR SongsFrom12thCentury(asItWasByHarryStyles) -> MaxListensToClassicalMusic(asItWasByHarryStyles) ⊕ SongsFrom12thCentury(asItWasByHarryStyles)"
+      "MaxListensToClassicalMusic(asItWasByHarryStyles) OR SongsFrom12thCentury(asItWasByHarryStyles) -> MaxListensToClassicalMusic(asItWasByHarryStyles) OR SongsFrom12thCentury(asItWasByHarryStyles)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -12816,7 +12816,7 @@
       "ForAll(x, (MaxListensToRap(x) -> SongsFromKanyeWest(x)))",
       "ForAll(x, (SongsFromKanyeWest(x) -> SongsFullOfLyrics(x)))",
       "ForAll(x, (SongsFullOfLyrics(x) -> NeedToBeWrittenWithWords(x)))",
-      "MaxListensToClassicalMusic(asItWasByHarryStyles) OR SongsFrom12thCentury(asItWasByHarryStyles) -> MaxListensToClassicalMusic(asItWasByHarryStyles) ⊕ SongsFrom12thCentury(asItWasByHarryStyles)"
+      "MaxListensToClassicalMusic(asItWasByHarryStyles) OR SongsFrom12thCentury(asItWasByHarryStyles) -> MaxListensToClassicalMusic(asItWasByHarryStyles) OR SongsFrom12thCentury(asItWasByHarryStyles)"
     ],
     "label": "False",
     "source": "hyb"
@@ -12892,9 +12892,9 @@
     "premises-FOL": [
       "ForAll(x, (Limp(x) -> Medical(x)))",
       "ForAll(x, (Medical(x) -> NOT Spry(x)))",
-      "ForAll(x, (Spry(x) ⊕ Tired(x)) AND (ForAll(x, (Tired(x) -> Indoors(x)))))",
+      "ForAll(x, (Spry(x) OR Tired(x)) AND (ForAll(x, (Tired(x) -> Indoors(x)))))",
       "ForAll(x, (Indoors(x) -> NOT Gym(x)))",
-      "(Limp(Mark) ⊕ Spry(Mark)) -> Limp(Mark) OR Tired(Mark)"
+      "(Limp(Mark) OR Spry(Mark)) -> Limp(Mark) OR Tired(Mark)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -12913,9 +12913,9 @@
     "premises-FOL": [
       "ForAll(x, (Limp(x) -> Medical(x)))",
       "ForAll(x, (Medical(x) -> NOT Spry(x)))",
-      "ForAll(x, (Spry(x) ⊕ Tired(x)) AND (ForAll(x, (Tired(x) -> Indoors(x)))))",
+      "ForAll(x, (Spry(x) OR Tired(x)) AND (ForAll(x, (Tired(x) -> Indoors(x)))))",
       "ForAll(x, (Indoors(x) -> NOT Gym(x)))",
-      "(Limp(Mark) ⊕ Spry(Mark)) -> Limp(Mark) OR Tired(Mark)"
+      "(Limp(Mark) OR Spry(Mark)) -> Limp(Mark) OR Tired(Mark)"
     ],
     "label": "False",
     "source": "hyb"
@@ -12934,9 +12934,9 @@
     "premises-FOL": [
       "ForAll(x, (Limp(x) -> Medical(x)))",
       "ForAll(x, (Medical(x) -> NOT Spry(x)))",
-      "ForAll(x, (Spry(x) ⊕ Tired(x)) AND (ForAll(x, (Tired(x) -> Indoors(x)))))",
+      "ForAll(x, (Spry(x) OR Tired(x)) AND (ForAll(x, (Tired(x) -> Indoors(x)))))",
       "ForAll(x, (Indoors(x) -> NOT Gym(x)))",
-      "(Limp(Mark) ⊕ Spry(Mark)) -> Limp(Mark) OR Tired(Mark)"
+      "(Limp(Mark) OR Spry(Mark)) -> Limp(Mark) OR Tired(Mark)"
     ],
     "label": "True",
     "source": "hyb"
@@ -13169,7 +13169,7 @@
       "ForAll(x, Frivolous(x) -> Luxury(x))",
       "ForAll(x, Luxury(x) -> Shopping(x))",
       "NOT Miserly(Jess) -> NOT Luxury(Jess)",
-      "Luxury(Jess) ⊕ Miserly(Jess)) ->  Luxury(Jess)"
+      "Luxury(Jess) OR Miserly(Jess)) -> Luxury(Jess)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -13192,7 +13192,7 @@
       "ForAll(x, Frivolous(x) -> Luxury(x))",
       "ForAll(x, Luxury(x) -> Shopping(x))",
       "NOT Miserly(Jess) -> NOT Luxury(Jess)",
-      "Luxury(Jess) ⊕ Miserly(Jess)) ->  Luxury(Jess)"
+      "Luxury(Jess) OR Miserly(Jess)) -> Luxury(Jess)"
     ],
     "label": "True",
     "source": "hyb"
@@ -13215,7 +13215,7 @@
       "ForAll(x, Frivolous(x) -> Luxury(x))",
       "ForAll(x, Luxury(x) -> Shopping(x))",
       "NOT Miserly(Jess) -> NOT Luxury(Jess)",
-      "Luxury(Jess) ⊕ Miserly(Jess)) ->  Luxury(Jess)"
+      "Luxury(Jess) OR Miserly(Jess)) -> Luxury(Jess)"
     ],
     "label": "False",
     "source": "hyb"
@@ -13279,7 +13279,7 @@
       "If Thor is happy, the Hulk is angry."
     ],
     "premises-FOL": [
-      "Superhero(peter) ⊕ Civilian(peter)",
+      "Superhero(peter) OR Civilian(peter)",
       "Destroyer(hulk)",
       "Angry(hulk) -> Wake(hulk)",
       "Wake(hulk) -> BreakBridge(hulk)",
@@ -13310,7 +13310,7 @@
       "If Thor is happy, the Hulk is angry."
     ],
     "premises-FOL": [
-      "Superhero(peter) ⊕ Civilian(peter)",
+      "Superhero(peter) OR Civilian(peter)",
       "Destroyer(hulk)",
       "Angry(hulk) -> Wake(hulk)",
       "Wake(hulk) -> BreakBridge(hulk)",
@@ -13341,7 +13341,7 @@
       "If Thor is happy, the Hulk is angry."
     ],
     "premises-FOL": [
-      "Superhero(peter) ⊕ Civilian(peter)",
+      "Superhero(peter) OR Civilian(peter)",
       "Destroyer(hulk)",
       "Angry(hulk) -> Wake(hulk)",
       "Wake(hulk) -> BreakBridge(hulk)",
@@ -13493,7 +13493,7 @@
       "ForAll(x, (Mild(x) -> NOT LabTestsOrImagingRequired(x)))",
       "ForAll(x, (BloodCancer(x) -> RareDiseases(x)))",
       "ForAll(x, (Leukemia(x) -> BloodCancer(x)))",
-      "NOT (BloodCancer(bladderCancer) ⊕ Leukemia(bladderCancer)) -> Leukemia(bladderCancer)"
+      "NOT (BloodCancer(bladderCancer) OR Leukemia(bladderCancer)) -> Leukemia(bladderCancer)"
     ],
     "label": "False",
     "source": "hyb"
@@ -13516,7 +13516,7 @@
       "ForAll(x, (Mild(x) -> NOT LabTestsOrImagingRequired(x)))",
       "ForAll(x, (BloodCancer(x) -> RareDiseases(x)))",
       "ForAll(x, (Leukemia(x) -> BloodCancer(x)))",
-      "NOT (BloodCancer(bladderCancer) ⊕ Leukemia(bladderCancer)) -> Leukemia(bladderCancer)"
+      "NOT (BloodCancer(bladderCancer) OR Leukemia(bladderCancer)) -> Leukemia(bladderCancer)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -13539,7 +13539,7 @@
       "ForAll(x, (Mild(x) -> NOT LabTestsOrImagingRequired(x)))",
       "ForAll(x, (BloodCancer(x) -> RareDiseases(x)))",
       "ForAll(x, (Leukemia(x) -> BloodCancer(x)))",
-      "NOT (BloodCancer(bladderCancer) ⊕ Leukemia(bladderCancer)) -> Leukemia(bladderCancer)"
+      "NOT (BloodCancer(bladderCancer) OR Leukemia(bladderCancer)) -> Leukemia(bladderCancer)"
     ],
     "label": "True",
     "source": "hyb"
@@ -13562,7 +13562,7 @@
       "ForAll(x, (Non-rareEarthMetals(x) OR RareEarthMetals(x)))",
       "ForAll(x, (RareEarthMetals(x) -> BeUsedForBatteries(x)))",
       "ForAll(x, (RareEarthMetals(x) -> EssentialForElectricVehicles(x)))",
-      "NOT Non-rareEarthMetals(lithium) ⊕ NOT EssentialForElectricVehicles(lithium)"
+      "NOT Non-rareEarthMetals(lithium) OR NOT EssentialForElectricVehicles(lithium)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -13585,7 +13585,7 @@
       "ForAll(x, (Non-rareEarthMetals(x) OR RareEarthMetals(x)))",
       "ForAll(x, (RareEarthMetals(x) -> BeUsedForBatteries(x)))",
       "ForAll(x, (RareEarthMetals(x) -> EssentialForElectricVehicles(x)))",
-      "NOT Non-rareEarthMetals(lithium) ⊕ NOT EssentialForElectricVehicles(lithium)"
+      "NOT Non-rareEarthMetals(lithium) OR NOT EssentialForElectricVehicles(lithium)"
     ],
     "label": "False",
     "source": "hyb"
@@ -13608,7 +13608,7 @@
       "ForAll(x, (Non-rareEarthMetals(x) OR RareEarthMetals(x)))",
       "ForAll(x, (RareEarthMetals(x) -> BeUsedForBatteries(x)))",
       "ForAll(x, (RareEarthMetals(x) -> EssentialForElectricVehicles(x)))",
-      "NOT Non-rareEarthMetals(lithium) ⊕ NOT EssentialForElectricVehicles(lithium)"
+      "NOT Non-rareEarthMetals(lithium) OR NOT EssentialForElectricVehicles(lithium)"
     ],
     "label": "True",
     "source": "hyb"
@@ -13629,7 +13629,7 @@
       "ForAll(x, (ChildhoodPet(x) -> OwnPet(x)))",
       "ForAll(x, (HireCleaning(x) -> TidyHouse(x)))",
       "ForAll(x, (Suburbs(x) -> ChildhoodPet(x)))",
-      "NOT (HireCleaning(jack) ⊕ OwnPet(jack))"
+      "NOT (HireCleaning(jack) OR OwnPet(jack))"
     ],
     "label": "False",
     "source": "hyb"
@@ -13650,7 +13650,7 @@
       "ForAll(x, (ChildhoodPet(x) -> OwnPet(x)))",
       "ForAll(x, (HireCleaning(x) -> TidyHouse(x)))",
       "ForAll(x, (Suburbs(x) -> ChildhoodPet(x)))",
-      "NOT (HireCleaning(jack) ⊕ OwnPet(jack))"
+      "NOT (HireCleaning(jack) OR OwnPet(jack))"
     ],
     "label": "True",
     "source": "hyb"
@@ -13671,7 +13671,7 @@
       "ForAll(x, (ChildhoodPet(x) -> OwnPet(x)))",
       "ForAll(x, (HireCleaning(x) -> TidyHouse(x)))",
       "ForAll(x, (Suburbs(x) -> ChildhoodPet(x)))",
-      "NOT (HireCleaning(jack) ⊕ OwnPet(jack))"
+      "NOT (HireCleaning(jack) OR OwnPet(jack))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -13692,7 +13692,7 @@
       "ForAll(x, (ChildhoodPet(x) -> OwnPet(x)))",
       "ForAll(x, (HireCleaning(x) -> TidyHouse(x)))",
       "ForAll(x, (Suburbs(x) -> ChildhoodPet(x)))",
-      "NOT (HireCleaning(jack) ⊕ OwnPet(jack))"
+      "NOT (HireCleaning(jack) OR OwnPet(jack))"
     ],
     "label": "True",
     "source": "hyb"
@@ -13713,7 +13713,7 @@
       "ForAll(x, (ChildhoodPet(x) -> OwnPet(x)))",
       "ForAll(x, (HireCleaning(x) -> TidyHouse(x)))",
       "ForAll(x, (Suburbs(x) -> ChildhoodPet(x)))",
-      "NOT (HireCleaning(jack) ⊕ OwnPet(jack))"
+      "NOT (HireCleaning(jack) OR OwnPet(jack))"
     ],
     "label": "False",
     "source": "hyb"
@@ -13727,7 +13727,7 @@
       "The bottle is not upright."
     ],
     "premises-FOL": [
-      "Upright(bottle) ⊕ ToppledOver(bottle)",
+      "Upright(bottle) OR ToppledOver(bottle)",
       "NOT Upright(bottle)"
     ],
     "label": "True",
@@ -13748,10 +13748,10 @@
     "premises-FOL": [
       "ForAll(x, (Cereal(x) -> BusyMorning(x)))",
       "ForAll(x, (YoungChildren(x) -> BusyMorning(x)))",
-      "ForAll(x, (YoungChildren(x) ⊕ Committments(x)))",
+      "ForAll(x, (YoungChildren(x) OR Committments(x)))",
       "ForAll(x, (Committments(x) -> Hardworking(x)))",
       "ForAll(x, (Hardworking(x) -> NOT Organized(x)))",
-      "(Hardworking(john) AND BusyMorning(john)) ⊕ (NOT Hardworking(john) AND NOT BusyMorning(john))"
+      "(Hardworking(john) AND BusyMorning(john)) OR (NOT Hardworking(john) AND NOT BusyMorning(john))"
     ],
     "label": "False",
     "source": "hyb"
@@ -13771,10 +13771,10 @@
     "premises-FOL": [
       "ForAll(x, (Cereal(x) -> BusyMorning(x)))",
       "ForAll(x, (YoungChildren(x) -> BusyMorning(x)))",
-      "ForAll(x, (YoungChildren(x) ⊕ Committments(x)))",
+      "ForAll(x, (YoungChildren(x) OR Committments(x)))",
       "ForAll(x, (Committments(x) -> Hardworking(x)))",
       "ForAll(x, (Hardworking(x) -> NOT Organized(x)))",
-      "(Hardworking(john) AND BusyMorning(john)) ⊕ (NOT Hardworking(john) AND NOT BusyMorning(john))"
+      "(Hardworking(john) AND BusyMorning(john)) OR (NOT Hardworking(john) AND NOT BusyMorning(john))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -13794,10 +13794,10 @@
     "premises-FOL": [
       "ForAll(x, (Cereal(x) -> BusyMorning(x)))",
       "ForAll(x, (YoungChildren(x) -> BusyMorning(x)))",
-      "ForAll(x, (YoungChildren(x) ⊕ Committments(x)))",
+      "ForAll(x, (YoungChildren(x) OR Committments(x)))",
       "ForAll(x, (Committments(x) -> Hardworking(x)))",
       "ForAll(x, (Hardworking(x) -> NOT Organized(x)))",
-      "(Hardworking(john) AND BusyMorning(john)) ⊕ (NOT Hardworking(john) AND NOT BusyMorning(john))"
+      "(Hardworking(john) AND BusyMorning(john)) OR (NOT Hardworking(john) AND NOT BusyMorning(john))"
     ],
     "label": "True",
     "source": "hyb"
@@ -13945,7 +13945,7 @@
       "ForAll(x, (Researcher(x) -> Professor(x)))",
       "ForAll(x, (Teacher(x) -> NOT Student(x)))",
       "ForAll(x, (Study(x) -> Student(x)))",
-      "NOT Study(leon) ⊕ Researcher(leon)",
+      "NOT Study(leon) OR Researcher(leon)",
       "NOT Study(leon) -> Teacher(leon)"
     ],
     "label": "Unknown",
@@ -13968,7 +13968,7 @@
       "ForAll(x, (Researcher(x) -> Professor(x)))",
       "ForAll(x, (Teacher(x) -> NOT Student(x)))",
       "ForAll(x, (Study(x) -> Student(x)))",
-      "NOT Study(leon) ⊕ Researcher(leon)",
+      "NOT Study(leon) OR Researcher(leon)",
       "NOT Study(leon) -> Teacher(leon)"
     ],
     "label": "True",
@@ -13991,7 +13991,7 @@
       "ForAll(x, (Researcher(x) -> Professor(x)))",
       "ForAll(x, (Teacher(x) -> NOT Student(x)))",
       "ForAll(x, (Study(x) -> Student(x)))",
-      "NOT Study(leon) ⊕ Researcher(leon)",
+      "NOT Study(leon) OR Researcher(leon)",
       "NOT Study(leon) -> Teacher(leon)"
     ],
     "label": "False",
@@ -14248,7 +14248,7 @@
       "The Crude Oil Data Exchange is a buisness that isnt free."
     ],
     "premises-FOL": [
-      "ForAll(x, (Buisness(x) -> Sanctioned(x) ⊕ NOT Sanctioned(x)))",
+      "ForAll(x, (Buisness(x) -> Sanctioned(x) OR NOT Sanctioned(x)))",
       "ForAll(x, (Buisness(x) AND Sanctioned(x) -> Limited(x)))",
       "ForAll(x, (Buisness(x) AND NOT Sanctioned(x) -> Free(x)))",
       "Buisness(crudeoildataexchange) AND NOT Free(crudeoildataexchange)"
@@ -14267,7 +14267,7 @@
       "The Crude Oil Data Exchange is a buisness that isnt free."
     ],
     "premises-FOL": [
-      "ForAll(x, (Buisness(x) -> Sanctioned(x) ⊕ NOT Sanctioned(x)))",
+      "ForAll(x, (Buisness(x) -> Sanctioned(x) OR NOT Sanctioned(x)))",
       "ForAll(x, (Buisness(x) AND Sanctioned(x) -> Limited(x)))",
       "ForAll(x, (Buisness(x) AND NOT Sanctioned(x) -> Free(x)))",
       "Buisness(crudeoildataexchange) AND NOT Free(crudeoildataexchange)"
@@ -14286,7 +14286,7 @@
       "The Crude Oil Data Exchange is a buisness that isnt free."
     ],
     "premises-FOL": [
-      "ForAll(x, (Buisness(x) -> Sanctioned(x) ⊕ NOT Sanctioned(x)))",
+      "ForAll(x, (Buisness(x) -> Sanctioned(x) OR NOT Sanctioned(x)))",
       "ForAll(x, (Buisness(x) AND Sanctioned(x) -> Limited(x)))",
       "ForAll(x, (Buisness(x) AND NOT Sanctioned(x) -> Free(x)))",
       "Buisness(crudeoildataexchange) AND NOT Free(crudeoildataexchange)"
@@ -14815,7 +14815,7 @@
       "WonCup(aberdeen, twentythirteen)",
       "WonCup(rangers, twentyfourteen)",
       "Different(aberdeen, rangers) AND Different(rangers, aberdeen)",
-      "ForAll(x, ForAll(y, ForAll(z, (Different(x, y)  AND WonCup(x, z)  -> NOT WonCup(y, z)))))"
+      "ForAll(x, ForAll(y, ForAll(z, (Different(x, y) AND WonCup(x, z) -> NOT WonCup(y, z)))))"
     ],
     "label": "Unknown",
     "source": "wiki"
@@ -14834,7 +14834,7 @@
       "WonCup(aberdeen, twentythirteen)",
       "WonCup(rangers, twentyfourteen)",
       "Different(aberdeen, rangers) AND Different(rangers, aberdeen)",
-      "ForAll(x, ForAll(y, ForAll(z, (Different(x, y)  AND WonCup(x, z)  -> NOT WonCup(y, z)))))"
+      "ForAll(x, ForAll(y, ForAll(z, (Different(x, y) AND WonCup(x, z) -> NOT WonCup(y, z)))))"
     ],
     "label": "False",
     "source": "wiki"
@@ -14853,7 +14853,7 @@
       "WonCup(aberdeen, twentythirteen)",
       "WonCup(rangers, twentyfourteen)",
       "Different(aberdeen, rangers) AND Different(rangers, aberdeen)",
-      "ForAll(x, ForAll(y, ForAll(z, (Different(x, y)  AND WonCup(x, z)  -> NOT WonCup(y, z)))))"
+      "ForAll(x, ForAll(y, ForAll(z, (Different(x, y) AND WonCup(x, z) -> NOT WonCup(y, z)))))"
     ],
     "label": "True",
     "source": "wiki"
@@ -14874,7 +14874,7 @@
       "Exists(x, (Manhattan(x) AND Working(x)))",
       "ForAll(x, (Pets(x) -> Child(x)))",
       "ForAll(x, (Child(x) -> NOT Car(x)))",
-      "NOT (Car(mary) ⊕ Child(mary))"
+      "NOT (Car(mary) OR Child(mary))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -14895,7 +14895,7 @@
       "Exists(x, (Manhattan(x) AND Working(x)))",
       "ForAll(x, (Pets(x) -> Child(x)))",
       "ForAll(x, (Child(x) -> NOT Car(x)))",
-      "NOT (Car(mary) ⊕ Child(mary))"
+      "NOT (Car(mary) OR Child(mary))"
     ],
     "label": "False",
     "source": "hyb"
@@ -14916,7 +14916,7 @@
       "Exists(x, (Manhattan(x) AND Working(x)))",
       "ForAll(x, (Pets(x) -> Child(x)))",
       "ForAll(x, (Child(x) -> NOT Car(x)))",
-      "NOT (Car(mary) ⊕ Child(mary))"
+      "NOT (Car(mary) OR Child(mary))"
     ],
     "label": "True",
     "source": "hyb"
@@ -15035,10 +15035,10 @@
     "premises-FOL": [
       "ForAll(x, (DisposableChopsticks(x) -> MadeFromTrees(x)))",
       "Exists(x, (EcoFriendly(x)))",
-      "ForAll(x, (DisposableChopsticks(x) ⊕ Reusable(x)))",
+      "ForAll(x, (DisposableChopsticks(x) OR Reusable(x)))",
       "ForAll(x, (MadeFromMetals(x) -> NOT MadeFromPlastics(x)))",
       "ForAll(x, (Reusable(x) -> MadeFromMetals(x)))",
-      "NOT (MadeFromMetals(chopsticksAtRestaurants) ⊕ MadeFromPlastics(chopsticksAtRestaurants))"
+      "NOT (MadeFromMetals(chopsticksAtRestaurants) OR MadeFromPlastics(chopsticksAtRestaurants))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -15058,10 +15058,10 @@
     "premises-FOL": [
       "ForAll(x, (DisposableChopsticks(x) -> MadeFromTrees(x)))",
       "Exists(x, (EcoFriendly(x)))",
-      "ForAll(x, (DisposableChopsticks(x) ⊕ Reusable(x)))",
+      "ForAll(x, (DisposableChopsticks(x) OR Reusable(x)))",
       "ForAll(x, (MadeFromMetals(x) -> NOT MadeFromPlastics(x)))",
       "ForAll(x, (Reusable(x) -> MadeFromMetals(x)))",
-      "NOT (MadeFromMetals(chopsticksAtRestaurants) ⊕ MadeFromPlastics(chopsticksAtRestaurants))"
+      "NOT (MadeFromMetals(chopsticksAtRestaurants) OR MadeFromPlastics(chopsticksAtRestaurants))"
     ],
     "label": "True",
     "source": "hyb"
@@ -15081,10 +15081,10 @@
     "premises-FOL": [
       "ForAll(x, (DisposableChopsticks(x) -> MadeFromTrees(x)))",
       "Exists(x, (EcoFriendly(x)))",
-      "ForAll(x, (DisposableChopsticks(x) ⊕ Reusable(x)))",
+      "ForAll(x, (DisposableChopsticks(x) OR Reusable(x)))",
       "ForAll(x, (MadeFromMetals(x) -> NOT MadeFromPlastics(x)))",
       "ForAll(x, (Reusable(x) -> MadeFromMetals(x)))",
-      "NOT (MadeFromMetals(chopsticksAtRestaurants) ⊕ MadeFromPlastics(chopsticksAtRestaurants))"
+      "NOT (MadeFromMetals(chopsticksAtRestaurants) OR MadeFromPlastics(chopsticksAtRestaurants))"
     ],
     "label": "False",
     "source": "hyb"
@@ -15268,7 +15268,7 @@
       "ForAll(x, (Cat(x) OR Dog(x)))",
       "ForAll(x, (Bark(x) -> NOT Lovely(x)))",
       "ForAll(x, (Dog(x) -> Bark(x)))",
-      "(Cat(grace) AND Dog(grace)) ⊕ (NOT Cat(grace) AND NOT Dog(grace))"
+      "(Cat(grace) AND Dog(grace)) OR (NOT Cat(grace) AND NOT Dog(grace))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -15291,7 +15291,7 @@
       "ForAll(x, (Cat(x) OR Dog(x)))",
       "ForAll(x, (Bark(x) -> NOT Lovely(x)))",
       "ForAll(x, (Dog(x) -> Bark(x)))",
-      "(Cat(grace) AND Dog(grace)) ⊕ (NOT Cat(grace) AND NOT Dog(grace))"
+      "(Cat(grace) AND Dog(grace)) OR (NOT Cat(grace) AND NOT Dog(grace))"
     ],
     "label": "True",
     "source": "hyb"
@@ -15314,7 +15314,7 @@
       "ForAll(x, (Cat(x) OR Dog(x)))",
       "ForAll(x, (Bark(x) -> NOT Lovely(x)))",
       "ForAll(x, (Dog(x) -> Bark(x)))",
-      "(Cat(grace) AND Dog(grace)) ⊕ (NOT Cat(grace) AND NOT Dog(grace))"
+      "(Cat(grace) AND Dog(grace)) OR (NOT Cat(grace) AND NOT Dog(grace))"
     ],
     "label": "False",
     "source": "hyb"
@@ -15648,7 +15648,7 @@
       "ForAll(x, (BadChess(x) -> NOT PlaysLots(x)))",
       "ForAll(x, (Plans(x) OR Creative(x)))",
       "PlaysLots(erica)",
-      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) ⊕ Creative(erica))"
+      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) OR Creative(erica))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -15669,7 +15669,7 @@
       "ForAll(x, (BadChess(x) -> NOT PlaysLots(x)))",
       "ForAll(x, (Plans(x) OR Creative(x)))",
       "PlaysLots(erica)",
-      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) ⊕ Creative(erica))"
+      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) OR Creative(erica))"
     ],
     "label": "True",
     "source": "hyb"
@@ -15690,7 +15690,7 @@
       "ForAll(x, (BadChess(x) -> NOT PlaysLots(x)))",
       "ForAll(x, (Plans(x) OR Creative(x)))",
       "PlaysLots(erica)",
-      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) ⊕ Creative(erica))"
+      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) OR Creative(erica))"
     ],
     "label": "False",
     "source": "hyb"
@@ -15711,7 +15711,7 @@
       "ForAll(x, (BadChess(x) -> NOT PlaysLots(x)))",
       "ForAll(x, (Plans(x) OR Creative(x)))",
       "PlaysLots(erica)",
-      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) ⊕ Creative(erica))"
+      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) OR Creative(erica))"
     ],
     "label": "False",
     "source": "hyb"
@@ -15732,7 +15732,7 @@
       "ForAll(x, (BadChess(x) -> NOT PlaysLots(x)))",
       "ForAll(x, (Plans(x) OR Creative(x)))",
       "PlaysLots(erica)",
-      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) ⊕ Creative(erica))"
+      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) OR Creative(erica))"
     ],
     "label": "False",
     "source": "hyb"
@@ -15753,7 +15753,7 @@
       "ForAll(x, (BadChess(x) -> NOT PlaysLots(x)))",
       "ForAll(x, (Plans(x) OR Creative(x)))",
       "PlaysLots(erica)",
-      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) ⊕ Creative(erica))"
+      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) OR Creative(erica))"
     ],
     "label": "False",
     "source": "hyb"
@@ -15774,7 +15774,7 @@
       "ForAll(x, (BadChess(x) -> NOT PlaysLots(x)))",
       "ForAll(x, (Plans(x) OR Creative(x)))",
       "PlaysLots(erica)",
-      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) ⊕ Creative(erica))"
+      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) OR Creative(erica))"
     ],
     "label": "True",
     "source": "hyb"
@@ -15795,7 +15795,7 @@
       "ForAll(x, (BadChess(x) -> NOT PlaysLots(x)))",
       "ForAll(x, (Plans(x) OR Creative(x)))",
       "PlaysLots(erica)",
-      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) ⊕ Creative(erica))"
+      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) OR Creative(erica))"
     ],
     "label": "False",
     "source": "hyb"
@@ -15816,7 +15816,7 @@
       "ForAll(x, (BadChess(x) -> NOT PlaysLots(x)))",
       "ForAll(x, (Plans(x) OR Creative(x)))",
       "PlaysLots(erica)",
-      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) ⊕ Creative(erica))"
+      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) OR Creative(erica))"
     ],
     "label": "True",
     "source": "hyb"
@@ -15837,7 +15837,7 @@
       "ForAll(x, (BadChess(x) -> NOT PlaysLots(x)))",
       "ForAll(x, (Plans(x) OR Creative(x)))",
       "PlaysLots(erica)",
-      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) ⊕ Creative(erica))"
+      "NOT (BadChess(erica) OR Creative(erica)) -> (Plans(erica) OR Creative(erica))"
     ],
     "label": "False",
     "source": "hyb"
@@ -16019,7 +16019,7 @@
       "ForAll(x, (Software(x) -> Code(x)))",
       "ForAll(x, (Convenient(x) -> Popular(x)))",
       "Code(burger) AND Mac(burger))",
-      "(Windows(pytorch) AND Software(pytorch)) ⊕ (NOT Windows(pytorch) AND NOT Software(pytorch))"
+      "(Windows(pytorch) AND Software(pytorch)) OR (NOT Windows(pytorch) AND NOT Software(pytorch))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -16046,7 +16046,7 @@
       "ForAll(x, (Software(x) -> Code(x)))",
       "ForAll(x, (Convenient(x) -> Popular(x)))",
       "Code(burger) AND Mac(burger))",
-      "(Windows(pytorch) AND Software(pytorch)) ⊕ (NOT Windows(pytorch) AND NOT Software(pytorch))"
+      "(Windows(pytorch) AND Software(pytorch)) OR (NOT Windows(pytorch) AND NOT Software(pytorch))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -16073,7 +16073,7 @@
       "ForAll(x, (Software(x) -> Code(x)))",
       "ForAll(x, (Convenient(x) -> Popular(x)))",
       "Code(burger) AND Mac(burger))",
-      "(Windows(pytorch) AND Software(pytorch)) ⊕ (NOT Windows(pytorch) AND NOT Software(pytorch))"
+      "(Windows(pytorch) AND Software(pytorch)) OR (NOT Windows(pytorch) AND NOT Software(pytorch))"
     ],
     "label": "True",
     "source": "hyb"
@@ -16100,7 +16100,7 @@
       "ForAll(x, (Software(x) -> Code(x)))",
       "ForAll(x, (Convenient(x) -> Popular(x)))",
       "Code(burger) AND Mac(burger))",
-      "(Windows(pytorch) AND Software(pytorch)) ⊕ (NOT Windows(pytorch) AND NOT Software(pytorch))"
+      "(Windows(pytorch) AND Software(pytorch)) OR (NOT Windows(pytorch) AND NOT Software(pytorch))"
     ],
     "label": "False",
     "source": "hyb"
@@ -16448,7 +16448,7 @@
       "James is working in software engineering."
     ],
     "premises-FOL": [
-      "Exists(x, ( BusinessAnalysis(x) AND GoodAtMath(x)))",
+      "Exists(x, (BusinessAnalysis(x) AND GoodAtMath(x)))",
       "ForAll(x, (BusinessAnalysis(x) -> WorkInCompany(x)))",
       "ForAll(x, (WorkInCompany(x) -> NOT FromChina(x)))",
       "ForAll(x, (SoftwareEngineering(x) -> FromChina(x)))",
@@ -16469,7 +16469,7 @@
       "James is working in software engineering."
     ],
     "premises-FOL": [
-      "Exists(x, ( BusinessAnalysis(x) AND GoodAtMath(x)))",
+      "Exists(x, (BusinessAnalysis(x) AND GoodAtMath(x)))",
       "ForAll(x, (BusinessAnalysis(x) -> WorkInCompany(x)))",
       "ForAll(x, (WorkInCompany(x) -> NOT FromChina(x)))",
       "ForAll(x, (SoftwareEngineering(x) -> FromChina(x)))",
@@ -16490,7 +16490,7 @@
       "James is working in software engineering."
     ],
     "premises-FOL": [
-      "Exists(x, ( BusinessAnalysis(x) AND GoodAtMath(x)))",
+      "Exists(x, (BusinessAnalysis(x) AND GoodAtMath(x)))",
       "ForAll(x, (BusinessAnalysis(x) -> WorkInCompany(x)))",
       "ForAll(x, (WorkInCompany(x) -> NOT FromChina(x)))",
       "ForAll(x, (SoftwareEngineering(x) -> FromChina(x)))",
@@ -16581,7 +16581,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Attend(x) -> Registered(x)))",
-      "ForAll(x, (Attend(x) -> InPerson(x) ⊕ Remotely(x)))",
+      "ForAll(x, (Attend(x) -> InPerson(x) OR Remotely(x)))",
       "ForAll(x, ((Attend(x) AND China(x)) -> NOT Remotely(x)))",
       "Attend(james) AND NOT Remotely(james)",
       "China(jack) AND Attend(jack)"
@@ -16602,7 +16602,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Attend(x) -> Registered(x)))",
-      "ForAll(x, (Attend(x) -> InPerson(x) ⊕ Remotely(x)))",
+      "ForAll(x, (Attend(x) -> InPerson(x) OR Remotely(x)))",
       "ForAll(x, ((Attend(x) AND China(x)) -> NOT Remotely(x)))",
       "Attend(james) AND NOT Remotely(james)",
       "China(jack) AND Attend(jack)"
@@ -16623,7 +16623,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Attend(x) -> Registered(x)))",
-      "ForAll(x, (Attend(x) -> InPerson(x) ⊕ Remotely(x)))",
+      "ForAll(x, (Attend(x) -> InPerson(x) OR Remotely(x)))",
       "ForAll(x, ((Attend(x) AND China(x)) -> NOT Remotely(x)))",
       "Attend(james) AND NOT Remotely(james)",
       "China(jack) AND Attend(jack)"
@@ -16930,7 +16930,7 @@
       "ForAll(x, (Train(x) -> NOT LoseTime(x)))",
       "ForAll(x, ((Car(x) AND MeetJam(x)) -> LoseTime(x)))",
       "ForAll(x, (LoseTime(x) <-> LateForWork(x)))",
-      "Train(mary) ⊕ Car(mary)",
+      "Train(mary) OR Car(mary)",
       "LateForWork(mary)"
     ],
     "label": "False",
@@ -16951,7 +16951,7 @@
       "ForAll(x, (Train(x) -> NOT LoseTime(x)))",
       "ForAll(x, ((Car(x) AND MeetJam(x)) -> LoseTime(x)))",
       "ForAll(x, (LoseTime(x) <-> LateForWork(x)))",
-      "Train(mary) ⊕ Car(mary)",
+      "Train(mary) OR Car(mary)",
       "LateForWork(mary)"
     ],
     "label": "True",
@@ -16972,7 +16972,7 @@
       "ForAll(x, (Train(x) -> NOT LoseTime(x)))",
       "ForAll(x, ((Car(x) AND MeetJam(x)) -> LoseTime(x)))",
       "ForAll(x, (LoseTime(x) <-> LateForWork(x)))",
-      "Train(mary) ⊕ Car(mary)",
+      "Train(mary) OR Car(mary)",
       "LateForWork(mary)"
     ],
     "label": "Unknown",
@@ -17009,7 +17009,7 @@
       "ForAll(x, (WhiteCollar(x) -> GetMinWage(x)))",
       "ForAll(x, (Lawyer(x) -> WhiteCollar(x)))",
       "ForAll(x, (Advocate(x) -> Lawyer(x)))",
-      "NOT Lawyer(mary) ⊕ Tipped(mary)"
+      "NOT Lawyer(mary) OR Tipped(mary)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -17030,7 +17030,7 @@
       "ForAll(x, (WhiteCollar(x) -> GetMinWage(x)))",
       "ForAll(x, (Lawyer(x) -> WhiteCollar(x)))",
       "ForAll(x, (Advocate(x) -> Lawyer(x)))",
-      "NOT Lawyer(mary) ⊕ Tipped(mary)"
+      "NOT Lawyer(mary) OR Tipped(mary)"
     ],
     "label": "False",
     "source": "hyb"
@@ -17051,7 +17051,7 @@
       "ForAll(x, (WhiteCollar(x) -> GetMinWage(x)))",
       "ForAll(x, (Lawyer(x) -> WhiteCollar(x)))",
       "ForAll(x, (Advocate(x) -> Lawyer(x)))",
-      "NOT Lawyer(mary) ⊕ Tipped(mary)"
+      "NOT Lawyer(mary) OR Tipped(mary)"
     ],
     "label": "True",
     "source": "hyb"
@@ -17072,7 +17072,7 @@
       "ForAll(x, (WhiteCollar(x) -> GetMinWage(x)))",
       "ForAll(x, (Lawyer(x) -> WhiteCollar(x)))",
       "ForAll(x, (Advocate(x) -> Lawyer(x)))",
-      "NOT Lawyer(mary) ⊕ Tipped(mary)"
+      "NOT Lawyer(mary) OR Tipped(mary)"
     ],
     "label": "False",
     "source": "hyb"
@@ -17093,7 +17093,7 @@
       "ForAll(x, (WhiteCollar(x) -> GetMinWage(x)))",
       "ForAll(x, (Lawyer(x) -> WhiteCollar(x)))",
       "ForAll(x, (Advocate(x) -> Lawyer(x)))",
-      "NOT Lawyer(mary) ⊕ Tipped(mary)"
+      "NOT Lawyer(mary) OR Tipped(mary)"
     ],
     "label": "True",
     "source": "hyb"
@@ -17114,7 +17114,7 @@
       "ForAll(x, (WhiteCollar(x) -> GetMinWage(x)))",
       "ForAll(x, (Lawyer(x) -> WhiteCollar(x)))",
       "ForAll(x, (Advocate(x) -> Lawyer(x)))",
-      "NOT Lawyer(mary) ⊕ Tipped(mary)"
+      "NOT Lawyer(mary) OR Tipped(mary)"
     ],
     "label": "True",
     "source": "hyb"
@@ -17336,7 +17336,7 @@
       "ForAll(x, (SoccerPlayer(x) -> NOT ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (CenterBack(x) -> Defender(x)))",
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
-      "NOT NBAPlayer(stephencurry) -> NOT (NBAPlayer(stephencurry) ⊕ SoccerPlayer(stephencurry))"
+      "NOT NBAPlayer(stephencurry) -> NOT (NBAPlayer(stephencurry) OR SoccerPlayer(stephencurry))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -17357,7 +17357,7 @@
       "ForAll(x, (SoccerPlayer(x) -> NOT ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (CenterBack(x) -> Defender(x)))",
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
-      "NOT NBAPlayer(stephencurry) -> NOT (NBAPlayer(stephencurry) ⊕ SoccerPlayer(stephencurry))"
+      "NOT NBAPlayer(stephencurry) -> NOT (NBAPlayer(stephencurry) OR SoccerPlayer(stephencurry))"
     ],
     "label": "False",
     "source": "hyb"
@@ -17378,7 +17378,7 @@
       "ForAll(x, (SoccerPlayer(x) -> NOT ProfessionalBasketballPlayer(x)))",
       "ForAll(x, (CenterBack(x) -> Defender(x)))",
       "ForAll(x, (NBAPlayer(x) -> ProfessionalBasketballPlayer(x)))",
-      "NOT NBAPlayer(stephencurry) -> NOT (NBAPlayer(stephencurry) ⊕ SoccerPlayer(stephencurry))"
+      "NOT NBAPlayer(stephencurry) -> NOT (NBAPlayer(stephencurry) OR SoccerPlayer(stephencurry))"
     ],
     "label": "True",
     "source": "hyb"
@@ -17534,11 +17534,11 @@
     "premises-FOL": [
       "ForAll(x, (Easy(x) -> NOT LowerAC(x)))",
       "ForAll(x, (Recommended(x) -> Easy(x)))",
-      "ForAll(x, (LowerAC(x) ⊕ Starred(x)))",
+      "ForAll(x, (LowerAC(x) OR Starred(x)))",
       "ForAll(x, (Hard(x) -> Starred(x)))",
       "ForAll(x, (PublishedAfter2022(x) -> NOT Starred(x)))",
       "NOT (Recommended(twosum) AND Hard(twosum))",
-      "NOT (Starred(foursum) ⊕ PublishedAfter2022(foursum))"
+      "NOT (Starred(foursum) OR PublishedAfter2022(foursum))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -17559,11 +17559,11 @@
     "premises-FOL": [
       "ForAll(x, (Easy(x) -> NOT LowerAC(x)))",
       "ForAll(x, (Recommended(x) -> Easy(x)))",
-      "ForAll(x, (LowerAC(x) ⊕ Starred(x)))",
+      "ForAll(x, (LowerAC(x) OR Starred(x)))",
       "ForAll(x, (Hard(x) -> Starred(x)))",
       "ForAll(x, (PublishedAfter2022(x) -> NOT Starred(x)))",
       "NOT (Recommended(twosum) AND Hard(twosum))",
-      "NOT (Starred(foursum) ⊕ PublishedAfter2022(foursum))"
+      "NOT (Starred(foursum) OR PublishedAfter2022(foursum))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -17584,11 +17584,11 @@
     "premises-FOL": [
       "ForAll(x, (Easy(x) -> NOT LowerAC(x)))",
       "ForAll(x, (Recommended(x) -> Easy(x)))",
-      "ForAll(x, (LowerAC(x) ⊕ Starred(x)))",
+      "ForAll(x, (LowerAC(x) OR Starred(x)))",
       "ForAll(x, (Hard(x) -> Starred(x)))",
       "ForAll(x, (PublishedAfter2022(x) -> NOT Starred(x)))",
       "NOT (Recommended(twosum) AND Hard(twosum))",
-      "NOT (Starred(foursum) ⊕ PublishedAfter2022(foursum))"
+      "NOT (Starred(foursum) OR PublishedAfter2022(foursum))"
     ],
     "label": "False",
     "source": "hyb"
@@ -17609,11 +17609,11 @@
     "premises-FOL": [
       "ForAll(x, (Easy(x) -> NOT LowerAC(x)))",
       "ForAll(x, (Recommended(x) -> Easy(x)))",
-      "ForAll(x, (LowerAC(x) ⊕ Starred(x)))",
+      "ForAll(x, (LowerAC(x) OR Starred(x)))",
       "ForAll(x, (Hard(x) -> Starred(x)))",
       "ForAll(x, (PublishedAfter2022(x) -> NOT Starred(x)))",
       "NOT (Recommended(twosum) AND Hard(twosum))",
-      "NOT (Starred(foursum) ⊕ PublishedAfter2022(foursum))"
+      "NOT (Starred(foursum) OR PublishedAfter2022(foursum))"
     ],
     "label": "True",
     "source": "hyb"
@@ -17706,7 +17706,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (JuvenileDelinquent(x) -> MaladjustedIndividual(x)))",
-      "Exists(x, (JuvenileDelinquent(x)  AND ProductOfBrokenHome(x)))"
+      "Exists(x, (JuvenileDelinquent(x) AND ProductOfBrokenHome(x)))"
     ],
     "label": "True",
     "source": "wiki"
@@ -18184,7 +18184,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Pet(x) -> Animal(x)))",
-      "ForAll(x, (Pet(x) -> Dog(x) ⊕ Cat(x)))",
+      "ForAll(x, (Pet(x) -> Dog(x) OR Cat(x)))",
       "ForAll(x, ForAll(y, (HasPet(x) -> Cares(x, y))))",
       "Exists(x, ((Cat(x) AND Naughty(x)) OR (Dog(x) AND Naughty(x))))",
       "ForAll(x, ForAll(y, (Pet(x) AND Naughty(x) -> NOT Liked(x, y))))",
@@ -18207,7 +18207,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Pet(x) -> Animal(x)))",
-      "ForAll(x, (Pet(x) -> Dog(x) ⊕ Cat(x)))",
+      "ForAll(x, (Pet(x) -> Dog(x) OR Cat(x)))",
       "ForAll(x, ForAll(y, (HasPet(x) -> Cares(x, y))))",
       "Exists(x, ((Cat(x) AND Naughty(x)) OR (Dog(x) AND Naughty(x))))",
       "ForAll(x, ForAll(y, (Pet(x) AND Naughty(x) -> NOT Liked(x, y))))",
@@ -18230,7 +18230,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Pet(x) -> Animal(x)))",
-      "ForAll(x, (Pet(x) -> Dog(x) ⊕ Cat(x)))",
+      "ForAll(x, (Pet(x) -> Dog(x) OR Cat(x)))",
       "ForAll(x, ForAll(y, (HasPet(x) -> Cares(x, y))))",
       "Exists(x, ((Cat(x) AND Naughty(x)) OR (Dog(x) AND Naughty(x))))",
       "ForAll(x, ForAll(y, (Pet(x) AND Naughty(x) -> NOT Liked(x, y))))",
@@ -18248,7 +18248,7 @@
       "All scares are surprises."
     ],
     "premises-FOL": [
-      "ForAll(x, (Surprise(x) -> (Fun(x) ⊕ Dreadful(x))))",
+      "ForAll(x, (Surprise(x) -> (Fun(x) OR Dreadful(x))))",
       "ForAll(x, (Scare(x) -> Surprise(x)))"
     ],
     "label": "Unknown",
@@ -18470,7 +18470,7 @@
       "ForAll(x, (OperatedByYaleHousingStaffs(x) -> ManagedByYaleHousing(x)))",
       "ForAll(x, (OpenToStudents(x) -> NOT EstablishedAfter1800(x)))",
       "ForAll(x, (InYorkStreet(x) -> OpenToStudents(x)))",
-      "OperatedByYaleHousingStaffs(harkness) ⊕ InYorkStreet(harkness)"
+      "OperatedByYaleHousingStaffs(harkness) OR InYorkStreet(harkness)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -18493,7 +18493,7 @@
       "ForAll(x, (OperatedByYaleHousingStaffs(x) -> ManagedByYaleHousing(x)))",
       "ForAll(x, (OpenToStudents(x) -> NOT EstablishedAfter1800(x)))",
       "ForAll(x, (InYorkStreet(x) -> OpenToStudents(x)))",
-      "OperatedByYaleHousingStaffs(harkness) ⊕ InYorkStreet(harkness)"
+      "OperatedByYaleHousingStaffs(harkness) OR InYorkStreet(harkness)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -18516,7 +18516,7 @@
       "ForAll(x, (OperatedByYaleHousingStaffs(x) -> ManagedByYaleHousing(x)))",
       "ForAll(x, (OpenToStudents(x) -> NOT EstablishedAfter1800(x)))",
       "ForAll(x, (InYorkStreet(x) -> OpenToStudents(x)))",
-      "OperatedByYaleHousingStaffs(harkness) ⊕ InYorkStreet(harkness)"
+      "OperatedByYaleHousingStaffs(harkness) OR InYorkStreet(harkness)"
     ],
     "label": "False",
     "source": "hyb"
@@ -18539,7 +18539,7 @@
       "ForAll(x, (OperatedByYaleHousingStaffs(x) -> ManagedByYaleHousing(x)))",
       "ForAll(x, (OpenToStudents(x) -> NOT EstablishedAfter1800(x)))",
       "ForAll(x, (InYorkStreet(x) -> OpenToStudents(x)))",
-      "OperatedByYaleHousingStaffs(harkness) ⊕ InYorkStreet(harkness)"
+      "OperatedByYaleHousingStaffs(harkness) OR InYorkStreet(harkness)"
     ],
     "label": "True",
     "source": "hyb"
@@ -19026,7 +19026,7 @@
       "PartOf(johnstone, scottishpremiership)",
       "ForAll(x, ForAll(y, (PartOf(x, y) -> Joined(x, y))))",
       "Different(misnk, johnstone) AND Different(johnstone, minsk)",
-      "ForAll(x, ForAll(y, (Different(x, y) -> WonGame(x, y) ⊕ WonGame(y, x))))",
+      "ForAll(x, ForAll(y, (Different(x, y) -> WonGame(x, y) OR WonGame(y, x))))",
       "WonGame(minsk, johnstone)"
     ],
     "label": "True",
@@ -19049,7 +19049,7 @@
       "PartOf(johnstone, scottishpremiership)",
       "ForAll(x, ForAll(y, (PartOf(x, y) -> Joined(x, y))))",
       "Different(misnk, johnstone) AND Different(johnstone, minsk)",
-      "ForAll(x, ForAll(y, (Different(x, y) -> WonGame(x, y) ⊕ WonGame(y, x))))",
+      "ForAll(x, ForAll(y, (Different(x, y) -> WonGame(x, y) OR WonGame(y, x))))",
       "WonGame(minsk, johnstone)"
     ],
     "label": "False",
@@ -19072,7 +19072,7 @@
       "PartOf(johnstone, scottishpremiership)",
       "ForAll(x, ForAll(y, (PartOf(x, y) -> Joined(x, y))))",
       "Different(misnk, johnstone) AND Different(johnstone, minsk)",
-      "ForAll(x, ForAll(y, (Different(x, y) -> WonGame(x, y) ⊕ WonGame(y, x))))",
+      "ForAll(x, ForAll(y, (Different(x, y) -> WonGame(x, y) OR WonGame(y, x))))",
       "WonGame(minsk, johnstone)"
     ],
     "label": "Unknown",
@@ -19097,8 +19097,8 @@
       "ForAll(x, (Seats300(x) OR Passengers100(x)))",
       "ForAll(x, (Passengers100(x) -> ShortDistance(x)))",
       "ForAll(x, (Passengers100(x) -> ProducedBefore2010(x)))",
-      "Boeing737(jake32) ⊕ Delta(jake32)",
-      "Boeing737(t10) ⊕ Delta(t10)"
+      "Boeing737(jake32) OR Delta(jake32)",
+      "Boeing737(t10) OR Delta(t10)"
     ],
     "label": "True",
     "source": "hyb"
@@ -19122,8 +19122,8 @@
       "ForAll(x, (Seats300(x) OR Passengers100(x)))",
       "ForAll(x, (Passengers100(x) -> ShortDistance(x)))",
       "ForAll(x, (Passengers100(x) -> ProducedBefore2010(x)))",
-      "Boeing737(jake32) ⊕ Delta(jake32)",
-      "Boeing737(t10) ⊕ Delta(t10)"
+      "Boeing737(jake32) OR Delta(jake32)",
+      "Boeing737(t10) OR Delta(t10)"
     ],
     "label": "False",
     "source": "hyb"
@@ -19147,8 +19147,8 @@
       "ForAll(x, (Seats300(x) OR Passengers100(x)))",
       "ForAll(x, (Passengers100(x) -> ShortDistance(x)))",
       "ForAll(x, (Passengers100(x) -> ProducedBefore2010(x)))",
-      "Boeing737(jake32) ⊕ Delta(jake32)",
-      "Boeing737(t10) ⊕ Delta(t10)"
+      "Boeing737(jake32) OR Delta(jake32)",
+      "Boeing737(t10) OR Delta(t10)"
     ],
     "label": "True",
     "source": "hyb"
@@ -19172,8 +19172,8 @@
       "ForAll(x, (Seats300(x) OR Passengers100(x)))",
       "ForAll(x, (Passengers100(x) -> ShortDistance(x)))",
       "ForAll(x, (Passengers100(x) -> ProducedBefore2010(x)))",
-      "Boeing737(jake32) ⊕ Delta(jake32)",
-      "Boeing737(t10) ⊕ Delta(t10)"
+      "Boeing737(jake32) OR Delta(jake32)",
+      "Boeing737(t10) OR Delta(t10)"
     ],
     "label": "False",
     "source": "hyb"
@@ -19406,10 +19406,10 @@
     "premises-FOL": [
       "ForAll(x, (Shoes(x) -> NOT Food(x)))",
       "ForAll(x, (Slipper(x) -> Shoes(x)))",
-      "ForAll(x, (Food(x) ⊕ Clothes(x)))",
+      "ForAll(x, (Food(x) OR Clothes(x)))",
       "ForAll(x, (Wearable(x) -> NOT AirTight(x)))",
       "ForAll(x, (Clothes(x) -> Wearable(x)))",
-      "NOT (AirTight(watch) AND Clothes(watch)) -> (AirTight(watch) AND Clothes(watch)) ⊕ (NOT AirTight(watch) AND NOT Clothes(watch))"
+      "NOT (AirTight(watch) AND Clothes(watch)) -> (AirTight(watch) AND Clothes(watch)) OR (NOT AirTight(watch) AND NOT Clothes(watch))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -19429,10 +19429,10 @@
     "premises-FOL": [
       "ForAll(x, (Shoes(x) -> NOT Food(x)))",
       "ForAll(x, (Slipper(x) -> Shoes(x)))",
-      "ForAll(x, (Food(x) ⊕ Clothes(x)))",
+      "ForAll(x, (Food(x) OR Clothes(x)))",
       "ForAll(x, (Wearable(x) -> NOT AirTight(x)))",
       "ForAll(x, (Clothes(x) -> Wearable(x)))",
-      "NOT (AirTight(watch) AND Clothes(watch)) -> (AirTight(watch) AND Clothes(watch)) ⊕ (NOT AirTight(watch) AND NOT Clothes(watch))"
+      "NOT (AirTight(watch) AND Clothes(watch)) -> (AirTight(watch) AND Clothes(watch)) OR (NOT AirTight(watch) AND NOT Clothes(watch))"
     ],
     "label": "False",
     "source": "hyb"
@@ -19452,10 +19452,10 @@
     "premises-FOL": [
       "ForAll(x, (Shoes(x) -> NOT Food(x)))",
       "ForAll(x, (Slipper(x) -> Shoes(x)))",
-      "ForAll(x, (Food(x) ⊕ Clothes(x)))",
+      "ForAll(x, (Food(x) OR Clothes(x)))",
       "ForAll(x, (Wearable(x) -> NOT AirTight(x)))",
       "ForAll(x, (Clothes(x) -> Wearable(x)))",
-      "NOT (AirTight(watch) AND Clothes(watch)) -> (AirTight(watch) AND Clothes(watch)) ⊕ (NOT AirTight(watch) AND NOT Clothes(watch))"
+      "NOT (AirTight(watch) AND Clothes(watch)) -> (AirTight(watch) AND Clothes(watch)) OR (NOT AirTight(watch) AND NOT Clothes(watch))"
     ],
     "label": "True",
     "source": "hyb"
@@ -20051,7 +20051,7 @@
     "premises-FOL": [
       "ForAll(x, (Human(x) AND CanTurnInto(x, wolf) -> Werewolf(x)))",
       "ForAll(x, Exists(y, (Werewolf(x) -> (BittenBy(x, y) OR ScratchedBy(x, y)) AND Werewolf(y))))",
-      "ForAll(x, Exists(y, (BittenBy(x, y) OR ScratchedBy(x, y)) -> AttackedBy(x,y)))"
+      "ForAll(x, Exists(y, (BittenBy(x, y) OR ScratchedBy(x, y)) -> AttackedBy(x, y)))"
     ],
     "label": "Unknown",
     "source": "wiki"
@@ -20068,7 +20068,7 @@
     "premises-FOL": [
       "ForAll(x, (Human(x) AND CanTurnInto(x, wolf) -> Werewolf(x)))",
       "ForAll(x, Exists(y, (Werewolf(x) -> (BittenBy(x, y) OR ScratchedBy(x, y)) AND Werewolf(y))))",
-      "ForAll(x, Exists(y, (BittenBy(x, y) OR ScratchedBy(x, y)) -> AttackedBy(x,y)))"
+      "ForAll(x, Exists(y, (BittenBy(x, y) OR ScratchedBy(x, y)) -> AttackedBy(x, y)))"
     ],
     "label": "Unknown",
     "source": "wiki"
@@ -20085,7 +20085,7 @@
     "premises-FOL": [
       "ForAll(x, (Human(x) AND CanTurnInto(x, wolf) -> Werewolf(x)))",
       "ForAll(x, Exists(y, (Werewolf(x) -> (BittenBy(x, y) OR ScratchedBy(x, y)) AND Werewolf(y))))",
-      "ForAll(x, Exists(y, (BittenBy(x, y) OR ScratchedBy(x, y)) -> AttackedBy(x,y)))"
+      "ForAll(x, Exists(y, (BittenBy(x, y) OR ScratchedBy(x, y)) -> AttackedBy(x, y)))"
     ],
     "label": "Unknown",
     "source": "wiki"
@@ -20317,7 +20317,7 @@
       "ForAll(x, (CocaCola(x) -> Dentist(x)))",
       "ForAll(x, (BusyParents(x) -> Erratic(x)))",
       "ForAll(x, (Erratic(x) -> NOT Consistent(x)))",
-      "(BusyParents(franny) AND Consistent(franny)) ⊕ (NOT BusyParents(franny) AND NOT Consistent(franny))"
+      "(BusyParents(franny) AND Consistent(franny)) OR (NOT BusyParents(franny) AND NOT Consistent(franny))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -20340,7 +20340,7 @@
       "ForAll(x, (CocaCola(x) -> Dentist(x)))",
       "ForAll(x, (BusyParents(x) -> Erratic(x)))",
       "ForAll(x, (Erratic(x) -> NOT Consistent(x)))",
-      "(BusyParents(franny) AND Consistent(franny)) ⊕ (NOT BusyParents(franny) AND NOT Consistent(franny))"
+      "(BusyParents(franny) AND Consistent(franny)) OR (NOT BusyParents(franny) AND NOT Consistent(franny))"
     ],
     "label": "True",
     "source": "hyb"
@@ -20363,7 +20363,7 @@
       "ForAll(x, (CocaCola(x) -> Dentist(x)))",
       "ForAll(x, (BusyParents(x) -> Erratic(x)))",
       "ForAll(x, (Erratic(x) -> NOT Consistent(x)))",
-      "(BusyParents(franny) AND Consistent(franny)) ⊕ (NOT BusyParents(franny) AND NOT Consistent(franny))"
+      "(BusyParents(franny) AND Consistent(franny)) OR (NOT BusyParents(franny) AND NOT Consistent(franny))"
     ],
     "label": "False",
     "source": "hyb"
@@ -20543,7 +20543,7 @@
       "ForAll(x, (MalignantTumor(x) -> NOT CanBeTreatedAtHome(x)))",
       "ForAll(x, (ColorectalCancer(x) -> Cancer(x)))",
       "ForAll(x, (HavingACold(x) -> CanBeTreatedAtHome(x)))",
-      "NOT (HavingACold(breastCancer) ⊕ MalignantTumor(breastCancer))"
+      "NOT (HavingACold(breastCancer) OR MalignantTumor(breastCancer))"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -20564,7 +20564,7 @@
       "ForAll(x, (MalignantTumor(x) -> NOT CanBeTreatedAtHome(x)))",
       "ForAll(x, (ColorectalCancer(x) -> Cancer(x)))",
       "ForAll(x, (HavingACold(x) -> CanBeTreatedAtHome(x)))",
-      "NOT (HavingACold(breastCancer) ⊕ MalignantTumor(breastCancer))"
+      "NOT (HavingACold(breastCancer) OR MalignantTumor(breastCancer))"
     ],
     "label": "False",
     "source": "hyb"
@@ -20585,7 +20585,7 @@
       "ForAll(x, (MalignantTumor(x) -> NOT CanBeTreatedAtHome(x)))",
       "ForAll(x, (ColorectalCancer(x) -> Cancer(x)))",
       "ForAll(x, (HavingACold(x) -> CanBeTreatedAtHome(x)))",
-      "NOT (HavingACold(breastCancer) ⊕ MalignantTumor(breastCancer))"
+      "NOT (HavingACold(breastCancer) OR MalignantTumor(breastCancer))"
     ],
     "label": "True",
     "source": "hyb"
@@ -20606,7 +20606,7 @@
       "ForAll(x, (MalignantTumor(x) -> NOT CanBeTreatedAtHome(x)))",
       "ForAll(x, (ColorectalCancer(x) -> Cancer(x)))",
       "ForAll(x, (HavingACold(x) -> CanBeTreatedAtHome(x)))",
-      "NOT (HavingACold(breastCancer) ⊕ MalignantTumor(breastCancer))"
+      "NOT (HavingACold(breastCancer) OR MalignantTumor(breastCancer))"
     ],
     "label": "False",
     "source": "hyb"
@@ -20627,7 +20627,7 @@
       "ForAll(x, (MalignantTumor(x) -> NOT CanBeTreatedAtHome(x)))",
       "ForAll(x, (ColorectalCancer(x) -> Cancer(x)))",
       "ForAll(x, (HavingACold(x) -> CanBeTreatedAtHome(x)))",
-      "NOT (HavingACold(breastCancer) ⊕ MalignantTumor(breastCancer))"
+      "NOT (HavingACold(breastCancer) OR MalignantTumor(breastCancer))"
     ],
     "label": "False",
     "source": "hyb"
@@ -20648,7 +20648,7 @@
       "ForAll(x, (MalignantTumor(x) -> NOT CanBeTreatedAtHome(x)))",
       "ForAll(x, (ColorectalCancer(x) -> Cancer(x)))",
       "ForAll(x, (HavingACold(x) -> CanBeTreatedAtHome(x)))",
-      "NOT (HavingACold(breastCancer) ⊕ MalignantTumor(breastCancer))"
+      "NOT (HavingACold(breastCancer) OR MalignantTumor(breastCancer))"
     ],
     "label": "False",
     "source": "hyb"
@@ -20829,7 +20829,7 @@
       "ForAll(x, (NoninvasiveNeuroimagingTechnique(x) -> ProvidesSpatialResolutionOfBrains(x)))",
       "ForAll(x, (ProvidesSpatialResolutionOfBrains(x) -> MeasurementOfBrainActivity(x)))",
       "ForAll(x, (MeasurementOfBrainActivity(x) -> UsedByNeuroscienceResearchers(x)))",
-      "MeasurementOfBrainActivity(fMRI) ⊕ NoninvasiveNeuroimagingTechnique(fMRI)"
+      "MeasurementOfBrainActivity(fMRI) OR NoninvasiveNeuroimagingTechnique(fMRI)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -20850,7 +20850,7 @@
       "ForAll(x, (NoninvasiveNeuroimagingTechnique(x) -> ProvidesSpatialResolutionOfBrains(x)))",
       "ForAll(x, (ProvidesSpatialResolutionOfBrains(x) -> MeasurementOfBrainActivity(x)))",
       "ForAll(x, (MeasurementOfBrainActivity(x) -> UsedByNeuroscienceResearchers(x)))",
-      "MeasurementOfBrainActivity(fMRI) ⊕ NoninvasiveNeuroimagingTechnique(fMRI)"
+      "MeasurementOfBrainActivity(fMRI) OR NoninvasiveNeuroimagingTechnique(fMRI)"
     ],
     "label": "True",
     "source": "hyb"
@@ -20871,7 +20871,7 @@
       "ForAll(x, (NoninvasiveNeuroimagingTechnique(x) -> ProvidesSpatialResolutionOfBrains(x)))",
       "ForAll(x, (ProvidesSpatialResolutionOfBrains(x) -> MeasurementOfBrainActivity(x)))",
       "ForAll(x, (MeasurementOfBrainActivity(x) -> UsedByNeuroscienceResearchers(x)))",
-      "MeasurementOfBrainActivity(fMRI) ⊕ NoninvasiveNeuroimagingTechnique(fMRI)"
+      "MeasurementOfBrainActivity(fMRI) OR NoninvasiveNeuroimagingTechnique(fMRI)"
     ],
     "label": "False",
     "source": "hyb"
@@ -20892,7 +20892,7 @@
       "ForAll(x, (NoninvasiveNeuroimagingTechnique(x) -> ProvidesSpatialResolutionOfBrains(x)))",
       "ForAll(x, (ProvidesSpatialResolutionOfBrains(x) -> MeasurementOfBrainActivity(x)))",
       "ForAll(x, (MeasurementOfBrainActivity(x) -> UsedByNeuroscienceResearchers(x)))",
-      "MeasurementOfBrainActivity(fMRI) ⊕ NoninvasiveNeuroimagingTechnique(fMRI)"
+      "MeasurementOfBrainActivity(fMRI) OR NoninvasiveNeuroimagingTechnique(fMRI)"
     ],
     "label": "True",
     "source": "hyb"
@@ -20912,7 +20912,7 @@
       "James does not attend the conference in person and is not provided with souvenirs."
     ],
     "premises-FOL": [
-      "ForAll(x, ( Present(x) OR Tutorial(x)))",
+      "ForAll(x, (Present(x) OR Tutorial(x)))",
       "ForAll(x, (Present(x) -> InPerson(x)))",
       "ForAll(x, (Tutorial(x) -> Invited(x)))",
       "ForAll(x, (InPerson(x) -> Souvenirs(x)))",
@@ -20939,7 +20939,7 @@
       "James does not attend the conference in person and is not provided with souvenirs."
     ],
     "premises-FOL": [
-      "ForAll(x, ( Present(x) OR Tutorial(x)))",
+      "ForAll(x, (Present(x) OR Tutorial(x)))",
       "ForAll(x, (Present(x) -> InPerson(x)))",
       "ForAll(x, (Tutorial(x) -> Invited(x)))",
       "ForAll(x, (InPerson(x) -> Souvenirs(x)))",
@@ -20966,7 +20966,7 @@
       "James does not attend the conference in person and is not provided with souvenirs."
     ],
     "premises-FOL": [
-      "ForAll(x, ( Present(x) OR Tutorial(x)))",
+      "ForAll(x, (Present(x) OR Tutorial(x)))",
       "ForAll(x, (Present(x) -> InPerson(x)))",
       "ForAll(x, (Tutorial(x) -> Invited(x)))",
       "ForAll(x, (InPerson(x) -> Souvenirs(x)))",
@@ -20993,7 +20993,7 @@
       "James does not attend the conference in person and is not provided with souvenirs."
     ],
     "premises-FOL": [
-      "ForAll(x, ( Present(x) OR Tutorial(x)))",
+      "ForAll(x, (Present(x) OR Tutorial(x)))",
       "ForAll(x, (Present(x) -> InPerson(x)))",
       "ForAll(x, (Tutorial(x) -> Invited(x)))",
       "ForAll(x, (InPerson(x) -> Souvenirs(x)))",
@@ -21020,7 +21020,7 @@
       "James does not attend the conference in person and is not provided with souvenirs."
     ],
     "premises-FOL": [
-      "ForAll(x, ( Present(x) OR Tutorial(x)))",
+      "ForAll(x, (Present(x) OR Tutorial(x)))",
       "ForAll(x, (Present(x) -> InPerson(x)))",
       "ForAll(x, (Tutorial(x) -> Invited(x)))",
       "ForAll(x, (InPerson(x) -> Souvenirs(x)))",
@@ -21413,10 +21413,10 @@
     "premises-FOL": [
       "ForAll(x, (Criminal(x) -> NOT Kind(x)))",
       "ForAll(x, (BreakLaw(x) -> Criminal(x)))",
-      "ForAll(x, (Kind(x) ⊕ Evil(x)))",
+      "ForAll(x, (Kind(x) OR Evil(x)))",
       "ForAll(x, (Evil(x) -> Ugly(x)))",
       "ForAll(x, (Evil(x) -> ColdBlood(x)))",
-      "((Evil(garry) AND Ugly(garry)) ⊕ (NOT Evil(garry) AND NOT Ugly(garry))) -> NOT Evil(garry)"
+      "((Evil(garry) AND Ugly(garry)) OR (NOT Evil(garry) AND NOT Ugly(garry))) -> NOT Evil(garry)"
     ],
     "label": "Unknown",
     "source": "hyb"
@@ -21436,10 +21436,10 @@
     "premises-FOL": [
       "ForAll(x, (Criminal(x) -> NOT Kind(x)))",
       "ForAll(x, (BreakLaw(x) -> Criminal(x)))",
-      "ForAll(x, (Kind(x) ⊕ Evil(x)))",
+      "ForAll(x, (Kind(x) OR Evil(x)))",
       "ForAll(x, (Evil(x) -> Ugly(x)))",
       "ForAll(x, (Evil(x) -> ColdBlood(x)))",
-      "((Evil(garry) AND Ugly(garry)) ⊕ (NOT Evil(garry) AND NOT Ugly(garry))) -> NOT Evil(garry)"
+      "((Evil(garry) AND Ugly(garry)) OR (NOT Evil(garry) AND NOT Ugly(garry))) -> NOT Evil(garry)"
     ],
     "label": "False",
     "source": "hyb"
@@ -21459,10 +21459,10 @@
     "premises-FOL": [
       "ForAll(x, (Criminal(x) -> NOT Kind(x)))",
       "ForAll(x, (BreakLaw(x) -> Criminal(x)))",
-      "ForAll(x, (Kind(x) ⊕ Evil(x)))",
+      "ForAll(x, (Kind(x) OR Evil(x)))",
       "ForAll(x, (Evil(x) -> Ugly(x)))",
       "ForAll(x, (Evil(x) -> ColdBlood(x)))",
-      "((Evil(garry) AND Ugly(garry)) ⊕ (NOT Evil(garry) AND NOT Ugly(garry))) -> NOT Evil(garry)"
+      "((Evil(garry) AND Ugly(garry)) OR (NOT Evil(garry) AND NOT Ugly(garry))) -> NOT Evil(garry)"
     ],
     "label": "True",
     "source": "hyb"
@@ -21481,7 +21481,7 @@
     "premises-FOL": [
       "IndiePop(phoenix)",
       "Band(phoenix) AND France(phoenix)",
-      "ForAll(x, ForAll(y, (Band(x) AND France(x) AND Make(x, y) -> FrenchSong(y) ⊕ EnglishSong(y))))",
+      "ForAll(x, ForAll(y, (Band(x) AND France(x) AND Make(x, y) -> FrenchSong(y) OR EnglishSong(y))))",
       "ForAll(x, (IndiePop(x) -> NOT PopRock(x) AND NOT SynthPop(x)))",
       "ForAll(x, (Make(phoenix, x) -> NOT FrenchSong(x)))"
     ],
@@ -21502,7 +21502,7 @@
     "premises-FOL": [
       "IndiePop(phoenix)",
       "Band(phoenix) AND France(phoenix)",
-      "ForAll(x, ForAll(y, (Band(x) AND France(x) AND Make(x, y) -> FrenchSong(y) ⊕ EnglishSong(y))))",
+      "ForAll(x, ForAll(y, (Band(x) AND France(x) AND Make(x, y) -> FrenchSong(y) OR EnglishSong(y))))",
       "ForAll(x, (IndiePop(x) -> NOT PopRock(x) AND NOT SynthPop(x)))",
       "ForAll(x, (Make(phoenix, x) -> NOT FrenchSong(x)))"
     ],
