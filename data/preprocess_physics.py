@@ -6,12 +6,12 @@ from src.utils.normalization import normalize_physics_scientific_text
 
 
 def resolve_physics_csv() -> Path:
-	candidates = [Path.cwd() / "data" / "physic.csv", Path.cwd() / "physic.csv"]
-	candidates += [parent / "data" / "physic.csv" for parent in Path.cwd().parents]
+	candidates = [Path.cwd() / "data" / "physics.csv", Path.cwd() / "data" / "physics.csv"]
+	candidates += [parent / "data" / "physics.csv" for parent in Path.cwd().parents]
 	for candidate in candidates:
 		if candidate.exists():
 			return candidate
-	raise FileNotFoundError("physic.csv not found from current working directory")
+	raise FileNotFoundError("physics.csv not found from current working directory")
 
 
 def collect_unique_chars(frame: pd.DataFrame) -> str:
@@ -56,7 +56,7 @@ def main() -> None:
 		)
 		print(sample.to_string())
 
-	output_path = csv_path.parent / "processed" / "physic.csv"
+	output_path = csv_path.parent / "processed" / "physics.csv"
 	output_path.parent.mkdir(parents=True, exist_ok=True)
 	df_norm.to_csv(output_path, index=False)
 	print(output_path.as_posix())

@@ -7,7 +7,7 @@ from utils.normalization import (
 
 def test_normalize_input_symbols() -> None:
     text = "q = 6 \u00d7 10\u207b\u2078 C and q2 = -6 \u00b7 10\u207b\u2078 C"
-    expected = "q = 6 * 10^-8 C and q2 = -6 * 10^-8 C"
+    expected = "q = 6e-8 C and q2 = -6e-8 C"
     assert normalize_physics_input(text) == expected
 
 
@@ -19,7 +19,7 @@ def test_normalize_input_minus_and_fraction() -> None:
 
 def test_normalize_output_units_and_spacing() -> None:
     text = "F = m \u00d7 a = 2 \u00d7 10\u207b\u00b3 \u03a9"
-    expected = "F=m*a=2*10^-3 ohm"
+    expected = "F=m*a=2e-3 ohm"
     assert normalize_physics_output(text) == expected
 
 
@@ -39,13 +39,13 @@ def test_extract_value_unit_explanation() -> None:
 
 def test_normalize_input_sample_x_notation() -> None:
     text = "Pressure increases by 2 x 10\u2075 Pa and 5 x 10\u2075 Pa."
-    expected = "Pressure increases by 2 x 10^5 Pa and 5 x 10^5 Pa."
+    expected = "Pressure increases by 2e5 Pa and 5e5 Pa."
     assert normalize_physics_input(text) == expected
 
 
 def test_normalize_output_sample_superscripts() -> None:
     text = "|Q| = 4 x 10\u207b\u2078 C at r = 5 cm"
-    expected = "|Q|=4 x 10^-8 C at r=5 cm"
+    expected = "|Q|=4e-8 C at r=5 cm"
     assert normalize_physics_output(text) == expected
 
 

@@ -29,7 +29,7 @@ Functions:
   - Converts common fractions to decimals.
 - normalize_physics_scientific_text(text):
   - Normalizes scientific notation from superscripts and unicode multiply.
-  - Wraps powers as `10^{...}` and standardizes spacing.
+  - Converts powers to `e` notation (e.g. `2e5`) and standardizes spacing.
 
 ## Notes
 
