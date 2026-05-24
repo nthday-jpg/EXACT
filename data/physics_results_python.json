@@ -1,102 +1,338 @@
 [
     {
-        "time_taken_seconds": 35.7668890953064,
-        "total_tokens": 3814,
-        "question": "A charge q1 = +2 \u03bcC is at A and q2 = -2 \u03bcC is at B, separated by 10 cm. A test charge is placed at the midpoint of AB. Calculate the net force acting on the test charge? If q0 = +1 \u03bcC.",
-        "correct_answer": "14.4",
-        "correct_units": "N",
-        "model_answer": 14.38,
-        "model_units": "N",
-        "response": "{\n  \"physics_analysis\": [\n    \"q1 = 2e-6 C at x = 0\",\n    \"q2 = -2e-6 C at x = 0.1m\",\n    \"q0 = 1e-6 C at x = 0.05m\",\n    \"Target: Net force F_net on q0.\",\n    \"Direction: Let the direction from A to B be the positive x-axis (+x).\"\n  ],\n  \"algebraic_reasoning\": [\n    \"q1 (+) repels q0 (+), pushing it towards B (+x direction). Force F1 = k * |q1*q0| / r^2.\",\n    \"q2 (-) attracts q0 (+), pulling it towards B (+x direction). Force F2 = k * |q2*q0| / r^2.\",\n    \"Both forces act in the +x direction, so F_net = F1 + F2.\"\n  ],\n  \"python_code\": \"import math\\nk = 8.988e9\\nq1, q2, q0 = 2e-6, -2e-6, 1e-6\\nr = 0.05\\nF1 = k * abs(q1 * q0) / (r**2)\\nF2 = k * abs(q2 * q0) / (r**2)\\nans = round(F1 + F2, 2)\\nunit = 'N'\"\n}"
+        "index": 1109,
+        "time_taken_seconds": 23.99480628967285,
+        "total_tokens": 2979,
+        "input_tokens": 2791,
+        "output_tokens": 188,
+        "question": "In a resonant RLC circuit, the RMS voltage is U=200 V, and the resistance R=400 \u03a9. Determine the power.",
+        "correct_answer": "100",
+        "correct_units": "W",
+        "model_answer": [
+            "100"
+        ],
+        "model_units": [
+            "W"
+        ],
+        "response": "{\n  \"thought\": \"In a resonant RLC circuit, the total impedance is equal to the resistance. Power is calculated using the formula P = U^2 / R.\",\n  \"physics_analysis\": [\n    \"U = 200 V\",\n    \"R = 400 \u03a9\",\n    \"Resonance condition: XL = XC\",\n    \"Total impedance Z = R\",\n    \"Target unit: W\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Use resonance condition to confirm Z = R\",\n    \"Apply power formula P = U^2 / R\"\n  ],\n  \"python_code\": \"import sympy as sp; U = sp.Float('200'); R = sp.Float('400'); P = U**2 / R; ans = [float(P.evalf())]; unit = ['W']\",\n  \"json_terminated\": true\n}"
     },
     {
-        "time_taken_seconds": 13.916203498840332,
-        "total_tokens": 2420,
-        "question": "A parallel plate capacitor has an area S = 400 cm\u00b2, a plate separation d = 2 mm, and a dielectric constant \u03b5 = 1.5. If a voltage U = 100 V is applied, calculate the charge on each plate.",
-        "correct_answer": "26.55",
-        "correct_units": "nC",
-        "model_answer": 26.56,
-        "model_units": "nC",
-        "response": "{\n  \"physics_analysis\": [\n    \"Area S = 400 cm^2 = 0.04 m^2\",\n    \"d = 2 mm = 0.002 m\",\n    \"epsilon = 1.5\",\n    \"U = 100 V\",\n    \"Target: Charge Q in nC\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Capacitance C = (epsilon_0 * epsilon * S) / d.\",\n    \"Charge Q = C * U (in Coulombs).\",\n    \"Convert Q from Coulombs to nanoCoulombs (nC) by multiplying by 10^9.\"\n  ],\n  \"python_code\": \"import math\\neps_0 = 8.854e-12\\nS = 0.04\\nd = 0.002\\nepsilon = 1.5\\nU = 100\\nC = (eps_0 * epsilon * S) / d\\nQ_coulomb = C * U\\nans = round(Q_coulomb * 1e9, 2)\\nunit = 'nC'\"\n}"
-    },
-    {
-        "time_taken_seconds": 11.469062566757202,
-        "total_tokens": 2228,
-        "question": "A solenoid has 1600 turns and a length of 0.8 m. Calculate the number of turns per unit length.",
-        "correct_answer": "2000",
-        "correct_units": "turns/m",
-        "model_answer": 2000.0,
-        "model_units": "turns/m",
-        "response": "{\n  \"physics_analysis\": [\n    \"N = 1600 turns\",\n    \"length l = 0.8 m\",\n    \"Target: turns per unit length (turns/m)\",\n    \"Coordinate direction: Not applicable for scalar quantity\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Number of turns per unit length n = N / l\",\n    \"Substitute values: n = 1600 / 0.8\",\n    \"Calculate: n = 2000 turns/m\"\n  ],\n  \"python_code\": \"import math\\nN = 1600\\nl = 0.8\\nn = N / l\\nans = round(n, 2)\\nunit = 'turns/m'\"\n}"
-    },
-    {
-        "time_taken_seconds": 7.499359130859375,
-        "total_tokens": 1934,
-        "question": "In a harmonically oscillating LC circuit, when the current is maximum, where is the energy stored?",
-        "correct_answer": "all energy is entirely stored in the magnetic field of the inductor",
-        "correct_units": "\u2014",
-        "model_answer": "all energy is entirely stored in the magnetic field of the inductor",
-        "model_units": "",
-        "response": "{\n  \"physics_analysis\": [\n    \"LC circuit components: Inductor (L) and Capacitor (C)\",\n    \"At maximum current, capacitor is fully discharged (voltage = 0)\",\n    \"Target: Determine energy storage location\",\n    \"Coordinate direction: Not applicable for qualitative theory\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Energy oscillates between electric field of capacitor and magnetic field of inductor.\",\n    \"When current is maximum, inductor stores all energy in its magnetic field.\",\n    \"Capacitor has zero voltage and stores zero energy at this exact instant.\"\n  ],\n  \"python_code\": \"ans = 'all energy is entirely stored in the magnetic field of the inductor'\\nunit = ''\"\n}"
-    },
-    {
-        "time_taken_seconds": 19.041909217834473,
-        "total_tokens": 2719,
-        "question": "The magnetic field inside a solenoid is directly proportional to which of the following quantities?",
-        "correct_answer": "Number of turns density and current intensity",
-        "correct_units": "\u2014",
-        "model_answer": "current and number of turns per unit length",
-        "model_units": "",
-        "response": "{\n  \"physics_analysis\": [\n    \"Magnetic field inside a solenoid: B = \u03bc\u2080 * n * I\",\n    \"Variables: \u03bc\u2080 (permeability of free space), n (turns per unit length), I (current)\",\n    \"Target: Identify quantities directly proportional to B\",\n    \"Coordinate direction: Not applicable for qualitative theory\"\n  ],\n  \"algebraic_reasoning\": [\n    \"The magnetic field B is directly proportional to the permeability of free space \u03bc\u2080 (constant).\",\n    \"B is directly proportional to the number of turns per unit length n (n = N/L).\",\n    \"B is directly proportional to the current I flowing through the solenoid.\",\n    \"Thus, B \u221d n and B \u221d I.\"\n  ],\n  \"python_code\": \"ans = 'current and number of turns per unit length'\\nunit = ''\"\n}"
-    },
-    {
-        "time_taken_seconds": 14.70470929145813,
-        "total_tokens": 2433,
-        "question": "Given L = 0.20 H, C = 80 \u00b5F. Determine the resonant frequency f0.",
-        "correct_answer": "39.79",
+        "index": 1091,
+        "time_taken_seconds": 24.20289444923401,
+        "total_tokens": 2994,
+        "input_tokens": 2788,
+        "output_tokens": 206,
+        "question": "An inductor L=0.02 H and a capacitor 5e-5 F are connected in series. What is the resonant frequency?",
+        "correct_answer": "159.15",
         "correct_units": "Hz",
-        "model_answer": 39.79,
-        "model_units": "Hz",
-        "response": "{\n  \"physics_analysis\": [\n    \"L = 0.20 H (henrys)\",\n    \"C = 80 \u00b5F = 80e-6 F (farads)\",\n    \"Target: Resonant frequency f0 in Hz\",\n    \"Coordinate direction: Not applicable for theoretical calculation\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Resonant frequency formula: f0 = 1/(2\u03c0\u221a(LC))\",\n    \"Convert C to farads: 80 \u00b5F = 80e-6 F\",\n    \"Calculate LC product: 0.20 * 80e-6 = 1.6e-5\",\n    \"Take square root: \u221a(1.6e-5) \u2248 0.004\",\n    \"Compute f0: 1/(2\u03c0*0.004) \u2248 39.79 Hz\"\n  ],\n  \"python_code\": \"import math\\nL = 0.20\\nC = 80e-6\\nf0 = 1 / (2 * math.pi * math.sqrt(L * C))\\nans = round(f0, 2)\\nunit = 'Hz'\"\n}"
+        "model_answer": [
+            "159.2"
+        ],
+        "model_units": [
+            "Hz"
+        ],
+        "response": "{\n  \"thought\": \"Resonance occurs when XL = XC. Use the resonance relation to solve for the ordinary frequency.\",\n  \"physics_analysis\": [\n    \"L = 0.02 H\",\n    \"C = 5e-5 F\",\n    \"Resonance condition: XL = XC\",\n    \"Ordinary frequency: f = 1/(2*pi*sqrt(L*C))\",\n    \"Target unit: Hz\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Apply resonance condition XL = XC\",\n    \"Use resonance relation to solve for f\",\n    \"Compute f using given L and C\"\n  ],\n  \"python_code\": \"import sympy as sp; L = sp.Float('0.02'); C = sp.Float('5e-5'); f = 1 / (2 * sp.pi * sp.sqrt(L * C)); ans = [float(f.evalf())]; unit = ['Hz']\",\n  \"json_terminated\": true\n}"
     },
     {
-        "time_taken_seconds": 12.12629246711731,
-        "total_tokens": 2274,
-        "question": "A capacitor has a voltage function U(t) = 250 * sin(1000t) V and a capacitance C = 8 \u00b5F. Calculate the maximum electric field energy stored in the capacitor.",
-        "correct_answer": "0.25",
-        "correct_units": "J",
-        "model_answer": 0.25,
-        "model_units": "J",
-        "response": "{\n  \"physics_analysis\": [\n    \"U(t) = 250*sin(1000t) V (amplitude 250 V)\",\n    \"C = 8 \u00b5F = 8e-6 F\",\n    \"Target: Maximum electric field energy E_max (Joules)\",\n    \"Direction: Not applicable for energy calculation\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Energy stored in capacitor: E = (1/2) C V\u00b2\",\n    \"Maximum energy occurs when V = V_max = 250 V\",\n    \"Substitute values: E_max = 0.5 * 8e-6 * (250)^2\"\n  ],\n  \"python_code\": \"import math\\nC = 8e-6\\nV_max = 250\\nE_max = 0.5 * C * (V_max ** 2)\\nans = round(E_max, 2)\\nunit = 'J'\"\n}"
+        "index": 1319,
+        "time_taken_seconds": 25.038224458694458,
+        "total_tokens": 3008,
+        "input_tokens": 2788,
+        "output_tokens": 220,
+        "question": "What is the resonant frequency of a circuit with L = 0.02 H and C = 0.00015 F?",
+        "correct_answer": "91.89",
+        "correct_units": "Hz",
+        "model_answer": [
+            "91.89"
+        ],
+        "model_units": [
+            "Hz"
+        ],
+        "response": "{\n  \"thought\": \"Resonance occurs when XL = XC. Use the resonance relation to find the angular frequency and then convert it to ordinary frequency.\",\n  \"physics_analysis\": [\n    \"L = 0.02 H\",\n    \"C = 0.00015 F\",\n    \"Resonance condition: XL = XC\",\n    \"Angular frequency: omega = 1 / sqrt(L*C)\",\n    \"Ordinary frequency: f = omega / (2*pi)\",\n    \"Target unit: Hz\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Apply resonance relation to find omega\",\n    \"Convert angular frequency to ordinary frequency\"\n  ],\n  \"python_code\": \"import sympy as sp; L = sp.Float('0.02'); C = sp.Float('0.00015'); omega = 1 / sp.sqrt(L * C); f = omega / (2 * sp.pi); ans = [float(f.evalf())]; unit = ['Hz']\",\n  \"json_terminated\": true\n}"
     },
     {
-        "time_taken_seconds": 31.4180965423584,
-        "total_tokens": 3629,
-        "question": "In a series RLC circuit, at \u03c90, the inductor has an inductive reactance of 25 \u03a9, and the capacitor has a capacitive reactance of 225 \u03a9. By what factor of \u03c90 should the angular frequency be changed to achieve resonance?",
+        "index": 368,
+        "time_taken_seconds": 28.123929977416992,
+        "total_tokens": 2974,
+        "input_tokens": 2795,
+        "output_tokens": 179,
+        "question": "Two electric forces have magnitudes of 5 N and 6 N, and act at an angle of 45\u00b0 to each other. Calculate the resultant force of these two forces.",
+        "correct_answer": "10.1699",
+        "correct_units": "N",
+        "model_answer": [
+            "10.17"
+        ],
+        "model_units": [
+            "N"
+        ],
+        "response": "{\n  \"thought\": \"Use the vector resultant formula with the given magnitudes and angle between them.\",\n  \"physics_analysis\": [\n    \"Force magnitudes: 5 N and 6 N\",\n    \"Angle between forces: 45\u00b0\",\n    \"Target unit: N\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Apply the vector resultant formula with the given angle\",\n    \"Calculate the resultant force magnitude\"\n  ],\n  \"python_code\": \"import sympy as sp; A = sp.Float('5'); B = sp.Float('6'); theta = sp.Float('45'); R = sp.sqrt(A**2 + B**2 + 2*A*B*sp.cos(sp.pi * sp.Float(theta)/180)); ans = [float(R.evalf())]; unit = ['N']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 181,
+        "time_taken_seconds": 28.686088800430298,
+        "total_tokens": 2993,
+        "input_tokens": 2799,
+        "output_tokens": 194,
+        "question": "A parallel-plate capacitor with a capacitance of 2.167e-11 F is charged to a voltage of 84.3 V. Calculate the charge stored by the capacitor.",
+        "correct_answer": "1.83",
+        "correct_units": "nC",
+        "model_answer": [
+            "1.8268e-9"
+        ],
+        "model_units": [
+            "C"
+        ],
+        "response": "{\n  \"thought\": \"The charge stored in a capacitor is given by the formula Q = C * V, where C is the capacitance and V is the voltage. Since the values of C and V are provided, we can directly compute the charge.\",\n  \"physics_analysis\": [\n    \"C = 2.167e-11 F\",\n    \"V = 84.3 V\",\n    \"Q = C * V\",\n    \"Target unit: C\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Multiply the capacitance by the voltage to find the charge\"\n  ],\n  \"python_code\": \"import sympy as sp; C = sp.Float('2.167e-11'); V = sp.Float('84.3'); Q = C * V; ans = [float(Q.evalf())]; unit = ['C']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 470,
+        "time_taken_seconds": 35.59809756278992,
+        "total_tokens": 3213,
+        "input_tokens": 2816,
+        "output_tokens": 397,
+        "question": "Three identical charges, q = 1.2e-6 C, are placed at the three vertices of an isosceles right triangle with legs of length 0.052 m. Calculate the net electric field at the right-angle vertex. Give your answer two decimal places.",
+        "correct_answer": "5.65 * 10^{6}",
+        "correct_units": "V/m",
+        "model_answer": [
+            "5.6410e6"
+        ],
+        "model_units": [
+            "N/C"
+        ],
+        "response": "{\n  \"thought\": \"The charges are placed at the vertices of an isosceles right triangle. The electric field at the right-angle vertex is the vector sum of the fields from the other two charges. Use the formula for electric field and vector addition.\",\n  \"physics_analysis\": [\n    \"q = 1.2e-6 C\",\n    \"Leg length = 0.052 m\",\n    \"ke = 8.988e9\",\n    \"Target unit: N/C\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Calculate the electric field from each charge at the right-angle vertex\",\n    \"Use vector addition to find the net electric field\",\n    \"Compute the magnitude of the net electric field\"\n  ],\n  \"python_code\": \"import sympy as sp; ke = sp.Float('8.988e9'); q = sp.Float('1.2e-6'); leg = sp.Float('0.052'); dx1 = sp.Float('0'); dy1 = leg; r1 = sp.sqrt(dx1**2 + dy1**2); E1x = (ke * q * dx1) / r1**3; E1y = (ke * q * dy1) / r1**3; dx2 = leg; dy2 = sp.Float('0'); r2 = sp.sqrt(dx2**2 + dy2**2); E2x = (ke * q * dx2) / r2**3; E2y = (ke * q * dy2) / r2**3; Ex_total = E1x + E2x; Ey_total = E1y + E2y; E_mag = sp.sqrt(Ex_total**2 + Ey_total**2); ans = [float(E_mag.evalf())]; unit = ['N/C']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 1270,
+        "time_taken_seconds": 36.14975142478943,
+        "total_tokens": 3273,
+        "input_tokens": 2872,
+        "output_tokens": 401,
+        "question": "A circuit segment AB is composed of two series parts. The first part (AM) consists of R1 = 30 \u03a9 in series with a capacitor C. The second part (MB) consists of R2 = 70 \u03a9 in series with an inductor L. The circuit satisfies the condition LC\u03c9^2 = 1. An RMS voltage U = 100 V is applied across AB. Given that the voltage uAM is 90 degrees out of phase with the voltage uMB. What is the RMS voltage across segment MB?",
+        "correct_answer": "83.67",
+        "correct_units": "V",
+        "model_answer": [
+            "83.67"
+        ],
+        "model_units": [
+            "V"
+        ],
+        "response": "{\n  \"thought\": \"Resonance condition gives XL = XC. Segment voltages are 90 degrees out of phase, so tan(phi_AM) * tan(phi_MB) = -1. Segment reactances must be preserved when computing U_MB.\",\n  \"physics_analysis\": [\n    \"R1 = 30 ohm\",\n    \"R2 = 70 ohm\",\n    \"U = 100 V\",\n    \"Resonance constraint: XL = XC\",\n    \"Phase constraint: tan(phi_AM) * tan(phi_MB) = -1\",\n    \"Target unit: V\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Express local tangent relations\",\n    \"Apply phase constraint\",\n    \"Use resonance relation XL = XC\",\n    \"Compute total current\",\n    \"Compute Z_MB\",\n    \"Compute U_MB\"\n  ],\n  \"python_code\": \"import sympy as sp; R1 = sp.Float('30'); R2 = sp.Float('70'); U = sp.Float('100'); XL, XC = sp.symbols('XL XC', real=True, positive=True); tan_am = -XC / R1; tan_mb = XL / R2; eq_phase = sp.Eq(tan_am * tan_mb, sp.Float('-1')); eq_res = sp.Eq(XL, XC); sol = sp.solve([eq_phase, eq_res], (XL, XC), dict=True); sol = [s for s in sol if s[XL].is_real and s[XL] > 0]; xl_val = sol[0][XL]; Z_total = R1 + R2; I_rms = U / Z_total; Z_MB = sp.sqrt(R2**2 + xl_val**2); U_MB = I_rms * Z_MB; ans = [float(U_MB.evalf())]; unit = ['V']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 411,
+        "time_taken_seconds": 37.99492311477661,
+        "total_tokens": 3276,
+        "input_tokens": 2806,
+        "output_tokens": 470,
+        "question": "Three identical charges q = -3e-8 C are placed at the three vertices of an isosceles right triangle with legs of 0.15 m. Calculate the net force acting on the charge at the right angle vertex.",
+        "correct_answer": "0.5091 * 10^{-3}",
+        "correct_units": "N",
+        "model_answer": [
+            "5.0296e-4"
+        ],
+        "model_units": [
+            "N"
+        ],
+        "response": "{\n  \"thought\": \"Geometry anchoring required. The charges form an isosceles right triangle with legs of 0.15 m. The net force on the charge at the right angle vertex is the vector sum of the forces from the other two charges.\",\n  \"physics_analysis\": [\n    \"q = -3e-8 C\",\n    \"Leg length = 0.15 m\",\n    \"ke = 8.988e9\",\n    \"Target unit: N\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Place charges at A(0,0), B(0.15,0), and C(0,0.15)\",\n    \"Compute force vectors from charges at A and B acting on charge at C\",\n    \"Sum Fx and Fy\",\n    \"Compute force magnitude\"\n  ],\n  \"python_code\": \"import sympy as sp; ke = sp.Float('8.988e9'); q = sp.Float('-3e-8'); ab = sp.Float('0.15'); ac = sp.Float('0.15'); xc = sp.Float('0'); yc = sp.Float('0.15'); dx1 = xc - sp.Float('0'); dy1 = yc - sp.Float('0'); r1 = sp.sqrt(dx1**2 + dy1**2); Fx1 = (ke * q * q * dx1) / r1**3; Fy1 = (ke * q * q * dy1) / r1**3; dx2 = xc - sp.Float('0.15'); dy2 = yc - sp.Float('0'); r2 = sp.sqrt(dx2**2 + dy2**2); Fx2 = (ke * q * q * dx2) / r2**3; Fy2 = (ke * q * q * dy2) / r2**3; Fx_total = Fx1 + Fx2; Fy_total = Fy1 + Fy2; F_mag = sp.sqrt(Fx_total**2 + Fy_total**2); ans = [float(F_mag.evalf())]; unit = ['N']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 635,
+        "time_taken_seconds": 24.43671154975891,
+        "total_tokens": 3113,
+        "input_tokens": 2832,
+        "output_tokens": 281,
+        "question": "A parallel plate capacitor has a capacitance C = 5e-12 F and a plate separation d = 0.001 m. If the plate separation d is changed to 0.0002 m and the dielectric medium is replaced by one with a dielectric constant of \u03b5_r = 3, what is the new capacitance?",
+        "correct_answer": "75",
+        "correct_units": "pF",
+        "model_answer": [
+            "7.5000e-11"
+        ],
+        "model_units": [
+            "F"
+        ],
+        "response": "{\n  \"thought\": \"Capacitance of a parallel plate capacitor is given by C = \u03b5\u2080\u03b5_r * A / d. Changing d and \u03b5_r affects the new capacitance. Use the formula to calculate the new capacitance.\",\n  \"physics_analysis\": [\n    \"C_initial = 5e-12 F\",\n    \"d_initial = 0.001 m\",\n    \"d_new = 0.0002 m\",\n    \"\u03b5_r_new = 3\",\n    \"Target unit: F\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Use the formula C = \u03b5\u2080\u03b5_r * A / d\",\n    \"Since A and \u03b5\u2080 are constant, C is inversely proportional to d and directly proportional to \u03b5_r\",\n    \"Calculate the new capacitance using the ratio of the new and initial parameters\"\n  ],\n  \"python_code\": \"import sympy as sp; C_initial = sp.Float('5e-12'); d_initial = sp.Float('0.001'); d_new = sp.Float('0.0002'); epsilon_r_new = sp.Float('3'); C_new = C_initial * epsilon_r_new * d_initial / d_new; ans = [float(C_new.evalf())]; unit = ['F']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 293,
+        "time_taken_seconds": 21.42450761795044,
+        "total_tokens": 3027,
+        "input_tokens": 2798,
+        "output_tokens": 229,
+        "question": "Two electric forces have magnitudes of 8 N and 7 N, and are inclined at an angle of 120\u00b0 to each other. Calculate the resultant force of these two electric forces.",
+        "correct_answer": "7.5498",
+        "correct_units": "N",
+        "model_answer": [
+            "7.55"
+        ],
+        "model_units": [
+            "N"
+        ],
+        "response": "{\n  \"thought\": \"This is a vector resultant problem. Use the law of cosines to calculate the magnitude of the resultant force.\",\n  \"physics_analysis\": [\n    \"Force 1 magnitude: 8 N\",\n    \"Force 2 magnitude: 7 N\",\n    \"Angle between forces: 120\u00b0\",\n    \"Target unit: N\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Apply the law of cosines to find the resultant force magnitude\",\n    \"Calculate the resultant force using the formula R = sqrt(A^2 + B^2 + 2AB*cos(theta))\",\n    \"Ensure the angle is converted to radians if necessary\"\n  ],\n  \"python_code\": \"import sympy as sp; A = sp.Float('8'); B = sp.Float('7'); theta = sp.Float('120'); theta_rad = sp.rad(theta); R = sp.sqrt(A**2 + B**2 + 2*A*B*sp.cos(theta_rad)); ans = [float(R.evalf())]; unit = ['N']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 82,
+        "time_taken_seconds": 31.292118549346924,
+        "total_tokens": 3344,
+        "input_tokens": 2846,
+        "output_tokens": 498,
+        "question": "Point charges qA and qB, both equal to 3e-7 C, are placed respectively at two points A and B in the air. The distance AB is 0.12 m. M is a point located on the perpendicular bisector of AB, 0.08 m away from the line segment AB. What is the magnitude of the resultant electric field strength produced by qA and qB at point M?",
+        "correct_answer": "432000",
+        "correct_units": "V/m",
+        "model_answer": [
+            "4.3142e5"
+        ],
+        "model_units": [
+            "N/C"
+        ],
+        "response": "{\n  \"thought\": \"Geometry anchoring required. qA@A(0,0), qB@B(0.12,0), M on perpendicular bisector of AB at (0.06, 0.08). Compute electric field vectors from qA and qB acting on M, then sum them to find resultant field.\",\n  \"physics_analysis\": [\n    \"qA = 3e-7 C at A(0,0)\",\n    \"qB = 3e-7 C at B(0.12,0)\",\n    \"M = (0.06, 0.08)\",\n    \"ke = 8.988e9\",\n    \"Target unit: N/C\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Compute electric field vectors from qA and qB acting on M\",\n    \"Sum Ex and Ey\",\n    \"Compute field magnitude\"\n  ],\n  \"python_code\": \"import sympy as sp; ke = sp.Float('8.988e9'); ab = sp.Float('0.12'); am = sp.Float('0.08'); xa = sp.Float('0'); ya = sp.Float('0'); xb = ab; yb = sp.Float('0'); xm = ab / 2; ym = am; dx1 = xm - xa; dy1 = ym - ya; r1 = sp.sqrt(dx1**2 + dy1**2); Ex1 = (ke * sp.Float('3e-7') * dx1) / r1**3; Ey1 = (ke * sp.Float('3e-7') * dy1) / r1**3; dx2 = xm - xb; dy2 = ym - yb; r2 = sp.sqrt(dx2**2 + dy2**2); Ex2 = (ke * sp.Float('3e-7') * dx2) / r2**3; Ey2 = (ke * sp.Float('3e-7') * dy2) / r2**3; Ex_total = Ex1 + Ex2; Ey_total = Ey1 + Ey2; E_mag = sp.sqrt(Ex_total**2 + Ey_total**2); ans = [float(E_mag.evalf())]; unit = ['N/C']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 1106,
+        "time_taken_seconds": 20.08597469329834,
+        "total_tokens": 2962,
+        "input_tokens": 2793,
+        "output_tokens": 169,
+        "question": "A resonant RLC circuit has a resistance R = 25 \u03a9 and an applied voltage U = 100 V. What is the power of the circuit?",
+        "correct_answer": "400",
+        "correct_units": "W",
+        "model_answer": [
+            "400"
+        ],
+        "model_units": [
+            "W"
+        ],
+        "response": "{\n  \"thought\": \"At resonance, the total impedance is equal to the resistance. Power is calculated using P = U^2 / R.\",\n  \"physics_analysis\": [\n    \"R = 25 \u03a9\",\n    \"U = 100 V\",\n    \"At resonance, Z = R\",\n    \"Target unit: W\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Use resonance condition to set Z = R\",\n    \"Calculate power using P = U^2 / R\"\n  ],\n  \"python_code\": \"import sympy as sp; R = sp.Float('25'); U = sp.Float('100'); P = U**2 / R; ans = [float(P.evalf())]; unit = ['W']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 325,
+        "time_taken_seconds": 32.58925271034241,
+        "total_tokens": 3353,
+        "input_tokens": 2812,
+        "output_tokens": 541,
+        "question": "Three electric charges, q1 = q2 = q3 = -9e-8 C, are placed at the three vertices of an equilateral triangle with a side length of 0.1 m in air. Calculate the net electric force exerted on q3.",
+        "correct_answer": "12.6 * 10^{-3}",
+        "correct_units": "N",
+        "model_answer": [
+            "0.01261"
+        ],
+        "model_units": [
+            "N"
+        ],
+        "response": "{\n  \"thought\": \"Geometry anchoring required. The charges form an equilateral triangle. Use Coulomb's law to compute the force vectors from q1 and q2 acting on q3, then sum the vectors to find the net force.\",\n  \"physics_analysis\": [\n    \"q1 = q2 = q3 = -9e-8 C\",\n    \"Side length = 0.1 m\",\n    \"ke = 8.988e9\",\n    \"Target unit: N\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Place q1 at (0, 0), q2 at (0.1, 0), and q3 at (0.05, sp.sqrt(3)/2 * 0.1) to form an equilateral triangle\",\n    \"Compute force vectors from q1 and q2 acting on q3\",\n    \"Sum Fx and Fy components\",\n    \"Compute net force magnitude\"\n  ],\n  \"python_code\": \"import sympy as sp; ke = sp.Float('8.988e9'); side = sp.Float('0.1'); q1, q2, q3 = sp.Float('-9e-8'), sp.Float('-9e-8'), sp.Float('-9e-8'); x1, y1 = sp.Float('0'), sp.Float('0'); x2, y2 = side, sp.Float('0'); x3, y3 = side / 2, sp.sqrt(3) * side / 2; dx1 = x3 - x1; dy1 = y3 - y1; r1 = sp.sqrt(dx1**2 + dy1**2); Fx1 = (ke * q3 * q1 * dx1) / r1**3; Fy1 = (ke * q3 * q1 * dy1) / r1**3; dx2 = x3 - x2; dy2 = y3 - y2; r2 = sp.sqrt(dx2**2 + dy2**2); Fx2 = (ke * q3 * q2 * dx2) / r2**3; Fy2 = (ke * q3 * q2 * dy2) / r2**3; Fx_total = Fx1 + Fx2; Fy_total = Fy1 + Fy2; F_mag = sp.sqrt(Fx_total**2 + Fy_total**2); ans = [float(F_mag.evalf())]; unit = ['N']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 1167,
+        "time_taken_seconds": 30.04158639907837,
+        "total_tokens": 3191,
+        "input_tokens": 2801,
+        "output_tokens": 390,
+        "question": "Given R=10\u03a9. At resonance, f=200Hz. When f increases to 400Hz, the current (I) decreases to 1/2. What is ZL?",
+        "correct_answer": "11.55",
+        "correct_units": "\u03a9",
+        "model_answer": null,
+        "model_units": "EXECUTION_ERROR: C",
+        "response": "{\n  \"thought\": \"At resonance, XL = XC. When frequency doubles, XL doubles and XC halves. The new impedance Z is calculated using the new frequency and the given current change.\",\n  \"physics_analysis\": [\n    \"R = 10 \u03a9\",\n    \"f_resonance = 200 Hz\",\n    \"f_new = 400 Hz\",\n    \"I_new = 1/2 I_resonance\",\n    \"Target unit: \u03a9\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Use resonance condition to find L and C\",\n    \"Apply frequency scaling to find new reactances\",\n    \"Use current change to find new impedance\",\n    \"Solve for ZL\"\n  ],\n  \"python_code\": \"import sympy as sp; R = sp.Float('10'); f_res = sp.Float('200'); f_new = sp.Float('400'); I_new = sp.Float('0.5'); L, C = sp.symbols('L C', real=True, positive=True); omega_res = 2 * sp.pi * f_res; omega_new = 2 * sp.pi * f_new; eq_res = sp.Eq(omega_res * L, 1 / (omega_res * C)); sol = sp.solve(eq_res, (L, C), dict=True); sol = [s for s in sol if s[L].is_real and s[L] > 0]; L_val = sol[0][L]; C_val = sol[0][C]; XL_new = omega_new * L_val; XC_new = 1 / (omega_new * C_val); Z_total = sp.sqrt(R**2 + (XL_new - XC_new)**2); ZL = XL_new; ans = [float(ZL.evalf())]; unit = ['\u03a9']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 689,
+        "time_taken_seconds": 21.013355016708374,
+        "total_tokens": 2967,
+        "input_tokens": 2784,
+        "output_tokens": 183,
+        "question": "The measured value is 1 m, and the absolute error is 0.005 m. Calculate the percentage relative error.",
+        "correct_answer": "0.5",
+        "correct_units": "%",
+        "model_answer": [
+            "0.5"
+        ],
+        "model_units": [
+            "%"
+        ],
+        "response": "{\n  \"thought\": \"The percentage relative error is calculated by dividing the absolute error by the measured value and then multiplying by 100 to get a percentage.\",\n  \"physics_analysis\": [\n    \"Measured value = 1 m\",\n    \"Absolute error = 0.005 m\",\n    \"Target unit: %\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Calculate percentage relative error using the formula: (absolute error / measured value) * 100\"\n  ],\n  \"python_code\": \"import sympy as sp; measured_value = sp.Float('1'); absolute_error = sp.Float('0.005'); percentage_relative_error = (absolute_error / measured_value) * sp.Float('100'); ans = [float(percentage_relative_error.evalf())]; unit = ['%']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 53,
+        "time_taken_seconds": 36.06898021697998,
+        "total_tokens": 3330,
+        "input_tokens": 2822,
+        "output_tokens": 508,
+        "question": "Two point charges, q1 = q2 = 16e-8 C, are placed at points A and B, which are 0.1 m apart in air. Determine the electric field strength produced by these two point charges at point C, given that AC = BC = 0.08 m.",
+        "correct_answer": "3.51 * 10^{5}",
+        "correct_units": "V/m",
+        "model_answer": [
+            "3.5081e5"
+        ],
+        "model_units": [
+            "N/C"
+        ],
+        "response": "{\n  \"thought\": \"Geometry anchoring required. q1@A(0,0), q2@B(0.1,0), q3@C(xc,yc). q1 and q2 are sources, point C is the target. Compute electric field vectors directly using Coulomb vector components.\",\n  \"physics_analysis\": [\n    \"q1=16e-8 C at A(0,0)\",\n    \"q2=16e-8 C at B(0.1,0)\",\n    \"Point C is equidistant from A and B\",\n    \"ke=8.988e9\",\n    \"Target unit: N/C\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Compute xc and yc\",\n    \"Compute electric field vectors from q1 and q2 acting on point C\",\n    \"Sum Ex and Ey\",\n    \"Compute electric field magnitude\"\n  ],\n  \"python_code\": \"import sympy as sp; ke = sp.Float('8.988e9'); ab = sp.Float('0.1'); ac = sp.Float('0.08'); bc = sp.Float('0.08'); xc = (ac**2 + ab**2 - bc**2) / (2 * ab); yc = sp.sqrt(sp.Max(0, ac**2 - xc**2)); q1, q2 = sp.Float('16e-8'), sp.Float('16e-8'); dx1 = xc - sp.Float('0'); dy1 = yc - sp.Float('0'); r1 = sp.sqrt(dx1**2 + dy1**2); Ex1 = (ke * q1 * dx1) / r1**3; Ey1 = (ke * q1 * dy1) / r1**3; dx2 = xc - ab; dy2 = yc - sp.Float('0'); r2 = sp.sqrt(dx2**2 + dy2**2); Ex2 = (ke * q2 * dx2) / r2**3; Ey2 = (ke * q2 * dy2) / r2**3; Ex_total = Ex1 + Ex2; Ey_total = Ey1 + Ey2; E_mag = sp.sqrt(Ex_total**2 + Ey_total**2); ans = [float(E_mag.evalf())]; unit = ['N/C']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 1117,
+        "time_taken_seconds": 22.990275621414185,
+        "total_tokens": 2969,
+        "input_tokens": 2784,
+        "output_tokens": 185,
+        "question": "A resonant circuit has a resistance of 15 \u03a9 and an RMS voltage of 60 V. Calculate the power.",
+        "correct_answer": "240",
+        "correct_units": "W",
+        "model_answer": [
+            "240"
+        ],
+        "model_units": [
+            "W"
+        ],
+        "response": "{\n  \"thought\": \"At resonance, the total impedance is equal to the resistance. Power is calculated using P = U^2 / R.\",\n  \"physics_analysis\": [\n    \"Resistance R = 15 \u03a9\",\n    \"RMS voltage U = 60 V\",\n    \"At resonance, Z = R\",\n    \"Target unit: W\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Use the formula for power in a resonant circuit: P = U^2 / R\",\n    \"Substitute the given values into the formula\",\n    \"Calculate the result\"\n  ],\n  \"python_code\": \"import sympy as sp; R = sp.Float('15'); U = sp.Float('60'); P = U**2 / R; ans = [float(P.evalf())]; unit = ['W']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 43,
+        "time_taken_seconds": 27.27610993385315,
+        "total_tokens": 3181,
+        "input_tokens": 2832,
+        "output_tokens": 349,
+        "question": "Two charges, q1 = +1e-6 C and q2 = +1e-6 C, are placed at points A and B, separated by 0.04 m. Find the net force acting on a test charge q0 = +2e-6 C placed at point M, which is located precisely at the midpoint between A and B.",
+        "correct_answer": "0",
+        "correct_units": "N",
+        "model_answer": [
+            "0"
+        ],
+        "model_units": [
+            "N"
+        ],
+        "response": "{\n  \"thought\": \"The charges are symmetrically placed, and the test charge is at the midpoint. The forces from q1 and q2 on q0 will be equal in magnitude but opposite in direction, resulting in a net force of zero.\",\n  \"physics_analysis\": [\n    \"q1 = +1e-6 C at A\",\n    \"q2 = +1e-6 C at B\",\n    \"q0 = +2e-6 C at M (midpoint between A and B)\",\n    \"ke = 8.988e9\",\n    \"Target unit: N\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Calculate the distance from q0 to each charge (r = 0.02 m)\",\n    \"Compute the force from q1 on q0\",\n    \"Compute the force from q2 on q0\",\n    \"Sum the forces (they are equal in magnitude and opposite in direction, so net force is zero)\"\n  ],\n  \"python_code\": \"import sympy as sp; ke = sp.Float('8.988e9'); ab = sp.Float('0.04'); r = ab / 2; q1, q2, q0 = sp.Float('1e-6'), sp.Float('1e-6'), sp.Float('2e-6'); F1 = (ke * q0 * q1) / r**2; F2 = (ke * q0 * q2) / r**2; F_net = F1 - F2; ans = [float(F_net.evalf())]; unit = ['N']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 1006,
+        "time_taken_seconds": 22.630128860473633,
+        "total_tokens": 2992,
+        "input_tokens": 2787,
+        "output_tokens": 205,
+        "question": "L = 0.004 H, C = 0.00025 F. Calculate the angular frequency of oscillation.",
+        "correct_answer": "1000",
+        "correct_units": "rad/s",
+        "model_answer": [
+            "1000"
+        ],
+        "model_units": [
+            "rad/s"
+        ],
+        "response": "{\n  \"thought\": \"Resonance condition gives angular frequency omega = 1 / sqrt(L*C). Use the given values of L and C to calculate omega.\",\n  \"physics_analysis\": [\n    \"L = 0.004 H\",\n    \"C = 0.00025 F\",\n    \"Resonance condition: omega = 1 / sqrt(L*C)\",\n    \"Target unit: rad/s\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Apply resonance relation omega = 1 / sqrt(L*C)\",\n    \"Substitute values of L and C\",\n    \"Calculate omega\"\n  ],\n  \"python_code\": \"import sympy as sp; L = sp.Float('0.004'); C = sp.Float('0.00025'); omega = 1 / sp.sqrt(L * C); ans = [float(omega.evalf())]; unit = ['rad/s']\",\n  \"json_terminated\": true\n}"
+    },
+    {
+        "index": 1221,
+        "time_taken_seconds": 28.732743740081787,
+        "total_tokens": 3096,
+        "input_tokens": 2815,
+        "output_tokens": 281,
+        "question": "Consider a series RLC circuit. At the initial angular frequency \u03c90, XL = 45 \u03a9 and XC = 405 \u03a9. The new angular frequency is set to k * \u03c90. What is the value of k for the circuit to resonate?",
         "correct_answer": "3.0",
         "correct_units": "-",
-        "model_answer": 3.0,
-        "model_units": "",
-        "response": "{\n  \"physics_analysis\": [\n    \"At \u03c90, inductive reactance X_L = 25 \u03a9, capacitive reactance X_C = 225 \u03a9\",\n    \"Resonance occurs when X_L = X_C\",\n    \"Target: Find factor k such that \u03c9 = k * \u03c90 achieves resonance\",\n    \"Coordinate direction: Not applicable for qualitative theory\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Resonance condition: \u03c9_res * L = 1/(\u03c9_res * C)\",\n    \"From given \u03c90: L = X_L / \u03c90 = 25 / \u03c90, C = 1/(X_C * \u03c90) = 1/(225 * \u03c90)\",\n    \"Substitute L and C into resonance equation: \u03c9_res^2 * (25 / \u03c90) = 225 * \u03c90 / \u03c9_res\",\n    \"Solve for \u03c9_res: \u03c9_res^2 = (225 / 25) * \u03c90^2 \u2192 \u03c9_res = 3 * \u03c90\",\n    \"Factor k = \u03c9_res / \u03c90 = 3\"\n  ],\n  \"python_code\": \"import math\\nX_L = 25\\nX_C = 225\\nfactor = math.sqrt(X_C / X_L)\\nans = round(factor, 2)\\nunit = ''\"\n}"
-    },
-    {
-        "time_taken_seconds": 69.2241530418396,
-        "total_tokens": 6117,
-        "question": "A 2 \u03bcF capacitor is charged to 12 V, then disconnected, and its charge is equally shared among two identical capacitors. Calculate the total remaining energy after sharing.",
-        "correct_answer": "72",
-        "correct_units": "\u03bcJ",
-        "model_answer": 0.0,
-        "model_units": "\u03bcJ",
-        "response": "{\n  \"physics_analysis\": [\n    \"Initial capacitor: C_initial = 2e-6 F, V_initial = 12 V\",\n    \"Initial charge Q_initial = C_initial * V_initial = 24e-6 C\",\n    \"Two identical capacitors (C = 2e-6 F each) share charge equally\",\n    \"Target: Total remaining energy after charge sharing in \u03bcJ\",\n    \"Coordinate direction: Not applicable for energy calculation\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Initial energy: U_initial = 0.5 * C_initial * V_initial^2 = 144e-6 J\",\n    \"After sharing: Each capacitor has Q = 12e-6 C and C = 2e-6 F\",\n    \"Energy per capacitor: U = 0.5 * C * (Q/C)^2 = Q^2/(2C)\",\n    \"Total energy: 2 * [ (12e-6)^2 / (2 * 2e-6) ) ] = 72e-6 J\",\n    \"Final energy is 72 \u03bcJ\"\n  ],\n  \"python_code\": \"import math\\nQ_initial = 2e-6 * 12\\nc = 2e-6\\ntotal_energy = (Q_initial ** 2) / (4 * c)\\nans = round(total_energy, 2)\\nunit = '\u03bcJ'\"\n}"
-    },
-    {
-        "time_taken_seconds": 12.64646601676941,
-        "total_tokens": 2297,
-        "question": "An inductor has a magnetic field energy of 2 mJ and a current of 2 A. Calculate the inductance (H).",
-        "correct_answer": "0.001",
-        "correct_units": "H",
-        "model_answer": 0.001,
-        "model_units": "H",
-        "response": "{\n  \"physics_analysis\": [\n    \"Energy U = 2 mJ = 0.002 J\",\n    \"Current I = 2 A\",\n    \"Target: Inductance L in H\",\n    \"Coordinate direction: Not applicable for scalar calculation\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Energy stored in inductor: U = (1/2) * L * I\u00b2\",\n    \"Rearranged formula: L = 2U / I\u00b2\",\n    \"Substitute values: L = 2*(0.002 J) / (2 A)\u00b2\"\n  ],\n  \"python_code\": \"import math\\nU = 0.002\\nI = 2\\nL = 2 * U / (I**2)\\nans = round(L, 3)\\nunit = 'H'\"\n}"
+        "model_answer": [
+            "3"
+        ],
+        "model_units": [
+            ""
+        ],
+        "response": "{\n  \"thought\": \"Resonance occurs when XL = XC. The new angular frequency is k * \u03c90. Use the resonance condition to solve for k.\",\n  \"physics_analysis\": [\n    \"XL_initial = 45 \u03a9\",\n    \"XC_initial = 405 \u03a9\",\n    \"Resonance condition: XL_new = XC_new\",\n    \"New angular frequency: \u03c9_new = k * \u03c90\",\n    \"Target unit: dimensionless\"\n  ],\n  \"algebraic_reasoning\": [\n    \"Use resonance condition XL_new = XC_new\",\n    \"Express XL_new and XC_new in terms of k\",\n    \"Solve for k\"\n  ],\n  \"python_code\": \"import sympy as sp; XL_initial = sp.Float('45'); XC_initial = sp.Float('405'); k = sp.symbols('k', real=True, positive=True); XL_new = XL_initial * k; XC_new = XC_initial / k; eq_res = sp.Eq(XL_new, XC_new); sol = sp.solve(eq_res, k, dict=True); sol = [s for s in sol if s[k].is_real and s[k] > 0]; k_val = sol[0][k]; ans = [float(k_val.evalf())]; unit = ['']\",\n  \"json_terminated\": true\n}"
     }
 ]
