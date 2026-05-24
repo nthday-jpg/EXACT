@@ -12,6 +12,7 @@ dependencies = [
     "openai>=2.36.0",
     "pandas>=3.0.3",
     "peft>=0.19.1",
+    "pint>=0.25.3",
     "python-dotenv>=1.2.2",
     "streamlit>=1.57.0",
     "sympy>=1.14.0",
