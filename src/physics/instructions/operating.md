@@ -1,8 +1,20 @@
 <OPERATING_CONSTRAINTS>
 
-1. OUTPUT FORMAT
-   - Return ONLY a raw JSON object.
+1. OUTPUT FORMAT (STRICT)
+   - Return ONLY a single raw JSON object.
+   - No markdown.
    - No conversational text.
+   - No code fences.
+   Required schema:
+   {
+     "thought": "string",
+     "physics_analysis": ["string", ...],
+     "algebraic_reasoning": ["string", ...],
+     "python_code": "string",
+     "json_terminated": true
+   }
+   - The final key MUST be:
+     "json_terminated": true
 
 2. STRICT SYMPY SYNTAX:
    - Use 'sp.Float' for numbers only (e.g., '1.6e-19').
@@ -50,6 +62,4 @@
    - verify every variable is defined
    - verify no renamed variants exist
    (e.g., `Znew` vs `Z_new`)
-
-5. FINAL KEY: "json_terminated": true.
 </OPERATING_CONSTRAINTS>
