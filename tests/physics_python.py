@@ -31,7 +31,7 @@ def process_question(index, question_raw, correct_answer, correct_units, model, 
         model_name=model,
         api_key=api_key,
         system_prompt=instructions,
-        temperature=0.01,
+        temperature=0.1,
         extra_body={
             "chat_template_kwargs": {"enable_thinking": False},
         }

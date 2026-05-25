@@ -217,7 +217,7 @@ def _maybe_sympy_expr(value: Any) -> Optional[sp.Expr]:
 
 def _formula_match(model_expr: sp.Expr, correct_expr: sp.Expr) -> bool:
 	try:
-		diff = sp.simplify(model_expr - correct_expr)
+		diff = sp.simplify(model_expr - correct_expr) #type: ignore
 		return diff == 0
 	except Exception:
 		return False
