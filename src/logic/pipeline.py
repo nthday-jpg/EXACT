@@ -106,9 +106,9 @@ class LogicalReasoningPipeline:
                 offset = len(premises_nl) + idx
                 options_fol[k] = all_fol[offset] if offset < len(all_fol) else ""
                 
-            correct_option = None
-            correct_verification = None
-            
+            # Evaluate ALL options: collect every UNSAT candidate with its core size
+            unsat_candidates: list[tuple[str, dict, int]] = []  # (key, verification, core_size)
+
             for k in opt_keys:
                 opt_fol = options_fol.get(k, "")
                 if not opt_fol:
@@ -116,11 +116,15 @@ class LogicalReasoningPipeline:
                 try:
                     verification = self.reasoning_pipeline.verify(premises_fol, opt_fol, negate_conclusion=True)
                     if verification["result"] == z3.unsat:
-                        correct_option = k
-                        correct_verification = verification
-                        break
+                        core_size = len(verification.get("unsat_core", []))
+                        unsat_candidates.append((k, verification, core_size))
                 except Exception:
                     pass
+
+            if unsat_candidates:
+                # Pick the option whose proof uses the fewest premises (tightest entailment)
+                unsat_candidates.sort(key=lambda x: x[2])
+                correct_option, correct_verification, _ = unsat_candidates[0]
             
             if not correct_option and opt_keys:
                 correct_option = opt_keys[0]
