@@ -348,3 +348,20 @@ def verify_with_z3(premises_fol: list[str], conclusion_fol: str, negate_conclusi
 		verification_result["model"] = solver.model()
 		
 	return verification_result
+
+
+def try_parse_fol(formula: str) -> tuple[bool, str]:
+	"""Try to parse a single FOL formula string into a Z3 expression.
+
+	Returns:
+		(True, "")           if the formula parses successfully.
+		(False, error_msg)   if the parser raises an exception.
+
+	Used by the translation repair loop to validate each generated formula
+	before committing it, without running a full solver check.
+	"""
+	try:
+		parse_formulas([formula])
+		return True, ""
+	except Exception as exc:
+		return False, str(exc)

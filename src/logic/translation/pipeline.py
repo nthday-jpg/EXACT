@@ -1,5 +1,6 @@
 import torch
 from src.utils.normalization import extract_fol_formulas
+from src.logic.reasoning.verifier import try_parse_fol
 
 class NLToFOLPipeline:
     """
@@ -115,7 +116,50 @@ class NLToFOLPipeline:
         
         response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=1024)
         all_extracted_fol = extract_fol_formulas(response_content)
+        # Validate each formula and repair any that fail to parse
+        all_extracted_fol = self._validate_and_repair(all_extracted_fol)
         return all_extracted_fol
+
+    def _repair_fol(self, formula: str, error: str) -> str:
+        """Ask the LLM to fix a broken FOL formula given a parse error message."""
+        system_prompt = (
+            "You are a first-order logic formula corrector.\n\n"
+            "Fix the given FOL formula so it is accepted by a strict parser.\n\n"
+            "ALLOWED OPERATORS: AND, OR, NOT, ->, <->, =, !=, >=, <=, >, <, ForAll, Exists\n"
+            "QUANTIFIER SYNTAX: ForAll(x, <body>) or Exists(x, <body>)\n"
+            "PREDICATE SYNTAX: P(x), R(a, b) — no spaces before '('\n"
+            "Return ONLY the corrected formula string, no explanation."
+        )
+        user_prompt = (
+            f"Broken FOL formula:\n{formula}\n\n"
+            f"Parse error:\n{error}\n\n"
+            "Return the corrected formula only."
+        )
+        return self._generate_text(system_prompt, user_prompt, max_new_tokens=256).strip()
+
+    def _validate_and_repair(self, formulas: list[str], max_retries: int = 2) -> list[str]:
+        """Validate each FOL formula by attempting a parse; repair broken ones via LLM.
+
+        For each formula:
+          1. Try to parse with Z3.
+          2. If it fails, send (formula, error) to the LLM for repair.
+          3. Repeat up to `max_retries` times, then keep whatever is available.
+        """
+        repaired: list[str] = []
+        for formula in formulas:
+            current = formula
+            ok, err = try_parse_fol(current)
+            for _ in range(max_retries):
+                if ok:
+                    break
+                candidate = self._repair_fol(current, err)
+                new_ok, new_err = try_parse_fol(candidate)
+                if new_ok or len(candidate) > 0:
+                    # Accept repaired version even if still broken — it may be closer
+                    current = candidate
+                    ok, err = new_ok, new_err
+            repaired.append(current)
+        return repaired
 
     def translate_premises_and_conclusion(self, premises_nl: list[str], conclusion_nl: str) -> tuple[list[str], str]:
         """Translates natural language premises and conclusion into FOL formulas."""
