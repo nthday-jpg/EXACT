@@ -1,16 +1,31 @@
 # First-Order Logic (FOL) Translation Module
 
-This module handles the translation of natural language (NL) premises and conclusions into standardized First-Order Logic (FOL) formulas using large language models.
+This module handles the translation of natural language (NL) premises and conclusions into standardized First-Order Logic (FOL) formulas using large language models, with an automatic repair loop to fix broken formulas.
 
 ## Components
 
-- **pipeline.py**: Contains the `NLToFOLPipeline` class. It manages loading LLMs, preparing structured prompts, querying the model, and extracting FOL list formulas from raw model responses.
+- **`pipeline.py`**: Contains the `NLToFOLPipeline` class. Manages LLM loading, structured prompt preparation, model querying, FOL extraction, and post-generation formula validation/repair.
 
 ## Key Features
 
-- **Execution Flexibility**: Supports local loading of fine-tuned PEFT LoRA adapter models with NF4 quantization (optimized for low-resource hardware) as well as calling remote API instances via `LLMClient`.
-- **Predicate Alignment Prompting**: System and user prompts enforce strict constraints to ensure uniform predicate definitions and canonical operator formatting (e.g., standardizing custom symbols into parser-safe operators like `AND`, `OR`, `ForAll`, `Exists`).
+- **Execution Flexibility**: Supports local loading of fine-tuned PEFT LoRA adapter models with NF4 4-bit quantization (optimized for low-resource hardware) as well as calling remote API instances via `LLMClient`.
+- **Predicate Alignment Prompting**: System and user prompts enforce strict constraints to ensure uniform predicate definitions and canonical operator formatting (e.g. `AND`, `OR`, `ForAll`, `Exists`, `->`, `<->`).
 - **Robust Output Recovery**: Utilizes regular expressions and JSON parsers in `extract_fol_formulas` to reliably extract and align logic formulas even from conversational or verbose model responses.
+- **FOL Repair Loop** *(new)*: After generation, each formula is validated by attempting a Z3 parse (`try_parse_fol`). Broken formulas are automatically sent back to the LLM with the exact parse error for correction — up to 2 retries per formula.
+
+## Public API
+
+### `translate_list(nl_list) -> list[str]`
+Translates a list of NL sentences into FOL formulas in a **single** LLM call, then validates and repairs each formula.
+
+### `translate_premises_and_conclusion(premises_nl, conclusion_nl) -> (list[str], str)`
+Convenience wrapper around `translate_list` that splits the result into premises and conclusion.
+
+### `_repair_fol(formula, error) -> str` *(internal)*
+Sends a broken formula and its parse error back to the LLM for correction. Returns the repaired formula string.
+
+### `_validate_and_repair(formulas, max_retries=2) -> list[str]` *(internal)*
+Iterates over each formula, calls `try_parse_fol`, and triggers `_repair_fol` for any that fail. Accepts the best available version after `max_retries` attempts (never discards a formula outright).
 
 ## Basic Usage
 
@@ -26,14 +41,37 @@ premises_nl = [
 ]
 conclusion_nl = "Sophia can enroll in Course B."
 
-# Translate to FOL formulas
+# Translate to FOL formulas (includes automatic repair)
 premises_fol, conclusion_fol = translator.translate_premises_and_conclusion(
-    premises_nl, 
+    premises_nl,
     conclusion_nl
 )
 
 print("Premises FOL:", premises_fol)
-# Output: ['ForAll(x, (Completes(x, Course_A) -> CanEnroll(x, Course_B)))', 'Completes(Sophia, Course_A)']
+# ['ForAll(x, (Completes(x, Course_A) -> CanEnroll(x, Course_B)))', 'Completes(Sophia, Course_A)']
 print("Conclusion FOL:", conclusion_fol)
-# Output: 'CanEnroll(Sophia, Course_B)'
+# 'CanEnroll(Sophia, Course_B)'
 ```
+
+## FOL Repair Loop Detail
+
+```
+translate_list()
+    │
+    ├─ LLM generates FOL strings
+    │
+    └─ _validate_and_repair()
+           ├─ Formula OK → keep as-is
+           └─ Formula broken
+                   ├─ Retry 1: _repair_fol(formula, error) → LLM fix → revalidate
+                   └─ Retry 2: repeat if still broken → keep best available
+```
+
+## Allowed Operators (enforced in prompts)
+
+```
+AND  OR  NOT  ->  <->  =  !=  >=  <=  >  <  ForAll  Exists
+```
+
+Quantifier syntax: `ForAll(x, <body>)` or `Exists(x, <body>)`.  
+Predicate syntax: `P(x)`, `R(a, b)` — no spaces before `(`.
