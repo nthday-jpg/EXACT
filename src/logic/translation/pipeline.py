@@ -1,0 +1,133 @@
+import torch
+from src.utils.normalization import extract_fol_formulas
+
+class NLToFOLPipeline:
+    """
+    Pipeline that translates natural language premises and a conclusion
+    into First-Order Logic (FOL) formulas.
+    
+    Supports both local execution (via Hugging Face LoRA models) and remote API execution.
+    """
+    def __init__(self, use_local: bool = True, model_dir: str = None, llm_client = None):
+        self.use_local = use_local
+        self.model_dir = model_dir
+        self.llm_client = llm_client
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.tokenizer = None
+        self.model = None
+
+    def load_local_model(self):
+        """Loads Hugging Face tokenizer and PEFT LoRA model locally with NF4 4-bit quantization."""
+        if not self.use_local:
+            return
+            
+        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+        from peft import PeftModel
+        from pathlib import Path
+        
+        # Resolve default model directory if none provided
+        if not self.model_dir:
+            root_dir = Path(__file__).resolve().parents[3]
+            self.model_dir = str(root_dir / "results")
+
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float16,
+            bnb_4bit_use_double_quant=True
+        )
+        
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir, trust_remote_code=True)
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+            
+        base_model = AutoModelForCausalLM.from_pretrained(
+            "Qwen/Qwen3-8B",
+            quantization_config=bnb_config if torch.cuda.is_available() else None,
+            device_map="cuda:0" if torch.cuda.is_available() else None,
+            trust_remote_code=True,
+            attn_implementation="sdpa" if torch.cuda.is_available() else None
+        )
+        
+        self.model = PeftModel.from_pretrained(base_model, self.model_dir)
+        self.model.eval()
+
+    def _generate_text(self, system_prompt: str, user_prompt: str, max_new_tokens: int = 512) -> str:
+        """Helper to generate text using either the local model or the LLM client."""
+        if self.use_local:
+            if not self.model:
+                self.load_local_model()
+                
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ]
+            
+            chat_prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, enable_thinking=False)
+            inputs = self.tokenizer(chat_prompt, return_tensors="pt").to(self.device)
+            
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_new_tokens=max_new_tokens,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    pad_token_id=self.tokenizer.pad_token_id
+                )
+                
+            response = self.tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
+            return response.strip()
+        else:
+            if not self.llm_client:
+                raise ValueError("An LLMClient instance must be provided when use_local=False")
+            
+            # Temporarily override LLMClient's system prompt if necessary
+            orig_system_prompt = self.llm_client.system_prompt
+            self.llm_client.system_prompt = system_prompt
+            
+            try:
+                res = self.llm_client.generate(user_prompt, max_tokens=max_new_tokens)
+                return res["content"]
+            finally:
+                self.llm_client.system_prompt = orig_system_prompt
+
+    def translate_list(self, nl_list: list[str]) -> list[str]:
+        """Translates a list of natural language sentences into FOL formulas in a single LLM call."""
+        nl_content = ""
+        for i, nl in enumerate(nl_list, start=1):
+            nl_content += f"{i}. {nl}\n"
+            
+        user_prompt = (
+            "Convert the following premises into canonical first-order logic.\n\n"
+            "Premises:\n"
+            f"{nl_content.strip()}\n\n"
+            "Return a JSON list of strings containing the formulas."
+        )
+        
+        system_prompt = (
+            "You convert natural-language premises into parser-safe first-order logic formulas.\n\n"
+            "Output a STRICT valid JSON list of strings containing the first-order logic formulas in the exact order of the input premises.\n\n"
+            "ALLOWED OPERATORS:\n"
+            "AND, OR, NOT, ->, <->, =, !=, >=, <=, >, <, ForAll, Exists\n\n"
+            "QUANTIFIER RULES:\n"
+            "Use nested quantifiers only. E.g., ForAll(x, ForAll(y, P(x,y)))\n\n"
+            "Return JSON only."
+        )
+        
+        response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=1024)
+        all_extracted_fol = extract_fol_formulas(response_content)
+        return all_extracted_fol
+
+    def translate_premises_and_conclusion(self, premises_nl: list[str], conclusion_nl: str) -> tuple[list[str], str]:
+        """Translates natural language premises and conclusion into FOL formulas."""
+        combined_nl_list = premises_nl + [conclusion_nl]
+        all_extracted_fol = self.translate_list(combined_nl_list)
+        
+        expected_count = len(combined_nl_list)
+        if len(all_extracted_fol) < expected_count:
+            premises_fol = all_extracted_fol[:-1]
+            conclusion_fol = all_extracted_fol[-1] if all_extracted_fol else ""
+        else:
+            premises_fol = all_extracted_fol[:len(premises_nl)]
+            conclusion_fol = all_extracted_fol[len(premises_nl)]
+            
+        return premises_fol, conclusion_fol
