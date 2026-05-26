@@ -213,3 +213,123 @@ class ReasoningPipeline:
         )
         
         return self._generate_text(system_prompt, user_prompt, max_new_tokens=512)
+
+    # ------------------------------------------------------------------
+    # Structured Chain-of-Thought output
+    # ------------------------------------------------------------------
+
+    def _parse_cot_steps(self, text: str) -> list[str]:
+        """Extract numbered reasoning steps from LLM output into a clean list.
+
+        Tries three increasingly lenient patterns:
+        1. Explicit ``Step N:`` / ``Step N.`` labels.
+        2. Plain numbered list items (``1.``, ``2)``).
+        3. Non-empty lines as a last resort.
+        """
+        # Pattern 1: "Step N: ..." or "Step N. ..."
+        steps = re.findall(
+            r"(?:^|\n)\s*Step\s+\d+[:.]\s*(.+?)(?=\n\s*Step\s+\d+[:.:]|\Z)",
+            text,
+            re.DOTALL | re.IGNORECASE,
+        )
+        steps = [s.strip() for s in steps if s.strip()]
+        if steps:
+            return steps
+
+        # Pattern 2: plain numbered list
+        steps = re.findall(
+            r"(?:^|\n)\s*\d+[.)]\s*(.+?)(?=\n\s*\d+[.)]|\Z)",
+            text,
+            re.DOTALL,
+        )
+        steps = [s.strip() for s in steps if s.strip()]
+        if steps:
+            return steps
+
+        # Pattern 3: fallback — one non-empty line per step
+        return [line.strip() for line in text.splitlines() if line.strip()]
+
+    def generate_cot(
+        self,
+        premises_nl: list[str],
+        conclusion_nl: str,
+        verification: dict,
+    ) -> tuple[str, list[str]]:
+        """Generate structured Chain-of-Thought reasoning.
+
+        Uses the same contextual prompts as ``generate_reasoning()`` but
+        instructs the LLM to format its answer as explicit numbered steps
+        (``Step 1: ...``, ``Step 2: ...``, etc.).
+
+        Returns:
+            ``(reasoning_str, cot_steps)`` where ``reasoning_str`` is the raw
+            LLM response (backward-compatible with the ``reasoning`` field) and
+            ``cot_steps`` is a parsed list of individual reasoning steps.
+        """
+        result = verification["result"]
+
+        if result == unsat:
+            core_indices = []
+            for var_str in verification["unsat_core"]:
+                if var_str.startswith("p_"):
+                    try:
+                        core_indices.append(int(var_str.split("_")[1]) - 1)
+                    except ValueError:
+                        pass
+            core_indices.sort()
+
+            core_premises_nl = [
+                f"- Premise {i + 1}: {premises_nl[i]}"
+                for i in core_indices
+                if i < len(premises_nl)
+            ]
+            core_premises_text = (
+                "\n".join(core_premises_nl)
+                if core_premises_nl
+                else "\n".join(f"- {p}" for p in premises_nl)
+            )
+            user_prompt = (
+                f"We have proven that the following conclusion is LOGICALLY CORRECT (entailed) "
+                f"by the premises using formal verification (Z3 SMT solver).\n\n"
+                f"Premises that directly contribute to the proof:\n"
+                f"{core_premises_text}\n\n"
+                f"Conclusion to prove:\n"
+                f"- {conclusion_nl}\n\n"
+                f"Explain step-by-step why the premises logically entail the conclusion. "
+                f"Format EACH reasoning step on its own line as 'Step N: <explanation>'. "
+                f"Be concise and precise."
+            )
+        elif result == sat:
+            model_str = str(verification["model"])
+            user_prompt = (
+                f"We have found that the following conclusion is NOT logically guaranteed by the premises.\n"
+                f"The SMT solver found a counterexample where all premises are TRUE but the conclusion is FALSE.\n\n"
+                f"Premises:\n"
+                f"{chr(10).join(f'- {p}' for p in premises_nl)}\n\n"
+                f"Conclusion to check:\n"
+                f"- {conclusion_nl}\n\n"
+                f"Counterexample scenario (Z3 Model):\n"
+                f"{model_str}\n\n"
+                f"Explain why this counterexample invalidates the conclusion. "
+                f"Format EACH reasoning step as 'Step N: <explanation>'."
+            )
+        else:
+            user_prompt = (
+                f"We could not determine if the conclusion is logically guaranteed by the premises.\n\n"
+                f"Premises:\n"
+                f"{chr(10).join(f'- {p}' for p in premises_nl)}\n\n"
+                f"Conclusion:\n"
+                f"- {conclusion_nl}\n\n"
+                f"Analyse the logical relationship between premises and conclusion. "
+                f"Format EACH reasoning step as 'Step N: <explanation>'."
+            )
+
+        system_prompt = (
+            "You are a logical reasoning assistant. "
+            "Explain logical deductions as clearly numbered steps in the format 'Step N: <explanation>'. "
+            "Each step must be self-contained and progress the argument forward."
+        )
+
+        raw_text = self._generate_text(system_prompt, user_prompt, max_new_tokens=512)
+        cot_steps = self._parse_cot_steps(raw_text)
+        return raw_text, cot_steps

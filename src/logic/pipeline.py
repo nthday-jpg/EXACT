@@ -84,6 +84,16 @@ class LogicalReasoningPipeline:
             self.reasoning_pipeline.model = self.translation_pipeline.model
         return self.reasoning_pipeline.generate_reasoning(premises_nl, conclusion_nl, verification)
 
+    def generate_cot(
+        self, premises_nl: list[str], conclusion_nl: str, verification: dict
+    ) -> tuple[str, list[str]]:
+        """Generate structured CoT reasoning. Returns (reasoning_str, cot_steps)."""
+        # Propagate models if loaded
+        if self.translation_pipeline.model:
+            self.reasoning_pipeline.tokenizer = self.translation_pipeline.tokenizer
+            self.reasoning_pipeline.model = self.translation_pipeline.model
+        return self.reasoning_pipeline.generate_cot(premises_nl, conclusion_nl, verification)
+
     def run_pipeline(self, premises_nl: list[str], conclusion_nl: str) -> dict:
         # Propagate models if loaded
         if self.translation_pipeline.model:
@@ -136,7 +146,7 @@ class LogicalReasoningPipeline:
                 opt_fol = options_fol.get(correct_option, "")
                 correct_verification = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=True)
 
-            reasoning = self.generate_reasoning(
+            reasoning, cot = self.generate_cot(
                 premises_nl=filt_premises_nl,
                 conclusion_nl=f"Option {correct_option}: {options[correct_option]}",
                 verification=correct_verification
@@ -148,7 +158,8 @@ class LogicalReasoningPipeline:
                 "premises_fol": filt_premises_fol,
                 "conclusion_fol": options_fol.get(correct_option, ""),
                 "verification": correct_verification,
-                "reasoning": reasoning
+                "reasoning": reasoning,
+                "cot": cot,
             }
         else:
             # Yes/No or Statement Flow: Dual satisfiability check (both entailed or negated entailed)
@@ -178,7 +189,7 @@ class LogicalReasoningPipeline:
                 except Exception:
                     pass
 
-            reasoning = self.generate_reasoning(filt_premises_nl, conclusion_nl, verification)
+            reasoning, cot = self.generate_cot(filt_premises_nl, conclusion_nl, verification)
 
             return {
                 "answer": answer,
@@ -186,5 +197,6 @@ class LogicalReasoningPipeline:
                 "premises_fol": filt_premises_fol,
                 "conclusion_fol": conclusion_fol,
                 "verification": verification,
-                "reasoning": reasoning
+                "reasoning": reasoning,
+                "cot": cot,
             }
