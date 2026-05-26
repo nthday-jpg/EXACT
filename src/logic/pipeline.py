@@ -110,6 +110,7 @@ class LogicalReasoningPipeline:
             )
             
             return {
+                "answer": correct_option,
                 "premises_fol": premises_fol,
                 "conclusion_fol": options_fol.get(correct_option, ""),
                 "verification": correct_verification,
@@ -121,8 +122,12 @@ class LogicalReasoningPipeline:
             
             # Check if conclusion is entailed
             verification = self.reasoning_pipeline.verify(premises_fol, conclusion_fol, negate_conclusion=True)
+            answer = "Uncertain"
             
-            if verification["result"] != z3.unsat:
+            if verification["result"] == z3.unsat:
+                # Conclusion is logically entailed
+                answer = "Yes"
+            else:
                 # Check if negation of conclusion is entailed
                 try:
                     verification_neg = self.reasoning_pipeline.verify(premises_fol, conclusion_fol, negate_conclusion=False)
@@ -130,12 +135,14 @@ class LogicalReasoningPipeline:
                         verification = verification_neg
                         conclusion_nl = f"NOT ({conclusion_nl})"
                         conclusion_fol = f"NOT ({conclusion_fol})"
+                        answer = "No"
                 except Exception:
                     pass
                     
             reasoning = self.generate_reasoning(premises_nl, conclusion_nl, verification)
             
             return {
+                "answer": answer,
                 "premises_fol": premises_fol,
                 "conclusion_fol": conclusion_fol,
                 "verification": verification,
