@@ -11,7 +11,7 @@ for path in list(sys.path):
     if path and Path(path).resolve() == Path(__file__).resolve().parent:
         sys.path.remove(path)
 
-from src.logic.Z3_parser import parse_formulas, FolParser, Z3Symbols
+from src.logic.z3_verifier import parse_formulas, FolParser, Z3Symbols
 from z3 import Solver, sat, unsat, Not, DeclareSort
 
 def run_case(name: str, formulas: list[str], expect_sat: bool = True) -> None:
