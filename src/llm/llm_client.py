@@ -2,7 +2,8 @@ from openai import OpenAI
 
 class LLMClient:
     def __init__(self, model_name: str, 
-                 api_key: str, system_prompt: str = "", 
+                 api_key: str, base_url: str = "https://router.huggingface.co/v1",
+                 system_prompt: str = "", 
                  temperature: float = 0.0, extra_body: dict = {}):
         self.model_name = model_name
         self.system_prompt = system_prompt
@@ -11,7 +12,7 @@ class LLMClient:
         self.api_key = api_key
         if not self.api_key:
             raise RuntimeError("HF_API_KEY is not set")
-        self.base_url="https://router.huggingface.co/v1"
+        self.base_url=base_url
         self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
     def generate(self, prompt: str, max_tokens: int | None = None) -> dict:
