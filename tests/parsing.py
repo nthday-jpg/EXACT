@@ -9,7 +9,7 @@ from time import time
 from z3 import DeclareSort, Solver
 
 from llm.llm_client import LLMClient
-from src.logic.Z3_parser import FolParser, Z3Symbols
+from src.logic.z3_verifier import FolParser, Z3Symbols
 from src.utils.normalization import normalize_logic_premise_text
 
 
@@ -77,7 +77,8 @@ def run_pipeline(
 			ontology_prompt_template,
 			premises=premises_text,
 		)
-		ontology_raw = ontology_builder.generate(ontology_prompt)
+		ontology_res = ontology_builder.generate(ontology_prompt)
+		ontology_raw = ontology_res["content"]
 		result["ontology_output_raw"] = ontology_raw
 		ontology = parse_json(ontology_raw)
 		result["ontology_output"] = ontology
@@ -88,7 +89,8 @@ def run_pipeline(
 			ontologies=ontology_json,
 			premises=premises_text,
 		)
-		logic_raw = logic_compiler.generate(logic_prompt)
+		logic_res = logic_compiler.generate(logic_prompt)
+		logic_raw = logic_res["content"]
 		result["logic_output_raw"] = logic_raw
 		logic = parse_json(logic_raw)
 		result["logic_output"] = logic

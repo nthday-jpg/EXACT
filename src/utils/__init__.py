@@ -7,6 +7,7 @@ from .normalization import (
     normalize_physics_input,
     normalize_physics_output,
     normalize_physics_scientific_text,
+    extract_fol_formulas,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "normalize_physics_input",
     "normalize_physics_output",
     "normalize_physics_scientific_text",
+    "extract_fol_formulas",
 ]
