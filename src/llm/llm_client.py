@@ -36,6 +36,8 @@ class LLMClient:
         
         # Guard against truncated/incomplete text safely
         content = msg.content if msg and msg.content else ""
+        if not content and hasattr(msg, 'reasoning') and msg.reasoning:
+            content = msg.reasoning
         
         # If it cut off due to length, we might still have partial text we can use
         if response.choices[0].finish_reason == "length" and content:
