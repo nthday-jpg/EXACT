@@ -156,7 +156,7 @@ class ReasoningPipeline:
     def generate_reasoning(self, premises_nl: list[str], conclusion_nl: str, verification: dict) -> str:
         """Generates step-by-step reasoning explaining the Z3 verification result."""
         result = verification["result"]
-        
+
         if result == unsat:
             # Extract indices from unsat core
             core_indices = []
@@ -168,50 +168,60 @@ class ReasoningPipeline:
                     except ValueError:
                         pass
             core_indices.sort()
-            
+
             # Format core premises list
             core_premises_nl = []
             for idx in core_indices:
                 core_premises_nl.append(f"- Premise {idx+1}: {premises_nl[idx]}")
             core_premises_text = "\n".join(core_premises_nl) if core_premises_nl else "\n".join(f"- {p}" for p in premises_nl)
-            
+
             user_prompt = (
-                f"We have proven that the following conclusion is LOGICALLY CORRECT (entailed) by the premises using formal verification (Z3 SMT solver).\n\n"
-                f"Premises that directly contribute to the proof:\n"
+                f"The following premises have been formally proven (via Z3 SMT solver) to entail the conclusion.\n\n"
+                f"Key premises:\n"
                 f"{core_premises_text}\n\n"
-                f"Conclusion to prove:\n"
+                f"Conclusion:\n"
                 f"- {conclusion_nl}\n\n"
-                f"Explain step-by-step in clear, natural language why the premises logically entail the conclusion. "
-                f"Keep the explanation concise, professional, and focused on the logical steps."
+                f"Write a concise explanation that shows HOW these premises chain together to reach the conclusion. "
+                f"Trace the logical flow: what does each premise contribute? How do they combine? "
+                f"Use natural transitions like 'Since', 'Therefore', 'This means', 'Combined with', 'As a result'. "
+                f"Do NOT simply restate or copy the premises — synthesize them into a coherent argument."
             )
         elif result == sat:
             model_str = str(verification["model"])
             user_prompt = (
-                f"We have found that the following conclusion is NOT logically guaranteed (not entailed) by the premises.\n"
-                f"The SMT solver found a counterexample scenario where all premises are TRUE, but the conclusion is FALSE.\n\n"
+                f"The SMT solver found a counterexample: the premises are all TRUE yet the conclusion is FALSE.\n\n"
                 f"Premises:\n"
                 f"{chr(10).join(f'- {p}' for p in premises_nl)}\n\n"
-                f"Conclusion to check:\n"
+                f"Conclusion being tested:\n"
                 f"- {conclusion_nl}\n\n"
-                f"Counterexample scenario (Z3 Model):\n"
+                f"Counterexample (Z3 model):\n"
                 f"{model_str}\n\n"
-                f"Explain in clear, natural language why this counterexample shows that the conclusion is not guaranteed to be true "
-                f"under the given premises."
+                f"Explain in plain language why this counterexample breaks the conclusion. "
+                f"Show what the counterexample tells us, why it matters, and what logical gap it exposes. "
+                f"Speak like a human who understands the argument — do not just restate the premises."
             )
         else:
             user_prompt = (
-                f"We could not determine if the conclusion is logically guaranteed by the premises.\n\n"
+                f"The solver could not determine whether the conclusion is entailed by the premises.\n\n"
                 f"Premises:\n"
                 f"{chr(10).join(f'- {p}' for p in premises_nl)}\n\n"
                 f"Conclusion:\n"
                 f"- {conclusion_nl}\n\n"
-                f"Provide a brief logical analysis of these statements and any potential missing links."
+                f"Analyse why the relationship is indeterminate. What information is missing? "
+                f"What would need to be true for the conclusion to follow? "
+                f"Write as a human reasoner, not as a list of facts."
             )
-            
+
         system_prompt = (
-            "You are a logical reasoning assistant. Your task is to explain the logical deduction step-by-step in clear, natural language."
+            "You are an expert in logical reasoning. "
+            "Your role is to explain logical arguments clearly and naturally, the way a knowledgeable human teacher would.\n\n"
+            "IMPORTANT RULES:\n"
+            "- Synthesize ideas across premises — show how they connect and combine.\n"
+            "- Use transitional language: 'Since', 'Therefore', 'This means', 'Combined with', 'As a result', 'It follows that'.\n"
+            "- Never just copy or list premises verbatim — interpret and derive.\n"
+            "- Your explanation should read as a flowing argument, not a bullet list of facts."
         )
-        
+
         return self._generate_text(system_prompt, user_prompt, max_new_tokens=512)
 
     # ------------------------------------------------------------------
@@ -289,45 +299,53 @@ class ReasoningPipeline:
                 else "\n".join(f"- {p}" for p in premises_nl)
             )
             user_prompt = (
-                f"We have proven that the following conclusion is LOGICALLY CORRECT (entailed) "
-                f"by the premises using formal verification (Z3 SMT solver).\n\n"
-                f"Premises that directly contribute to the proof:\n"
+                f"The following premises have been formally proven (via Z3 SMT solver) to entail the conclusion.\n\n"
+                f"Key premises:\n"
                 f"{core_premises_text}\n\n"
-                f"Conclusion to prove:\n"
+                f"Conclusion:\n"
                 f"- {conclusion_nl}\n\n"
-                f"Explain step-by-step why the premises logically entail the conclusion. "
-                f"Format EACH reasoning step on its own line as 'Step N: <explanation>'. "
-                f"Be concise and precise."
+                f"Write a numbered step-by-step explanation that traces the logical chain from premises to conclusion. "
+                f"Each step should build on the previous one and show a new deduction or inference — "
+                f"NOT simply restate a premise. Use transitions like 'Since', 'Therefore', 'This means', 'It follows that'. "
+                f"Format: 'Step N: <explanation>'."
             )
         elif result == sat:
             model_str = str(verification["model"])
             user_prompt = (
-                f"We have found that the following conclusion is NOT logically guaranteed by the premises.\n"
-                f"The SMT solver found a counterexample where all premises are TRUE but the conclusion is FALSE.\n\n"
+                f"The SMT solver found a counterexample: the premises are all TRUE yet the conclusion is FALSE.\n\n"
                 f"Premises:\n"
                 f"{chr(10).join(f'- {p}' for p in premises_nl)}\n\n"
-                f"Conclusion to check:\n"
+                f"Conclusion being tested:\n"
                 f"- {conclusion_nl}\n\n"
-                f"Counterexample scenario (Z3 Model):\n"
+                f"Counterexample (Z3 model):\n"
                 f"{model_str}\n\n"
-                f"Explain why this counterexample invalidates the conclusion. "
-                f"Format EACH reasoning step as 'Step N: <explanation>'."
+                f"Explain in numbered steps why this counterexample breaks the conclusion. "
+                f"Show what the counterexample reveals about the logical gap. "
+                f"Each step should advance the argument — do not just restate facts. "
+                f"Format: 'Step N: <explanation>'."
             )
         else:
             user_prompt = (
-                f"We could not determine if the conclusion is logically guaranteed by the premises.\n\n"
+                f"The solver could not determine whether the conclusion is entailed by the premises.\n\n"
                 f"Premises:\n"
                 f"{chr(10).join(f'- {p}' for p in premises_nl)}\n\n"
                 f"Conclusion:\n"
                 f"- {conclusion_nl}\n\n"
-                f"Analyse the logical relationship between premises and conclusion. "
-                f"Format EACH reasoning step as 'Step N: <explanation>'."
+                f"In numbered steps, analyse why the relationship is indeterminate. "
+                f"What information is missing? What would need to be true for the conclusion to follow? "
+                f"Each step should offer a new insight, not repeat a premise. "
+                f"Format: 'Step N: <explanation>'."
             )
 
         system_prompt = (
-            "You are a logical reasoning assistant. "
-            "Explain logical deductions as clearly numbered steps in the format 'Step N: <explanation>'. "
-            "Each step must be self-contained and progress the argument forward."
+            "You are an expert in logical reasoning. "
+            "Your role is to explain arguments the way a knowledgeable human teacher would — "
+            "through clear numbered steps that DERIVE new insights, not restate known facts.\n\n"
+            "IMPORTANT RULES:\n"
+            "- Each 'Step N:' must advance the reasoning chain with a new deduction or inference.\n"
+            "- Synthesize across premises: show how they combine to produce a new conclusion.\n"
+            "- Use transitional language: 'Since', 'Therefore', 'This means', 'Combined with', 'It follows that'.\n"
+            "- Never copy a premise verbatim as a step — interpret and derive from it."
         )
 
         raw_text = self._generate_text(system_prompt, user_prompt, max_new_tokens=512)
