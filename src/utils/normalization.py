@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import json
 import unicodedata
 from typing import Dict, Optional
 
@@ -328,3 +329,34 @@ def _parse_number(value_text: str) -> Optional[float]:
         return float(value_text)
     except ValueError:
         return None
+
+def extract_fol_formulas(text: str) -> list[str]:
+    """Extract FOL formulas directly from conversational LLM output without post-processing cleanup."""
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    try:
+        cleaned_text = text.strip()
+        if cleaned_text.startswith("```"):
+            cleaned_text = re.sub(r"^```(?:json)?\n", "", cleaned_text)
+            cleaned_text = re.sub(r"\n```$", "", cleaned_text)
+        
+        parsed = json.loads(cleaned_text.strip())
+        if isinstance(parsed, list):
+            return [item.strip() for item in parsed if isinstance(item, str)]
+    except Exception:
+        pass
+
+    lines = text.strip().split("\n")
+    fol_formulas = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        if any(marker in line for marker in ["---", "Key Predicates", "Explanation:", "Predicate Key", "Key:", "Predicates:", "Notes:", "Key predicates:"]):
+            break
+        if ":" in line:
+            continue
+        line = re.sub(r"^\d+[\.\)]\s*", "", line).strip()
+        line = line.strip('"').strip("'").rstrip(",")
+        if line:
+            fol_formulas.append(line)
+    return fol_formulas
