@@ -230,7 +230,8 @@ def _llm_or_text_match(model_text: str, correct_text: str) -> bool:
 	if not model_text or not correct_text:
 		return False
 
-	llm_model = os.getenv("PHYSICS_EVAL_LLM")
+	default_model = os.getenv("DEFAULT_MODEL")
+	llm_model = os.getenv("PHYSICS_EVAL_LLM") or default_model
 	if not llm_model:
 		return _normalize_text(model_text) == _normalize_text(correct_text)
 
