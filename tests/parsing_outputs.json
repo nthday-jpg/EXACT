@@ -1,0 +1,180 @@
+[
+  {
+    "premises-NL": [
+      "Students who miss any quiz will fail the class.",
+      "Students who score less than 50% on the final exam will fail the class.",
+      "Students who complete all homework and attend every class will pass the final exam.",
+      "Ponko completed all homework but missed one class.",
+      "Students who fail the class must retake it next semester."
+    ],
+    "ontology_output_raw": null,
+    "ontology_output": null,
+    "logic_output_raw": null,
+    "logic_output": null,
+    "status": "error: BadRequestError: Error code: 400 - {'error': {'message': \"The requested model 'Qwen/Qwen3-8B' is not a chat model.\", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_supported'}}",
+    "processing_time_sec": 0.8339974880218506
+  },
+  {
+    "premises-NL": [
+      "If a student invests time in project-based learning, that student gains a broader understanding of the subject.",
+      "There is at least one person who mentors first-year students.",
+      "If a student has a broader understanding of the subject, that student also mentors first-year students.",
+      "All students complete the end-of-term research paper.",
+      "If a student does not complete the end-of-term research paper, that student does not mentor first-year students.",
+      "All students have valid library access.",
+      "If investing time in project-based learning leads to a broader understanding, then everyone must complete the end-of-term research paper.",
+      "If a broader understanding leads to mentoring first-year students, then investing time in project-based learning leads to that broader understanding.",
+      "If a student never visits the campus writing center, that student does not maintain valid library access.",
+      "There is at least one person who uses the librarys advanced research tools.",
+      "If a person mentors first-year students, that person also has a broader understanding of the subject."
+    ],
+    "ontology_output_raw": null,
+    "ontology_output": null,
+    "logic_output_raw": null,
+    "logic_output": null,
+    "status": "error: BadRequestError: Error code: 400 - {'error': {'message': \"The requested model 'Qwen/Qwen3-8B' is not a chat model.\", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_supported'}}",
+    "processing_time_sec": 0.2915456295013428
+  },
+  {
+    "premises-NL": [
+      "If a Raspberry Pi system is simple to use, then it is cost-effective.",
+      "There exists at least one Raspberry Pi system that is cost-effective.",
+      "If a Raspberry Pi system is not simple to use, then it is not versatile.",
+      "If a Raspberry Pi system is simple to use, then it is versatile.",
+      "There exists at least one Raspberry Pi system that is versatile.",
+      "Every Raspberry Pi system is thoroughly tested and well-documented.",
+      "If being simple to use implies cost-effectiveness for a Raspberry Pi system, then every Raspberry Pi system is thoroughly tested and well-documented.",
+      "If there exists at least one cost-effective Raspberry Pi system, then there exists at least one versatile Raspberry Pi system.",
+      "If a Raspberry Pi system is connected to online resources, then it is thoroughly tested and well-documented.",
+      "If a Raspberry Pi system is connected to online resources, then it is versatile.",
+      "There exists at least one Raspberry Pi system that is connected to online resources and benefits from active community support.",
+      "If a Raspberry Pi system is cost-effective but not thoroughly tested and well-documented, then it might not support all versatile use-cases."
+    ],
+    "ontology_output_raw": null,
+    "ontology_output": null,
+    "logic_output_raw": null,
+    "logic_output": null,
+    "status": "error: BadRequestError: Error code: 400 - {'error': {'message': \"The requested model 'Qwen/Qwen3-8B' is not a chat model.\", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_supported'}}",
+    "processing_time_sec": 0.3041417598724365
+  },
+  {
+    "premises-NL": [
+      "If an AI application has undergone rigorous testing, then it meets the highest quality standards.",
+      "If an AI application is highly successful, then it is widely adopted in educational institutions.",
+      "If an AI application shows great potential, then it has undergone rigorous testing.",
+      "If an AI application is widely adopted in educational institutions, then it is highly successful.",
+      "If an AI application is widely adopted in educational institutions, then it receives notable academic recognition.",
+      "Every AI application meets the highest quality standards.",
+      "If it is true that widespread adoption implies high success, then any AI application that shows great potential must have undergone rigorous testing.",
+      "If the implication that promising applications are rigorously tested (given that widespread adoption implies success) holds, then it follows that widespread adoption indeed implies high success.",
+      "Every AI application is widely adopted in educational institutions."
+    ],
+    "ontology_output_raw": null,
+    "ontology_output": null,
+    "logic_output_raw": null,
+    "logic_output": null,
+    "status": "error: BadRequestError: Error code: 400 - {'error': {'message': \"The requested model 'Qwen/Qwen3-8B' is not a chat model.\", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_supported'}}",
+    "processing_time_sec": 0.3358933925628662
+  },
+  {
+    "premises-NL": [
+      "There exists at least one student.",
+      "Everyone takes courses.",
+      "If x is a student, then x is a researcher.",
+      "If x is not qualified, then x is not a researcher.",
+      "If x is a professor, then x teaches."
+    ],
+    "ontology_output_raw": null,
+    "ontology_output": null,
+    "logic_output_raw": null,
+    "logic_output": null,
+    "status": "error: BadRequestError: Error code: 400 - {'error': {'message': \"The requested model 'Qwen/Qwen3-8B' is not a chat model.\", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_supported'}}",
+    "processing_time_sec": 0.2920982837677002
+  },
+  {
+    "premises-NL": [
+      "If x does not use online documents from the library, then x does not gain more knowledge",
+      "There exists a student who gains more knowledge from the online documents",
+      "All students actively use the librarys online resources"
+    ],
+    "ontology_output_raw": null,
+    "ontology_output": null,
+    "logic_output_raw": null,
+    "logic_output": null,
+    "status": "error: BadRequestError: Error code: 400 - {'error': {'message': \"The requested model 'Qwen/Qwen3-8B' is not a chat model.\", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_supported'}}",
+    "processing_time_sec": 0.29495930671691895
+  },
+  {
+    "premises-NL": [
+      "If a student is preparing for an exam, then they are understanding the material.",
+      "If a student is studying, then they are asking questions.",
+      "Every student is attending tutorials.",
+      "If (a student studying implies they are asking questions), then every student is attending tutorials.",
+      "If (a student preparing for an exam implies they are understanding the material), then every student is attending tutorials.",
+      "Every student is preparing for an exam.",
+      "If a student is understanding the material, then they are revising."
+    ],
+    "ontology_output_raw": null,
+    "ontology_output": null,
+    "logic_output_raw": null,
+    "logic_output": null,
+    "status": "error: BadRequestError: Error code: 400 - {'error': {'message': \"The requested model 'Qwen/Qwen3-8B' is not a chat model.\", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_supported'}}",
+    "processing_time_sec": 0.3010835647583008
+  },
+  {
+    "premises-NL": [
+      "Qualifying for Quantum Physics (Q) requires Research project completion (R).",
+      "Failing the entrance exam (\u00acT) blocks dormitory access (\u00acU).",
+      "Special program enrollment (S) mandates passing Philosophy (P).",
+      "All students passed the entrance exam.",
+      "All students have passed Philosophy.",
+      "No entrance exam pass -> No Research completion.",
+      "Some students completed Research projects.",
+      "Special program students get dormitory access.",
+      "Universal Philosophy success ensures special program benefits.",
+      "Research completers enforce Quantum Physics requirements.",
+      "The exam-Research rule activates Quantum Physics policies.",
+      "Quantum disqualification revokes dormitory rights.",
+      "Some students qualify for Quantum Physics.",
+      "Quantum qualification grants dormitory access."
+    ],
+    "ontology_output_raw": null,
+    "ontology_output": null,
+    "logic_output_raw": null,
+    "logic_output": null,
+    "status": "error: BadRequestError: Error code: 400 - {'error': {'message': \"The requested model 'Qwen/Qwen3-8B' is not a chat model.\", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_supported'}}",
+    "processing_time_sec": 0.293346643447876
+  },
+  {
+    "premises-NL": [
+      "If x is a student, then x takes advanced courses.",
+      "If x takes advanced courses, then x wins a scholarship.",
+      "If all students take advanced courses, then everyone takes advanced courses.",
+      "If x wins a scholarship, then x publishes research.",
+      "At least one person publishes research."
+    ],
+    "ontology_output_raw": null,
+    "ontology_output": null,
+    "logic_output_raw": null,
+    "logic_output": null,
+    "status": "error: BadRequestError: Error code: 400 - {'error': {'message': \"The requested model 'Qwen/Qwen3-8B' is not a chat model.\", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_supported'}}",
+    "processing_time_sec": 0.30602455139160156
+  },
+  {
+    "premises-NL": [
+      "Students who study hard gain knowledge.",
+      "Having knowledge enables you to do well on the exam.",
+      "If you do well on the exam and do not help others, you will pass the course.",
+      "If you do not have knowledge but receive help from others, you will pass the course.",
+      "You can only help others if you have knowledge.",
+      "Mia did the exam well.",
+      "Mia passed the course."
+    ],
+    "ontology_output_raw": null,
+    "ontology_output": null,
+    "logic_output_raw": null,
+    "logic_output": null,
+    "status": "error: BadRequestError: Error code: 400 - {'error': {'message': \"The requested model 'Qwen/Qwen3-8B' is not a chat model.\", 'type': 'invalid_request_error', 'param': 'model', 'code': 'model_not_supported'}}",
+    "processing_time_sec": 0.2876460552215576
+  }
+]

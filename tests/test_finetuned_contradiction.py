@@ -23,7 +23,7 @@ root_dir = Path(__file__).resolve().parents[1]
 sys.path.append(str(root_dir))
 
 from llm.llm_client import LLMClient
-from src.logic.z3_verifier import parse_formulas, FolParser, Z3Symbols
+from src.logic.reasoning.verifier import parse_formulas, FolParser, Z3Symbols
 from src.utils.normalization import normalize_logic_fol_entry
 
 # Preset samples for testing contradiction

@@ -9,7 +9,7 @@ from time import time
 from z3 import DeclareSort, Solver
 
 from llm.llm_client import LLMClient
-from src.logic.z3_verifier import FolParser, Z3Symbols
+from src.logic.reasoning.verifier import FolParser, Z3Symbols
 from src.utils.normalization import normalize_logic_premise_text
 
 
