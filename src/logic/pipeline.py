@@ -105,7 +105,12 @@ class LogicalReasoningPipeline:
             for idx, k in enumerate(opt_keys):
                 offset = len(premises_nl) + idx
                 options_fol[k] = all_fol[offset] if offset < len(all_fol) else ""
-                
+
+            # Filter premises to those most relevant to the question (uses full question as context)
+            filt_premises_nl, filt_premises_fol, _ = self.reasoning_pipeline.filter_relevant_premises(
+                premises_nl, conclusion_nl, premises_fol
+            )
+
             # Evaluate ALL options: collect every UNSAT candidate with its core size
             unsat_candidates: list[tuple[str, dict, int]] = []  # (key, verification, core_size)
 
@@ -114,7 +119,7 @@ class LogicalReasoningPipeline:
                 if not opt_fol:
                     continue
                 try:
-                    verification = self.reasoning_pipeline.verify(premises_fol, opt_fol, negate_conclusion=True)
+                    verification = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=True)
                     if verification["result"] == z3.unsat:
                         core_size = len(verification.get("unsat_core", []))
                         unsat_candidates.append((k, verification, core_size))
@@ -125,22 +130,22 @@ class LogicalReasoningPipeline:
                 # Pick the option whose proof uses the fewest premises (tightest entailment)
                 unsat_candidates.sort(key=lambda x: x[2])
                 correct_option, correct_verification, _ = unsat_candidates[0]
-            
+
             if not correct_option and opt_keys:
                 correct_option = opt_keys[0]
                 opt_fol = options_fol.get(correct_option, "")
-                correct_verification = self.reasoning_pipeline.verify(premises_fol, opt_fol, negate_conclusion=True)
-                
+                correct_verification = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=True)
+
             reasoning = self.generate_reasoning(
-                premises_nl=premises_nl,
+                premises_nl=filt_premises_nl,
                 conclusion_nl=f"Option {correct_option}: {options[correct_option]}",
                 verification=correct_verification
             )
-            
+
             return {
                 "answer": correct_option,
-                "confidence": _compute_confidence(correct_verification, total_premises=len(premises_fol)),
-                "premises_fol": premises_fol,
+                "confidence": _compute_confidence(correct_verification, total_premises=len(filt_premises_fol)),
+                "premises_fol": filt_premises_fol,
                 "conclusion_fol": options_fol.get(correct_option, ""),
                 "verification": correct_verification,
                 "reasoning": reasoning
@@ -148,18 +153,23 @@ class LogicalReasoningPipeline:
         else:
             # Yes/No or Statement Flow: Dual satisfiability check (both entailed or negated entailed)
             premises_fol, conclusion_fol = self.translate_premises_and_conclusion(premises_nl, conclusion_nl)
-            
+
+            # Filter premises to those most relevant to the conclusion
+            filt_premises_nl, filt_premises_fol, _ = self.reasoning_pipeline.filter_relevant_premises(
+                premises_nl, conclusion_nl, premises_fol
+            )
+
             # Check if conclusion is entailed
-            verification = self.reasoning_pipeline.verify(premises_fol, conclusion_fol, negate_conclusion=True)
+            verification = self.reasoning_pipeline.verify(filt_premises_fol, conclusion_fol, negate_conclusion=True)
             answer = "Uncertain"
-            
+
             if verification["result"] == z3.unsat:
                 # Conclusion is logically entailed
                 answer = "Yes"
             else:
                 # Check if negation of conclusion is entailed
                 try:
-                    verification_neg = self.reasoning_pipeline.verify(premises_fol, conclusion_fol, negate_conclusion=False)
+                    verification_neg = self.reasoning_pipeline.verify(filt_premises_fol, conclusion_fol, negate_conclusion=False)
                     if verification_neg["result"] == z3.unsat:
                         verification = verification_neg
                         conclusion_nl = f"NOT ({conclusion_nl})"
@@ -167,13 +177,13 @@ class LogicalReasoningPipeline:
                         answer = "No"
                 except Exception:
                     pass
-                    
-            reasoning = self.generate_reasoning(premises_nl, conclusion_nl, verification)
-            
+
+            reasoning = self.generate_reasoning(filt_premises_nl, conclusion_nl, verification)
+
             return {
                 "answer": answer,
-                "confidence": _compute_confidence(verification, total_premises=len(premises_fol)),
-                "premises_fol": premises_fol,
+                "confidence": _compute_confidence(verification, total_premises=len(filt_premises_fol)),
+                "premises_fol": filt_premises_fol,
                 "conclusion_fol": conclusion_fol,
                 "verification": verification,
                 "reasoning": reasoning

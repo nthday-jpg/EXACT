@@ -1,3 +1,5 @@
+import json
+import re
 import z3
 from z3 import unsat, sat
 import torch
@@ -96,6 +98,60 @@ class ReasoningPipeline:
     def verify(self, premises_fol: list[str], conclusion_fol: str, negate_conclusion: bool = True) -> dict:
         """Parses FOL formulas, tracks them in Z3 solver, and checks for entailment via contradiction."""
         return verify_with_z3(premises_fol, conclusion_fol, negate_conclusion=negate_conclusion)
+
+    def filter_relevant_premises(
+        self,
+        premises_nl: list[str],
+        conclusion_nl: str,
+        premises_fol: list[str],
+        top_k: int = None,
+    ) -> tuple[list[str], list[str], list[int]]:
+        """Use LLM to select the subset of premises most relevant to the conclusion.
+
+        Returns:
+            (filtered_premises_nl, filtered_premises_fol, selected_indices)
+
+        Falls back to all premises when:
+        - There are 3 or fewer premises (not worth the LLM call).
+        - The LLM response cannot be parsed.
+        - Fewer than 2 premises survive filtering (degenerate result).
+        """
+        n = len(premises_nl)
+        if n <= 3:
+            return premises_nl, premises_fol, list(range(n))
+
+        if top_k is None:
+            # Keep at least half of the premises, minimum 3
+            top_k = max(3, (n + 1) // 2)
+
+        numbered = "\n".join(f"{i + 1}. {p}" for i, p in enumerate(premises_nl))
+        system_prompt = (
+            "You are a logical reasoning assistant. "
+            "Identify which premises are directly needed to prove or disprove the given conclusion.\n\n"
+            "Return ONLY a JSON list of 1-based premise numbers. Example: [1, 3, 5]"
+        )
+        user_prompt = (
+            f"Premises:\n{numbered}\n\n"
+            f"Conclusion:\n{conclusion_nl}\n\n"
+            f"Select at most {top_k} premise numbers that are most relevant. "
+            "Return a JSON list of integers only."
+        )
+
+        try:
+            response = self._generate_text(system_prompt, user_prompt, max_new_tokens=128)
+            match = re.search(r"\[[\d,\s]+\]", response)
+            if not match:
+                return premises_nl, premises_fol, list(range(n))
+            indices_1based: list[int] = json.loads(match.group())
+            # Convert to 0-based, deduplicate, clamp to valid range
+            indices = sorted({i - 1 for i in indices_1based if 1 <= i <= n})
+            if len(indices) < 2:
+                return premises_nl, premises_fol, list(range(n))
+            filtered_nl = [premises_nl[i] for i in indices]
+            filtered_fol = [premises_fol[i] for i in indices] if len(premises_fol) == n else premises_fol
+            return filtered_nl, filtered_fol, indices
+        except Exception:
+            return premises_nl, premises_fol, list(range(n))
 
     def generate_reasoning(self, premises_nl: list[str], conclusion_nl: str, verification: dict) -> str:
         """Generates step-by-step reasoning explaining the Z3 verification result."""
