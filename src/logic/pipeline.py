@@ -13,6 +13,30 @@ def parse_mcq_options(text: str) -> dict[str, str]:
         options[opt_char] = opt_text.strip()
     return options
 
+
+def _compute_confidence(verification: dict, total_premises: int = 0) -> float:
+    """Compute a confidence score (0.0–1.0) based on the Z3 verification result.
+
+    Scoring rationale:
+    - unsat: conclusion is formally proven; score scales with proof tightness.
+        A smaller unsat core relative to total premises means a tighter, more
+        focused proof → higher confidence (range 0.75–1.00).
+    - sat: a counterexample was found; the answer is definitively not entailed.
+        We are fairly confident in the "No/wrong option" judgment → 0.60.
+    - unknown: Z3 could not decide; we have low confidence → 0.30.
+    """
+    result = verification.get("result")
+    if result == z3.unsat:
+        core_size = len(verification.get("unsat_core", []))
+        # Tightness: 1.0 when core has 1 element, approaches 0 as core → total
+        denom = max(total_premises, core_size, 1)
+        tightness = 1.0 - (core_size - 1) / denom
+        # Map tightness to [0.75, 1.00]
+        return round(0.75 + tightness * 0.25, 4)
+    if result == z3.sat:
+        return 0.60
+    return 0.30
+
 class LogicalReasoningPipeline:
     """
     Backward-compatible wrapper for the End-to-End Logical Reasoning Pipeline.
@@ -111,6 +135,7 @@ class LogicalReasoningPipeline:
             
             return {
                 "answer": correct_option,
+                "confidence": _compute_confidence(correct_verification, total_premises=len(premises_fol)),
                 "premises_fol": premises_fol,
                 "conclusion_fol": options_fol.get(correct_option, ""),
                 "verification": correct_verification,
@@ -143,6 +168,7 @@ class LogicalReasoningPipeline:
             
             return {
                 "answer": answer,
+                "confidence": _compute_confidence(verification, total_premises=len(premises_fol)),
                 "premises_fol": premises_fol,
                 "conclusion_fol": conclusion_fol,
                 "verification": verification,
