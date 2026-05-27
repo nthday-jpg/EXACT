@@ -5,6 +5,18 @@ from z3 import unsat, sat
 import torch
 from src.logic.reasoning.verifier import verify_with_z3, extract_proof_structure
 from src.llm import LLMClient
+from src.logic.prompts import (
+    FILTER_PREMISES_SYSTEM_PROMPT,
+    FILTER_PREMISES_USER_PROMPT_TEMPLATE,
+    REASONING_SYSTEM_PROMPT,
+    REASONING_UNSAT_USER_PROMPT_TEMPLATE,
+    REASONING_SAT_USER_PROMPT_TEMPLATE,
+    REASONING_UNKNOWN_USER_PROMPT_TEMPLATE,
+    COT_SYSTEM_PROMPT,
+    COT_UNSAT_USER_PROMPT_TEMPLATE,
+    COT_SAT_USER_PROMPT_TEMPLATE,
+    COT_UNKNOWN_USER_PROMPT_TEMPLATE,
+)
 
 class ReasoningPipeline:
     """
@@ -80,16 +92,9 @@ class ReasoningPipeline:
             top_k = max(3, (n + 1) // 2)
 
         numbered = "\n".join(f"{i + 1}. {p}" for i, p in enumerate(premises_nl))
-        system_prompt = (
-            "You are a logical reasoning assistant. "
-            "Identify which premises are directly needed to prove or disprove the given conclusion.\n\n"
-            "Return ONLY a JSON list of 1-based premise numbers. Example: [1, 3, 5]"
-        )
-        user_prompt = (
-            f"Premises:\n{numbered}\n\n"
-            f"Conclusion:\n{conclusion_nl}\n\n"
-            f"Select at most {top_k} premise numbers that are most relevant. "
-            "Return a JSON list of integers only."
+        system_prompt = FILTER_PREMISES_SYSTEM_PROMPT
+        user_prompt = FILTER_PREMISES_USER_PROMPT_TEMPLATE.format(
+            numbered=numbered, conclusion_nl=conclusion_nl, top_k=top_k
         )
 
         try:
@@ -130,52 +135,26 @@ class ReasoningPipeline:
                 core_premises_nl.append(f"- Premise {idx+1}: {premises_nl[idx]}")
             core_premises_text = "\n".join(core_premises_nl) if core_premises_nl else "\n".join(f"- {p}" for p in premises_nl)
 
-            user_prompt = (
-                f"The following premises have been formally proven (via Z3 SMT solver) to entail the conclusion.\n\n"
-                f"Key premises:\n"
-                f"{core_premises_text}\n\n"
-                f"Conclusion:\n"
-                f"- {conclusion_nl}\n\n"
-                f"Write a concise explanation that shows HOW these premises chain together to reach the conclusion. "
-                f"Trace the logical flow: what does each premise contribute? How do they combine? "
-                f"Use natural transitions like 'Since', 'Therefore', 'This means', 'Combined with', 'As a result'. "
-                f"Do NOT simply restate or copy the premises — synthesize them into a coherent argument."
+            user_prompt = REASONING_UNSAT_USER_PROMPT_TEMPLATE.format(
+                core_premises_text=core_premises_text,
+                conclusion_nl=conclusion_nl
             )
         elif result == sat:
             model_str = str(verification["model"])
-            user_prompt = (
-                f"The SMT solver found a counterexample: the premises are all TRUE yet the conclusion is FALSE.\n\n"
-                f"Premises:\n"
-                f"{chr(10).join(f'- {p}' for p in premises_nl)}\n\n"
-                f"Conclusion being tested:\n"
-                f"- {conclusion_nl}\n\n"
-                f"Counterexample (Z3 model):\n"
-                f"{model_str}\n\n"
-                f"Explain in plain language why this counterexample breaks the conclusion. "
-                f"Show what the counterexample tells us, why it matters, and what logical gap it exposes. "
-                f"Speak like a human who understands the argument — do not just restate the premises."
+            premises_text = "\n".join(f"- {p}" for p in premises_nl)
+            user_prompt = REASONING_SAT_USER_PROMPT_TEMPLATE.format(
+                premises_text=premises_text,
+                conclusion_nl=conclusion_nl,
+                model_str=model_str
             )
         else:
-            user_prompt = (
-                f"The solver could not determine whether the conclusion is entailed by the premises.\n\n"
-                f"Premises:\n"
-                f"{chr(10).join(f'- {p}' for p in premises_nl)}\n\n"
-                f"Conclusion:\n"
-                f"- {conclusion_nl}\n\n"
-                f"Analyse why the relationship is indeterminate. What information is missing? "
-                f"What would need to be true for the conclusion to follow? "
-                f"Write as a human reasoner, not as a list of facts."
+            premises_text = "\n".join(f"- {p}" for p in premises_nl)
+            user_prompt = REASONING_UNKNOWN_USER_PROMPT_TEMPLATE.format(
+                premises_text=premises_text,
+                conclusion_nl=conclusion_nl
             )
 
-        system_prompt = (
-            "You are an expert in logical reasoning. "
-            "Your role is to explain logical arguments clearly and naturally, the way a knowledgeable human teacher would.\n\n"
-            "IMPORTANT RULES:\n"
-            "- Synthesize ideas across premises — show how they connect and combine.\n"
-            "- Use transitional language: 'Since', 'Therefore', 'This means', 'Combined with', 'As a result', 'It follows that'.\n"
-            "- Never just copy or list premises verbatim — interpret and derive.\n"
-            "- Your explanation should read as a flowing argument, not a bullet list of facts."
-        )
+        system_prompt = REASONING_SYSTEM_PROMPT
 
         return self._generate_text(system_prompt, user_prompt, max_new_tokens=512)
 
@@ -267,56 +246,27 @@ class ReasoningPipeline:
                     f"making the logic mathematically grounded."
                 )
 
-            user_prompt = (
-                f"The following premises have been formally proven (via Z3 SMT solver) to entail the conclusion.\n\n"
-                f"Key premises:\n"
-                f"{core_premises_text}\n\n"
-                f"Conclusion:\n"
-                f"- {conclusion_nl}\n\n"
-                f"{proof_skeleton_instruction}\n\n"
-                f"Write a numbered step-by-step explanation that traces the logical chain from premises to conclusion. "
-                f"Each step should build on the previous one and show a new deduction or inference — "
-                f"NOT simply restate a premise. Use transitions like 'Since', 'Therefore', 'This means', 'It follows that'. "
-                f"Format: 'Step N: <explanation>'."
+            user_prompt = COT_UNSAT_USER_PROMPT_TEMPLATE.format(
+                core_premises_text=core_premises_text,
+                conclusion_nl=conclusion_nl,
+                proof_skeleton_instruction=proof_skeleton_instruction
             )
         elif result == sat:
             model_str = str(verification["model"])
-            user_prompt = (
-                f"The SMT solver found a counterexample: the premises are all TRUE yet the conclusion is FALSE.\n\n"
-                f"Premises:\n"
-                f"{chr(10).join(f'- {p}' for p in premises_nl)}\n\n"
-                f"Conclusion being tested:\n"
-                f"- {conclusion_nl}\n\n"
-                f"Counterexample (Z3 model):\n"
-                f"{model_str}\n\n"
-                f"Explain in numbered steps why this counterexample breaks the conclusion. "
-                f"Show what the counterexample reveals about the logical gap. "
-                f"Each step should advance the argument — do not just restate facts. "
-                f"Format: 'Step N: <explanation>'."
+            premises_text = "\n".join(f"- {p}" for p in premises_nl)
+            user_prompt = COT_SAT_USER_PROMPT_TEMPLATE.format(
+                premises_text=premises_text,
+                conclusion_nl=conclusion_nl,
+                model_str=model_str
             )
         else:
-            user_prompt = (
-                f"The solver could not determine whether the conclusion is entailed by the premises.\n\n"
-                f"Premises:\n"
-                f"{chr(10).join(f'- {p}' for p in premises_nl)}\n\n"
-                f"Conclusion:\n"
-                f"- {conclusion_nl}\n\n"
-                f"In numbered steps, analyse why the relationship is indeterminate. "
-                f"What information is missing? What would need to be true for the conclusion to follow? "
-                f"Each step should offer a new insight, not repeat a premise. "
-                f"Format: 'Step N: <explanation>'."
+            premises_text = "\n".join(f"- {p}" for p in premises_nl)
+            user_prompt = COT_UNKNOWN_USER_PROMPT_TEMPLATE.format(
+                premises_text=premises_text,
+                conclusion_nl=conclusion_nl
             )
 
-        system_prompt = (
-            "You are an expert in logical reasoning. "
-            "Your role is to explain arguments the way a knowledgeable human teacher would — "
-            "through clear numbered steps that DERIVE new insights, not restate known facts.\n\n"
-            "IMPORTANT RULES:\n"
-            "- Each 'Step N:' must advance the reasoning chain with a new deduction or inference.\n"
-            "- Synthesize across premises: show how they combine to produce a new conclusion.\n"
-            "- Use transitional language: 'Since', 'Therefore', 'This means', 'Combined with', 'It follows that'.\n"
-            "- Never copy a premise verbatim as a step — interpret and derive from it."
-        )
+        system_prompt = COT_SYSTEM_PROMPT
 
         raw_text = self._generate_text(system_prompt, user_prompt, max_new_tokens=512)
         cot_steps = self._parse_cot_steps(raw_text)

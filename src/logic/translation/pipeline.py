@@ -4,6 +4,15 @@ import torch
 from src.utils.normalization import extract_fol_formulas, normalize_logic_fol_entry
 from src.logic.reasoning.verifier import try_parse_fol
 from src.llm import LLMClient
+from src.logic.prompts import (
+    GLOSSARY_SYSTEM_PROMPT,
+    GLOSSARY_USER_PROMPT_TEMPLATE,
+    TRANSLATE_USER_PROMPT_TEMPLATE,
+    TRANSLATE_SYSTEM_PROMPT_GLOSSARY_TEMPLATE,
+    TRANSLATE_SYSTEM_PROMPT_FALLBACK,
+    REPAIR_FOL_SYSTEM_PROMPT,
+    REPAIR_FOL_USER_PROMPT_TEMPLATE,
+)
 
 class NLToFOLPipeline:
     """
@@ -54,37 +63,9 @@ class NLToFOLPipeline:
         for i, nl in enumerate(nl_list, start=1):
             nl_content += f"{i}. {nl}\n"
             
-        system_prompt = (
-            "You are a formal logic analyzer. Your task is to analyze a list of natural language statements "
-            "and generate a unified Glossary of entities (constants) and predicates that will be used to translate them into First-Order Logic (FOL).\n\n"
-            "Strictly follow these rules:\n"
-            "1. Identify all unique predicates. A predicate represents a property or relation of one or more terms. "
-            "Use camelCase or snake_case consistently for predicate names. E.g., isStudent(x) or is_student(x).\n"
-            "2. Identify all unique constants (names of specific people, courses, events, objects, numbers). "
-            "Constants must be singular, capitalized names or standardized symbols. E.g., Sophia, CourseA, Time800AM. "
-            "Do not use spaces inside constant names; use underscores or camelCase. E.g., Course_A or CourseA.\n"
-            "3. Keep the predicates and constants as simple, generic, and aligned as possible. If two statements refer to the same concept "
-            "(e.g. 'curriculum has exercises' and 'curriculum features practical exercises'), they MUST map to the same predicate (e.g. has_exercises(c)).\n"
-            "4. Output a STRICT valid JSON object with two keys: 'predicates' (a dictionary mapping the predicate signature to its English description) "
-            "and 'constants' (a dictionary mapping the constant name to its English description).\n\n"
-            "Example output format:\n"
-            "{\n"
-            "  \"predicates\": {\n"
-            "    \"Human(x)\": \"x is a human\",\n"
-            "    \"Mortal(x)\": \"x is mortal\"\n"
-            "  },\n"
-            "  \"constants\": {\n"
-            "    \"Socrates\": \"Socrates\"\n"
-            "  }\n"
-            "}\n\n"
-            "Return JSON only. Do not include markdown code block formatting (like ```json)."
-        )
+        system_prompt = GLOSSARY_SYSTEM_PROMPT
         
-        user_prompt = (
-            "Analyze the following natural language statements:\n"
-            f"{nl_content.strip()}\n\n"
-            "Generate the strict JSON Glossary. Return JSON only."
-        )
+        user_prompt = GLOSSARY_USER_PROMPT_TEMPLATE.format(nl_content=nl_content.strip())
         
         try:
             response = self._generate_text(system_prompt, user_prompt, max_new_tokens=512)
@@ -107,12 +88,7 @@ class NLToFOLPipeline:
         for i, nl in enumerate(nl_list, start=1):
             nl_content += f"{i}. {nl}\n"
             
-        user_prompt = (
-            "Convert the following premises into canonical first-order logic.\n\n"
-            "Premises:\n"
-            f"{nl_content.strip()}\n\n"
-            "Return a JSON list of strings containing the formulas."
-        )
+        user_prompt = TRANSLATE_USER_PROMPT_TEMPLATE.format(nl_content=nl_content.strip())
         
         # 1. Try to generate a unified glossary to enforce predicate/entity alignment
         glossary = self.generate_glossary(nl_list)
@@ -120,32 +96,10 @@ class NLToFOLPipeline:
         if glossary:
             # Convert glossary to string for the prompt
             glossary_str = json.dumps(glossary, indent=2)
-            system_prompt = (
-                "You convert natural-language premises into parser-safe first-order logic formulas.\n\n"
-                "Output a STRICT valid JSON list of strings containing the first-order logic formulas in the exact order of the input premises.\n\n"
-                "ALLOWED OPERATORS:\n"
-                "AND, OR, NOT, ->, <->, =, !=, >=, <=, >, <, ForAll, Exists\n\n"
-                "QUANTIFIER RULES:\n"
-                "Use nested quantifiers only. E.g., ForAll(x, ForAll(y, P(x,y)))\n\n"
-                "GLOSSARY CONSTRAINTS:\n"
-                "You must strictly align your translation with the Glossary below.\n"
-                "- Every constant name in your formulas must match a constant in the Glossary exactly (e.g. do not mix Sophia and sophia).\n"
-                "- Every predicate must match a predicate signature in the Glossary exactly (e.g. do not mix isStudent(x) and Student(x)).\n"
-                "- Do not introduce any new predicates or constants not defined in the Glossary.\n\n"
-                f"Glossary:\n{glossary_str}\n\n"
-                "Return JSON only."
-            )
+            system_prompt = TRANSLATE_SYSTEM_PROMPT_GLOSSARY_TEMPLATE.format(glossary_str=glossary_str)
         else:
             # Fallback to standard prompt if glossary generation fails
-            system_prompt = (
-                "You convert natural-language premises into parser-safe first-order logic formulas.\n\n"
-                "Output a STRICT valid JSON list of strings containing the first-order logic formulas in the exact order of the input premises.\n\n"
-                "ALLOWED OPERATORS:\n"
-                "AND, OR, NOT, ->, <->, =, !=, >=, <=, >, <, ForAll, Exists\n\n"
-                "QUANTIFIER RULES:\n"
-                "Use nested quantifiers only. E.g., ForAll(x, ForAll(y, P(x,y)))\n\n"
-                "Return JSON only."
-            )
+            system_prompt = TRANSLATE_SYSTEM_PROMPT_FALLBACK
         
         response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=1024)
         all_extracted_fol = extract_fol_formulas(response_content)
@@ -157,19 +111,8 @@ class NLToFOLPipeline:
 
     def _repair_fol(self, formula: str, error: str) -> str:
         """Ask the LLM to fix a broken FOL formula given a parse error message."""
-        system_prompt = (
-            "You are a first-order logic formula corrector.\n\n"
-            "Fix the given FOL formula so it is accepted by a strict parser.\n\n"
-            "ALLOWED OPERATORS: AND, OR, NOT, ->, <->, =, !=, >=, <=, >, <, ForAll, Exists\n"
-            "QUANTIFIER SYNTAX: ForAll(x, <body>) or Exists(x, <body>)\n"
-            "PREDICATE SYNTAX: P(x), R(a, b) — no spaces before '('\n"
-            "Return ONLY the corrected formula string, no explanation."
-        )
-        user_prompt = (
-            f"Broken FOL formula:\n{formula}\n\n"
-            f"Parse error:\n{error}\n\n"
-            "Return the corrected formula only."
-        )
+        system_prompt = REPAIR_FOL_SYSTEM_PROMPT
+        user_prompt = REPAIR_FOL_USER_PROMPT_TEMPLATE.format(formula=formula, error=error)
         return self._generate_text(system_prompt, user_prompt, max_new_tokens=256).strip()
 
     def _validate_and_repair(self, formulas: list[str], max_retries: int = 2) -> list[str]:
