@@ -217,4 +217,3 @@ OPEN_ENDED_USER_PROMPT_TEMPLATE = (
     "{question_nl}\n\n"
     "Concise Answer Statement:"
 )
-
