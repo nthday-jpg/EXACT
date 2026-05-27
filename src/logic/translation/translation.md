@@ -9,14 +9,18 @@ This module handles the translation of natural language (NL) premises and conclu
 ## Key Features
 
 - **Execution Flexibility**: Supports local loading of fine-tuned PEFT LoRA adapter models with NF4 4-bit quantization (optimized for low-resource hardware) as well as calling remote API instances via `LLMClient`.
-- **Predicate Alignment Prompting**: System and user prompts enforce strict constraints to ensure uniform predicate definitions and canonical operator formatting (e.g. `AND`, `OR`, `ForAll`, `Exists`, `->`, `<->`).
+- **Glossary-Constrained Translation (Two-Stage)** *(new)*: To ensure 100% uniform predicate and entity mapping across premises, it first runs a Glossary Generation stage to define a JSON dictionary of predicates/constants. The second stage translates statements strictly aligned under these constraints.
+- **FOL Automatic Normalization** *(new)*: Extracted formulas are immediately normalized using `normalize_logic_fol_entry` to automatically repair minor syntax/casing issues (e.g. `forall` vs `ForAll`, spaces, or operators like `&`/`~`), preventing redundant LLM calls.
 - **Robust Output Recovery**: Utilizes regular expressions and JSON parsers in `extract_fol_formulas` to reliably extract and align logic formulas even from conversational or verbose model responses.
-- **FOL Repair Loop** *(new)*: After generation, each formula is validated by attempting a Z3 parse (`try_parse_fol`). Broken formulas are automatically sent back to the LLM with the exact parse error for correction — up to 2 retries per formula.
+- **FOL Repair Loop**: After generation and normalization, each formula is validated by attempting a Z3 parse (`try_parse_fol`). Any remaining broken formulas are automatically sent back to the LLM with the exact parse error for correction — up to 2 retries per formula.
 
 ## Public API
 
 ### `translate_list(nl_list) -> list[str]`
-Translates a list of NL sentences into FOL formulas in a **single** LLM call, then validates and repairs each formula.
+Translates a list of NL sentences into FOL formulas in a two-stage glossary-constrained flow, then automatically normalizes, validates, and repairs each formula.
+
+### `generate_glossary(nl_list) -> dict | None` *(new)*
+Analyzes the list of statements and outputs a unified JSON Glossary of predicates and constants.
 
 ### `translate_premises_and_conclusion(premises_nl, conclusion_nl) -> (list[str], str)`
 Convenience wrapper around `translate_list` that splits the result into premises and conclusion.
@@ -25,7 +29,7 @@ Convenience wrapper around `translate_list` that splits the result into premises
 Sends a broken formula and its parse error back to the LLM for correction. Returns the repaired formula string.
 
 ### `_validate_and_repair(formulas, max_retries=2) -> list[str]` *(internal)*
-Iterates over each formula, calls `try_parse_fol`, and triggers `_repair_fol` for any that fail. Accepts the best available version after `max_retries` attempts (never discards a formula outright).
+Iterates over each formula, calls `try_parse_fol`, and triggers `_repair_fol` for any that fail. Candidate repairs are automatically normalized and re-validated. Accepts the best available version after `max_retries` attempts.
 
 ## Basic Usage
 

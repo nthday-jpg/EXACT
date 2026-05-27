@@ -116,32 +116,33 @@ print(result["cot"])         # ["Step 1: ...", "Step 2: ...", ...]
 
 The following improvements have been applied on top of the baseline:
 
-### 1. Answer Extraction
+### 1. Answer Extraction & MCQ Process of Elimination
 `run_pipeline()` always returns an explicit `answer` field:
-- MCQ → the letter key of the best option (e.g. `"B"`)
-- Yes/No → `"Yes"` if entailed, `"No"` if negation entailed, `"Uncertain"` if Z3 cannot decide
+- MCQ → the letter key of the best option (e.g. `"B"`). If no option is logically entailed (`unsat`), a consistency check is run. Direct contradictions (solver returns `unsat` when adding the option itself, i.e., `negate_conclusion=False`) are eliminated. The first consistent option is selected (Process of Elimination).
+- Yes/No → `"Yes"` if entailed, `"No"` if negation entailed, `"Uncertain"` if Z3 cannot decide.
 
 ### 2. Confidence Score (`_compute_confidence`)
 Derived from the Z3 verification result:
 
 | Z3 result | Score range | Rationale |
 |-----------|-------------|-----------|
-| `unsat`, tight core | 0.90 – 1.00 | Formal proof with minimal premises |
-| `unsat`, large core | 0.75 – 0.90 | Formal proof, less focused |
-| `sat` | 0.60 | Counterexample found |
+| `unsat`, tight core | 0.75 – 1.00 | Formal proof with minimal premises |
+| `sat` | 0.60 | Consistent candidate (MCQ Process of Elimination or statement fallback) |
 | `unknown` | 0.30 | Solver undecided |
 
-### 3. MCQ Full Scan
-All options are verified independently; the one with the **smallest unsat core** (tightest proof) wins. Falls back to the first option if none yield `unsat`.
+### 3. FOL Automatic Normalization & Repair Loop
+After extraction, all FOL formulas are normalized using `normalize_logic_fol_entry()` to instantly resolve common syntax/casing issues (like `forall` vs `ForAll`, missing spaces, or unicode operators) without calling the LLM. Any remaining parsing errors are validated with `try_parse_fol()` and repaired via LLM (up to 2 retries).
 
-### 4. FOL Repair Loop (`_validate_and_repair`)
-After translation, each FOL formula is validated with `try_parse_fol()`. Broken formulas are sent back to the LLM with the exact parse error for repair (up to 2 retries).
+### 4. Glossary-Constrained Translation (Two-Stage Compilation)
+To prevent naming mismatches across premises (e.g. `well_structured` vs `wellStructured`), the compiler uses a two-stage translation:
+1. **Stage 1 (Glossary Generation)**: Generates a unified JSON Glossary defining all unique predicates and constants.
+2. **Stage 2 (Constrained Translation)**: Translates all statements strictly constrained by this Glossary.
 
-### 5. Premise Relevance Filtering (`filter_relevant_premises`)
-When there are more than 3 premises, the LLM selects the top-k most relevant to the conclusion before Z3 verification. Falls back to all premises if filtering fails or fewer than 2 survive.
+### 5. Arithmetic & Temporal Logic Parsing
+Mismatches in numeric sorts are resolved by pre-scanning formulas to identify numeric predicates and constants, automatically upgrading them to `IntSort()` in Z3. It supports temporal constants (e.g., `Time830AM` -> `IntVal(510)`) and durations (e.g., `Duration4Hours` -> `IntVal(240)`), as well as native arithmetic parsing rules for addition (`+`) and subtraction (`-`).
 
-### 6. Structured CoT Output (`generate_cot`)
-`generate_cot()` instructs the LLM to produce numbered steps (`Step N: ...`) and parses them into a list. The `reasoning` (raw string) is retained for backward compatibility alongside the new `cot` list.
+### 6. Neurosymbolic Proof-Guided CoT
+When a proof is successful (`unsat`), the pipeline post-order traverses Z3's formal proof tree (`solver.proof()`), extracting asserted premises and logical deduction steps (like `mp` or `unit-resolution`) into a clean, structured proof skeleton. This mathematical skeleton is injected into the LLM prompt to guide CoT explanation generation, eliminating hallucinations and ensuring 100% mathematical grounding.
 
 ### Human-Like Explanations
 Both `generate_reasoning()` and `generate_cot()` use prompts that explicitly prohibit verbatim premise copying and require the LLM to synthesize a flowing argument using transitional language (`Since`, `Therefore`, `As a result`, etc.).
