@@ -3,6 +3,7 @@ import z3
 from src.logic.translation.pipeline import NLToFOLPipeline
 from src.logic.reasoning.pipeline import ReasoningPipeline
 from src.logic.reasoning.verifier import verify_with_z3
+from src.llm import LLMClient
 
 def parse_mcq_options(text: str) -> dict[str, str]:
     """Parse options A, B, C, D from the text if present."""
@@ -45,10 +46,15 @@ class LogicalReasoningPipeline:
     def __init__(self, use_local: bool = True, model_dir: str = None, llm_client = None):
         self.use_local = use_local
         self.model_dir = model_dir
-        self.llm_client = llm_client
         
-        self.translation_pipeline = NLToFOLPipeline(use_local=use_local, model_dir=model_dir, llm_client=llm_client)
-        self.reasoning_pipeline = ReasoningPipeline(use_local=use_local, model_dir=model_dir, llm_client=llm_client)
+        if llm_client is not None:
+            self.llm_client = llm_client
+        else:
+            self.llm_client = LLMClient(use_local=use_local, model_dir=model_dir)
+            
+        self.translation_pipeline = NLToFOLPipeline(use_local=use_local, model_dir=model_dir, llm_client=self.llm_client)
+        self.reasoning_pipeline = ReasoningPipeline(use_local=use_local, model_dir=model_dir, llm_client=self.llm_client)
+
 
     @property
     def tokenizer(self):
