@@ -3,7 +3,7 @@ import re
 import z3
 from z3 import unsat, sat
 import torch
-from src.logic.reasoning.verifier import verify_with_z3
+from src.logic.reasoning.verifier import verify_with_z3, extract_proof_structure
 
 class ReasoningPipeline:
     """
@@ -298,12 +298,27 @@ class ReasoningPipeline:
                 if core_premises_nl
                 else "\n".join(f"- {p}" for p in premises_nl)
             )
+            proof_structure = ""
+            if "proof" in verification and verification["proof"] is not None:
+                proof_structure = extract_proof_structure(verification["proof"])
+
+            proof_skeleton_instruction = ""
+            if proof_structure:
+                proof_skeleton_instruction = (
+                    f"The formal Z3 SMT solver generated this mathematical proof skeleton:\n"
+                    f"{proof_structure}\n\n"
+                    f"Your explanation MUST strictly match this proof skeleton. "
+                    f"Ensure every step in your CoT corresponds to a deduction step in the Z3 proof tree, "
+                    f"making the logic mathematically grounded."
+                )
+
             user_prompt = (
                 f"The following premises have been formally proven (via Z3 SMT solver) to entail the conclusion.\n\n"
                 f"Key premises:\n"
                 f"{core_premises_text}\n\n"
                 f"Conclusion:\n"
                 f"- {conclusion_nl}\n\n"
+                f"{proof_skeleton_instruction}\n\n"
                 f"Write a numbered step-by-step explanation that traces the logical chain from premises to conclusion. "
                 f"Each step should build on the previous one and show a new deduction or inference — "
                 f"NOT simply restate a premise. Use transitions like 'Since', 'Therefore', 'This means', 'It follows that'. "
