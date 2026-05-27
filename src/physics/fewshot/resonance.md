@@ -15,6 +15,6 @@
         "Evaluate resonance condition in transformed state",
         "Determine relationship between transformed reactances"
     ],
-    "python_code": "ans = 'After the frequency change, XL equals XC.'; unit = ['-']",
+    "python_code": "ans = 'After the frequency change, XL equals XC.'; unit = []",
     "json_terminated": true
 }

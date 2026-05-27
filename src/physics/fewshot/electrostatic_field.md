@@ -17,6 +17,6 @@
         "Identify whether contributions cancel or reinforce",
         "Determine final field direction"
     ],
-    "python_code": "ans = 'Electric field points from the positive charge toward the negative charge.'; unit = ['-']",
+    "python_code": "ans = 'Electric field points from the positive charge toward the negative charge.'; unit = []",
     "json_terminated": true
 }

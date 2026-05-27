@@ -15,6 +15,6 @@
         "Evaluate cosine factor",
         "Determine average power"
     ],
-    "python_code": "ans = ['0']; unit = ['W']",
+    "python_code": "ans = [0.0]; unit = ['W']",
     "json_terminated": true
 }

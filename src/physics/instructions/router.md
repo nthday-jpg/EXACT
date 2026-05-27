@@ -17,6 +17,7 @@ Reasoning domains:
 - coordinate_geometry
 - vector_semantics
 - qualitative_reasoning
+- symbolic_derivation
 
 ## Domain Selection Rules
 
@@ -105,6 +106,7 @@ Use when:
 - cancellation analysis
 - directional reasoning
 - vector addition
+- AC circuits & phasor geometry (RMS voltage/current, impedance, RLC resonance combinations)
 
 ### qualitative_reasoning
 Use when:
@@ -113,6 +115,15 @@ Use when:
 - increase/decrease
 - yes/no conceptual reasoning
 - qualitative relationships
+- "depends on which quantities/factors..."
+- yes/no conceptual reasoning
+
+### symbolic_derivation
+Use when:
+- "Find the formula for..."
+- "Express X in terms of Y..."
+- "Derive the relationship equation..."
+- Answer format must be a raw symbolic equation string instead of a numerical value.
 
 ## Multi-Domain Rules
 

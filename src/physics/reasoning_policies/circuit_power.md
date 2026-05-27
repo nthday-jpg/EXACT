@@ -1,46 +1,28 @@
-##1. DC POWER
-P = U*I
+# circuit_power.md
 
-Equivalent forms:
-P = I**2 * R
-P = U**2 / R
+## 1. DC POWER
+P = U*I (Equivalent forms: P = I**2 * R, P = U**2 / R)
 
-##2. AC AVERAGE POWER
+## 2. AC AVERAGE POWER
 P = U_rms * I_rms * cos(phi)
 
-##3. PURE RESISTOR
-For pure resistors:
-cos(phi) = 1
+## 3. PURE RESISTOR
+For pure resistors: cos(phi) = 1, thus P = U_rms * I_rms
 
-Thus:
-P = U_rms * I_rms
+## 4. REACTIVE ELEMENTS
+Ideal inductors and capacitors consume zero average power: P_avg = 0
 
-##4. REACTIVE ELEMENTS
-Ideal inductors and capacitors consume zero average power.
+## 5. RESONANCE
+At resonance, phase angle = 0, cos(phi) = 1, and average power is maximal.
 
-Average power:
-P_avg = 0
+## 6. POWER FACTOR
+cos(phi) = R / Z
 
-##5. RESONANCE
-At resonance:
-- phase angle = 0
-- cos(phi) = 1
-- average power is maximal
+## 7. JOULE HEATING
+Heat energy: Q = I**2 * R * t
 
-##6. POWER FACTOR
-cos(phi) =
-R / Z
+## 8. ENERGY VS POWER
+Power is the rate of energy transfer. Energy: E = P * t
 
-##7. JOULE HEATING
-Heat energy:
-Q = I**2 * R * t
-
-##8. ENERGY VS POWER
-Power:
-rate of energy transfer
-
-Energy:
-E = P * t
-
-##9. RMS VALUES
+## 9. RMS VALUES
 AC power formulas use RMS values unless explicitly stated otherwise.

@@ -1,99 +1,58 @@
 <OPERATING_CONSTRAINTS>
 
 1. OUTPUT FORMAT (STRICT)
-   - Return ONLY a single raw JSON object.
-   - No markdown.
-   - No conversational text.
-   - No code fences.
-   Required schema:
-  {
-    "thought": "global strategy + ontology",
-    "physics_analysis": [
-      "grounded extracted facts"
-    ],
-    "algebraic_reasoning": [
-      "ordered execution plan"
-    ],
-    "python_code": "fully executable symbolic-safe code",
-    "json_terminated": true
-  }
+   - Return ONLY a single raw JSON object. No markdown formatting, conversational text, or code fences.
+   Required Schema:
+   {
+     "thought": "global strategy + ontology",
+     "physics_analysis": ["grounded extracted facts"],
+     "algebraic_reasoning": ["ordered execution plan"],
+     "python_code": "import sympy as sp; # ... code items here ...; ans = [val]; unit = ['u']",
+     "json_terminated": true
+   }
 
-1. STRICT SYMPY SYNTAX:
-   - Use 'sp.Float' for numbers only (e.g., '1.6e-19').
-   - Always use `sp.Float`, never `sp.float`.
-   - Never place expressions inside `sp.Float()`.
-      Correct:
-      `sp.sqrt(sp.Float('3')) / sp.Float('2')`
-   - RESOLUTION:
-     - Numerical questions -> `ans` contain numeric values only.
-     - Formula questions -> `ans` contain the formula string.
-     - Qualitative questions -> `ans` contain the exact text answer.
-     - Never leave unresolved symbols in numerical answers.
+2. STRICT SYMPY & ALGEBRAIC SYNTAX
+   - STRING-FLOAT LIMITATION: Use `sp.Float` for pure numeric string literals only (e.g., `sp.Float('1.6e-19')`). Never use `sp.float` or pass operations, constants, or algebraic expressions inside a string literal. 
+     * Correct: `sp.sqrt(sp.Float('3')) / sp.Float('2')` or `mu0 = 4 * sp.pi * 1e-7`
+     * Wrong: `sp.Float('pi')` or `sp.Float('4 * pi * 1e-7')`
+   - NO HALLUCINATED ATTRIBUTES: Never use shorthand constants like `sp.Half` or `sp.Quarter`. Use explicit floats or fractions: `sp.Float('0.5')` or `sp.Rational(1, 2)`.
+   - TRIGONOMETRY GUARDRAIL: Numeric trigonometric arguments are evaluated as RADIANS. Angles in degrees MUST be explicitly wrapped: `sp.cos(sp.rad(sp.Float('60')))`.
+   - MATRIX DIVISION INVARIANT: Never divide a scalar directly by a spatial coordinate position matrix. Compute the distance norm magnitude first, then divide by that scalar.
+     * Correct: `r1 = d1.norm(); E1 = k * q1 / r1**2; E1_vec = E1 * d1 / r1`
+     * Wrong: `E1 = k * q1 / d1`
+   - DUMMY VALUE SUBSTITUTION: If a variable cancels out but is not given a numerical value in the text (e.g., Resistance $R$ or Energy $W$), do not leave it as an unresolved symbol string. Assign it a baseline scale (e.g., `R = sp.Float('1.0')`) before solving to avoid float conversion errors.
 
-2. SOLVER RULES:
-   - ROOT FILTERING:
-      `sol = [s for s in sp.solve(eq, x) if s.is_real and s > 0]`
-   - SI UNITS ONLY:
-     - All values in `ans` must use raw SI units only.
-     - Never convert into engineering-prefix units.
-     - The `unit` field must match the scale used in `ans`.
-     Correct:
-       - `1.83e-9 C`
-       - `7.5e-11 F`
-     Wrong:
-       - `1.83 nC`
-       - `75 pF`
-   - NO UNDERDETERMINED EVALUATIONS:
-      Never call `float(val.evalf())` on expressions containing unresolved symbols (e.g., `U_AM` or `I`).
-      If the target variable cannot be solved numerically, check for hidden constraints such as:
-      - phase relations
-      - resonance
-      - frequency scaling
-      Eliminate intermediate symbolic variables completely before final evaluation.
-   - SYMBOL CONSISTENCY:
-     - Every variable used must be previously defined.
-     - Variable names must match exactly.
-     - Never leave unresolved symbols inside `ans`.
-   - STATE CONTRADICTIONS:
-     - DO NOT pass equations from mutually exclusive states (e.g., before and after a frequency change) into the same `sp.solve()`.
-     - SOLVE base state variables first.
-     - USE substitution (`sp.Subs`) or algebra to link distinct states.
-
-3. FINAL VALIDATION
-   Before finalizing `python_code`:
-   - verify every variable is defined
-   - verify no renamed variants exist
-   (e.g., `Znew` vs `Z_new`)
+3. SOLVER & EVALUATION RULES
+   - ROBUST ROOT FILTERING: Safely handle fallbacks to eliminate empty lists or precision drops:
+     `raw = sp.solve(eq, x)`
+     `real_roots = [sp.re(s) for s in raw if sp.im(s) == 0 or abs(sp.im(s)) < 1e-9]`
+     `sol = [r for r in real_roots if r > 0] or [r for r in real_roots if r >= 0] or real_roots`
+     `ans = [float(sol[0].evalf())]`
+   - STRICT BASE SI UNITS ONLY: Always evaluate final values in base SI units, ignoring prompt text requests for engineering prefixes (milli, micro, etc.). Post-processing handles scaling.
+     * Correct: `ans = [float(C.evalf())]; unit = ['F']`
+     * Wrong: `ans = [float(C_uF.evalf())]; unit = ['uF']`
+   - MULTI-VALUE ARRAY PARITY: The `ans` length must exactly equal to `unit` length. If a question requires multiple distinct answers, isolate them cleanly: `ans = [0.006, 1.2]; unit = ['m', '%']`. Never assign dicts, matrices, tuples to `ans`.
 
 4. OUTPUT CONTRACT
-   - Determine expected answer type BEFORE solving:
-     - numeric
-     - symbolic formula
-     - qualitative text
-     - equation relation
-     - vector magnitude
-     - vector components
-   - If the question asks for:
-     - "magnitude" -> return positive scalar only
-     - "relationship" -> return symbolic equation/string
-     - qualitative behavior -> return exact text answer
-   - Do not return vector components unless explicitly requested.
-   - Do not numerically evaluate symbolic/formula questions.
+   - Type Mapping Resolution (Determine before solving):
+     - Numerical questions -> `ans` contains raw float numbers only.
+     - Formula questions -> `ans` contains the formula string representation.
+     - Qualitative / Trend questions -> `ans` contains the exact descriptive text string.
+     - Yes/No questions -> Apply either of them:
+      `ans = ['Yes' if (condition) else 'No']`
+      `ans = ['Yes']`
+      `ans = ['No']`
+   - "Magnitude" asks for a positive scalar only. Do not return vector components unless explicitly requested. Do not numerically evaluate symbolic/formula questions.
 
-5. VECTOR SAFETY
-   - Never add force/field magnitudes directly unless vectors are collinear.
-   - Equal magnitudes do NOT imply cancellation.
-   - Cancellation requires opposite directions.
+5. VECTOR & GEOMETRY SAFETY
+   - Never add vector magnitudes directly unless perfectly collinear. Equal magnitudes do not imply cancellation; vector cancellation requires net $X == 0$ AND net $Y == 0$ simultaneously.
+   - GEOMETRIC PROJECTION: Decompose non-collinear fields or forces into independent orthogonal components via matrix operations or geometric scaling ($\cos\theta$ / $\sin\theta$) before summing components.
+   - GEOMETRY VALIDATION: Verify all geometric constraints and distances immediately after coordinate assignment. Reject invalid topologies before computing forces/fields.
 
-6. GEOMETRY VALIDATION
-   - After coordinate assignment:
-     verify all known distances and constraints.
-   - Reject invalid coordinate systems before force/field computation.
+6. STATE SEPARATION
+   - Do not mix equations from mutually exclusive states in a single `sp.solve()`. Solve baseline values first, then link distinct states via substitution (`sp.Subs`) or algebra.
+   - STATE SUFFIX SYSTEM: Maintain absolute variable separation across changing states by appending consistent system suffixes (e.g., `_0` or `_init` for initial parameters, and `_1` or `_new` for transformed states).
 
-7. STATE SEPARATION
-   - Variables from different physical states must remain separate.
-   Correct:
-     XL_0, XL_new
-   Wrong:
-     reuse XL across multiple states.
+7. FINAL CODE SANITY
+   - Before completing `python_code`, ensure: every variable is explicitly defined, spelling and case match exactly (e.g., no `Znew` vs `Z_new`), and the code block terminates with a clean array assignment. Do not concatenate trailing comments or text directly to the final statement, as it breaks JSON string escaping.
 </OPERATING_CONSTRAINTS>

@@ -1,44 +1,22 @@
 <GLOBAL_ONTOLOGY>
 
-##1. ENTITY EXTRACTION
-Extract:
-- physical entities
-- source entities
-- target entities
-- observation points
-- state variables
-- target quantities
+## 1. ENTITY EXTRACTION
+Identify and isolate from text:
+- Physical variables, source charges/components, and target points.
+- Missing symbolic parameters destined to cancel out.
 
-##2. ROLE ASSIGNMENT
-Determine:
-- source
-- target
-- measurement point
-- segment endpoints
+## 2. ROLE ASSIGNMENT
+Classify nodes/components into:
+- Source vs. Target entities.
+- Baseline system states vs. Transformed/Altered system states.
 
-##3. TOPOLOGY EXTRACTION
-Determine:
-- collinear
-- midpoint
-- perpendicular bisector
-- equilateral triangle
-- isosceles triangle
-- right triangle
+## 3. GEOMETRIC TOPOLOGY
+Identify spatial layouts:
+- Collinear alignments, midpoints, or perpendicular lines.
+- Specialized shapes (Equilateral, Isosceles, or Right triangles).
 
-##4. ANSWER CONTRACT
-Determine expected output:
-- numeric scalar
-- symbolic relation
-- qualitative text
-- vector magnitude
-- vector components
-
-##5. STATE STRUCTURE
-Separate:
-- initial state
-- transformed state
-- resonance state
-
-Never mix equations from different states directly.
+## 4. TARGET EXPECTATION
+Determine target destination parameter:
+- Scalar calculation vs. algebraic formula vs. conceptual behavior/trends.
 
 </GLOBAL_ONTOLOGY>
