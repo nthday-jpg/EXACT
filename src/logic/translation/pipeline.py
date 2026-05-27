@@ -4,7 +4,7 @@ import torch
 from src.utils.normalization import extract_fol_formulas, normalize_logic_fol_entry
 from src.logic.reasoning.verifier import try_parse_fol
 from src.llm import LLMClient
-from src.logic.prompts import (
+from src.llm.prompts import (
     GLOSSARY_SYSTEM_PROMPT,
     GLOSSARY_USER_PROMPT_TEMPLATE,
     TRANSLATE_USER_PROMPT_TEMPLATE,

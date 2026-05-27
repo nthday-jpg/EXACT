@@ -4,7 +4,7 @@ from src.logic.translation.pipeline import NLToFOLPipeline
 from src.logic.reasoning.pipeline import ReasoningPipeline
 from src.logic.reasoning.verifier import verify_with_z3
 from src.llm import LLMClient
-from src.logic.prompts import OPEN_ENDED_SYSTEM_PROMPT, OPEN_ENDED_USER_PROMPT_TEMPLATE
+from src.llm.prompts import OPEN_ENDED_SYSTEM_PROMPT, OPEN_ENDED_USER_PROMPT_TEMPLATE
 
 
 def parse_mcq_options(text: str) -> dict[str, str]:

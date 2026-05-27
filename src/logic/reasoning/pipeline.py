@@ -5,7 +5,7 @@ from z3 import unsat, sat
 import torch
 from src.logic.reasoning.verifier import verify_with_z3, extract_proof_structure
 from src.llm import LLMClient
-from src.logic.prompts import (
+from src.llm.prompts import (
     FILTER_PREMISES_SYSTEM_PROMPT,
     FILTER_PREMISES_USER_PROMPT_TEMPLATE,
     REASONING_SYSTEM_PROMPT,
