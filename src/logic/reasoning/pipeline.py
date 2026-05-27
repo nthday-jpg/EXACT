@@ -4,6 +4,7 @@ import z3
 from z3 import unsat, sat
 import torch
 from src.logic.reasoning.verifier import verify_with_z3, extract_proof_structure
+from src.llm import LLMClient
 
 class ReasoningPipeline:
     """
@@ -16,84 +17,38 @@ class ReasoningPipeline:
     def __init__(self, use_local: bool = True, model_dir: str = None, llm_client = None):
         self.use_local = use_local
         self.model_dir = model_dir
-        self.llm_client = llm_client
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.tokenizer = None
-        self.model = None
+        if llm_client is not None:
+            self.llm_client = llm_client
+        else:
+            self.llm_client = LLMClient(use_local=use_local, model_dir=model_dir)
+
+    @property
+    def tokenizer(self):
+        return self.llm_client.tokenizer
+
+    @tokenizer.setter
+    def tokenizer(self, value):
+        self.llm_client.tokenizer = value
+
+    @property
+    def model(self):
+        return self.llm_client.model
+
+    @model.setter
+    def model(self, value):
+        self.llm_client.model = value
+
+    @property
+    def device(self):
+        return self.llm_client.device
 
     def load_local_model(self):
-        """Loads Hugging Face tokenizer and PEFT LoRA model locally with NF4 4-bit quantization."""
-        if not self.use_local:
-            return
-            
-        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-        from peft import PeftModel
-        from pathlib import Path
-        
-        # Resolve default model directory if none provided
-        if not self.model_dir:
-            root_dir = Path(__file__).resolve().parents[3]
-            self.model_dir = str(root_dir / "results")
-
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float16,
-            bnb_4bit_use_double_quant=True
-        )
-        
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir, trust_remote_code=True)
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-            
-        base_model = AutoModelForCausalLM.from_pretrained(
-            "Qwen/Qwen3-8B",
-            quantization_config=bnb_config if torch.cuda.is_available() else None,
-            device_map="cuda:0" if torch.cuda.is_available() else None,
-            trust_remote_code=True,
-            attn_implementation="sdpa" if torch.cuda.is_available() else None
-        )
-        
-        self.model = PeftModel.from_pretrained(base_model, self.model_dir)
-        self.model.eval()
+        self.llm_client.load_local_model()
 
     def _generate_text(self, system_prompt: str, user_prompt: str, max_new_tokens: int = 512) -> str:
-        """Helper to generate text using either the local model or the LLM client."""
-        if self.use_local:
-            if not self.model:
-                self.load_local_model()
-                
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ]
-            
-            chat_prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, enable_thinking=False)
-            inputs = self.tokenizer(chat_prompt, return_tensors="pt").to(self.device)
-            
-            with torch.no_grad():
-                outputs = self.model.generate(
-                    **inputs,
-                    max_new_tokens=max_new_tokens,
-                    eos_token_id=self.tokenizer.eos_token_id,
-                    pad_token_id=self.tokenizer.pad_token_id
-                )
-                
-            response = self.tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
-            return response.strip()
-        else:
-            if not self.llm_client:
-                raise ValueError("An LLMClient instance must be provided when use_local=False")
-            
-            # Temporarily override LLMClient's system prompt if necessary
-            orig_system_prompt = self.llm_client.system_prompt
-            self.llm_client.system_prompt = system_prompt
-            
-            try:
-                res = self.llm_client.generate(user_prompt, max_tokens=max_new_tokens)
-                return res["content"]
-            finally:
-                self.llm_client.system_prompt = orig_system_prompt
+        return self.llm_client.generate_text(user_prompt, system_prompt=system_prompt, max_new_tokens=max_new_tokens)
+
+
 
     def verify(self, premises_fol: list[str], conclusion_fol: str, negate_conclusion: bool = True) -> dict:
         """Parses FOL formulas, tracks them in Z3 solver, and checks for entailment via contradiction."""
