@@ -4,11 +4,12 @@ This module handles the translation of natural language (NL) premises and conclu
 
 ## Components
 
-- **`pipeline.py`**: Contains the `NLToFOLPipeline` class. Manages LLM loading, structured prompt preparation, model querying, FOL extraction, and post-generation formula validation/repair.
+- **`pipeline.py`**: Contains the `NLToFOLPipeline` class. Composes a unified `LLMClient` to delegate LLM model loading and text generation. Manages structured prompt preparation, FOL extraction, and post-generation formula validation/repair.
 
 ## Key Features
 
-- **Execution Flexibility**: Supports local loading of fine-tuned PEFT LoRA adapter models with NF4 4-bit quantization (optimized for low-resource hardware) as well as calling remote API instances via `LLMClient`.
+- **Execution Flexibility**: Utilizes the unified `LLMClient` class from the `src/llm` module, which transparently handles both local model execution (with NF4 4-bit PEFT adapter quantization) and remote API execution depending on the `use_local` parameter.
+
 - **Glossary-Constrained Translation (Two-Stage)** *(new)*: To ensure 100% uniform predicate and entity mapping across premises, it first runs a Glossary Generation stage to define a JSON dictionary of predicates/constants. The second stage translates statements strictly aligned under these constraints.
 - **FOL Automatic Normalization** *(new)*: Extracted formulas are immediately normalized using `normalize_logic_fol_entry` to automatically repair minor syntax/casing issues (e.g. `forall` vs `ForAll`, spaces, or operators like `&`/`~`), preventing redundant LLM calls.
 - **Robust Output Recovery**: Utilizes regular expressions and JSON parsers in `extract_fol_formulas` to reliably extract and align logic formulas even from conversational or verbose model responses.
