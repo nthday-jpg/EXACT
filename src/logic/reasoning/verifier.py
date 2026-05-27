@@ -40,21 +40,24 @@ from z3 import (
 )
 
 _TOKEN_RE = re.compile(
-	r"\s*(->|<->|AND|OR|NOT|IN|ForAll|Exists|>=|<=|!=|=|>|<|\(|\)|,|\d+\.\d+|\d+|'[^']*'|[^\W\d][\w-]*)"
+	r"\s*(->|<->|AND|OR|NOT|IN|ForAll|Exists|>=|<=|!=|=|>|<|\(|\)|,|\+|-|\d+\.\d+|\d+|'[^']*'|[^\W\d][\w-]*)"
 )
 
 
-@dataclass
 class Z3Symbols:
-	sort: ExprRef
-	consts: Dict[str, ExprRef] = field(default_factory=dict)
-	preds: Dict[Tuple[str, int], ExprRef] = field(default_factory=dict)
-	funcs: Dict[Tuple[str, int], ExprRef] = field(default_factory=dict)
+	def __init__(self, sort: ExprRef) -> None:
+		self.sort = sort
+		self.consts: Dict[str, ExprRef] = {}
+		self.preds: Dict[Tuple[str, int], ExprRef] = {}
+		self.funcs: Dict[Tuple[str, int], ExprRef] = {}
+		self.numeric_symbols: set[str] = set()
 
 	def get_const(self, name: str, sort: Optional[ExprRef] = None) -> ExprRef:
 		if name in self.consts:
 			return self.consts[name]
-		use_sort = sort or self.sort
+		use_sort = sort
+		if use_sort is None:
+			use_sort = IntSort() if name in self.numeric_symbols else self.sort
 		const = Const(name, use_sort)
 		self.consts[name] = const
 		return const
@@ -63,6 +66,9 @@ class Z3Symbols:
 		key = (name, arity)
 		if key in self.preds:
 			return self.preds[key]
+		# Upgrades predicates to IntSort functions if they are involved in comparisons
+		if name in self.numeric_symbols:
+			return self.get_func(name, arity, IntSort())
 		pred = Function(name, *([self.sort] * arity), BoolSort())
 		self.preds[key] = pred
 		return pred
@@ -71,7 +77,9 @@ class Z3Symbols:
 		key = (name, arity)
 		if key in self.funcs:
 			return self.funcs[key]
-		use_sort = self.sort if sort is None else sort
+		use_sort = sort
+		if use_sort is None:
+			use_sort = IntSort() if name in self.numeric_symbols else self.sort
 		func = Function(name, *([self.sort] * arity), use_sort)
 		self.funcs[key] = func
 		return func
@@ -203,6 +211,17 @@ class FolParser:
 		return Exists([var], body)
 
 	def _parse_term(self, stream: TokenStream, prefer_numeric: bool = False) -> ExprRef:
+		left = self._parse_simple_term(stream, prefer_numeric=prefer_numeric)
+		while stream.peek() in ("+", "-"):
+			op = stream.next()
+			right = self._parse_simple_term(stream, prefer_numeric=True)
+			if op == "+":
+				left = left + right
+			else:
+				left = left - right
+		return left
+
+	def _parse_simple_term(self, stream: TokenStream, prefer_numeric: bool = False) -> ExprRef:
 		tok = stream.next()
 		if tok is None:
 			raise ValueError("Unexpected end of input")
@@ -212,6 +231,33 @@ class FolParser:
 			return expr
 		if tok.startswith("'") and tok.endswith("'"):
 			return StringVal(tok[1:-1])
+
+		# Parse temporal time constants (e.g., Time830AM, Time500PM) as minutes since midnight
+		time_match = re.match(r"^Time(\d{1,2})(\d{2})?(AM|PM)$", tok, re.IGNORECASE)
+		if time_match:
+			hour = int(time_match.group(1))
+			minute = int(time_match.group(2)) if time_match.group(2) else 0
+			ampm = time_match.group(3).upper()
+			if ampm == "PM" and hour < 12:
+				hour += 12
+			elif ampm == "AM" and hour == 12:
+				hour = 0
+			minutes = hour * 60 + minute
+			return IntVal(minutes)
+
+		# Parse temporal durations (e.g., Duration4Hours, Duration30Minutes) as minutes
+		duration_match = re.match(r"^Duration(\d+(?:\.\d+)?)(Hours|Minutes|Days)$", tok, re.IGNORECASE)
+		if duration_match:
+			value = float(duration_match.group(1))
+			unit = duration_match.group(2).lower()
+			if unit == "hours":
+				minutes = int(value * 60)
+			elif unit == "days":
+				minutes = int(value * 24 * 60)
+			else:
+				minutes = int(value)
+			return IntVal(minutes)
+
 		if tok.replace(".", "", 1).isdigit():
 			if "." in tok:
 				return RealVal(tok)
@@ -269,8 +315,19 @@ def parse_formulas(
 
 	Returns a tuple of (symbols, formula_exprs).
 	"""
+	# Pre-scan formulas to identify numeric symbols and prevent sort mismatches
+	numeric_symbols = set()
+	for f in formulas:
+		# Detect camelCase or snake_case function/constant names involved in arithmetic comparisons
+		matches = re.finditer(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*(?:\(([^()]+)\))?\s*(?:>=|<=|!=|=|>|<)\s*(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\b", f)
+		for match in matches:
+			name = match.group(1)
+			if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN"):
+				numeric_symbols.add(name)
 
 	symbols = Z3Symbols(sort=DeclareSort(sort_name))
+	symbols.numeric_symbols = numeric_symbols
+	
 	parser = FolParser(symbols)
 	formula_exprs: List[BoolRef] = [parser.parse(f) for f in formulas]
 
@@ -365,3 +422,45 @@ def try_parse_fol(formula: str) -> tuple[bool, str]:
 		return True, ""
 	except Exception as exc:
 		return False, str(exc)
+
+
+def extract_proof_structure(proof) -> str:
+	"""Traverses the Z3 proof tree and returns a clean, human-readable skeleton of proof steps."""
+	if proof is None:
+		return ""
+	
+	visited = set()
+	steps = []
+	
+	def traverse(node):
+		node_str = str(node)
+		if node_str in visited:
+			return
+		visited.add(node_str)
+		
+		# Check if it is a Z3 application node before calling decl() to prevent Z3Exception
+		if z3.is_app(node):
+			rule = node.decl().name()
+			
+			# Post-order traversal to process children (dependencies) first
+			for child in node.children():
+				traverse(child)
+				
+			if rule == "asserted":
+				# This represents a raw premise from our input
+				fact = node.arg(0) if node.num_args() > 0 else node
+				steps.append(f"- Premise used: {fact}")
+			elif rule not in ("hypothesis", "asserted"):
+				# This represents a logical deduction step
+				fact = node.arg(0) if node.num_args() > 0 else "consequence"
+				steps.append(f"- Deduction ({rule}): Derived '{fact}'")
+		else:
+			# Non-app nodes (like variables, quantifiers, etc.)
+			for child in node.children():
+				traverse(child)
+			
+	try:
+		traverse(proof)
+		return "\n".join(steps)
+	except Exception as e:
+		return f"Proof traversal error: {str(e)}"
