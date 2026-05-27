@@ -195,3 +195,26 @@ COT_UNKNOWN_USER_PROMPT_TEMPLATE = (
     "Each step should offer a new insight, not repeat a premise. "
     "Format: 'Step N: <explanation>'."
 )
+
+
+# =====================================================================
+# OPEN-ENDED QUERY PROMPTS
+# =====================================================================
+
+OPEN_ENDED_SYSTEM_PROMPT = (
+    "You are a precise logical assistant. "
+    "Your task is to answer the given open-ended question based strictly on the provided premises.\n\n"
+    "Strictly follow these rules:\n"
+    "1. Answer the question as a direct, concise, and complete natural language answer statement.\n"
+    "2. Do not include any explanations, chain of thought, or extra context in your output. Just state the answer statement.\n"
+    "3. Keep the statement simple so it can be cleanly translated into a First-Order Logic formula."
+)
+
+OPEN_ENDED_USER_PROMPT_TEMPLATE = (
+    "Premises:\n"
+    "{premises_text}\n\n"
+    "Question:\n"
+    "{question_nl}\n\n"
+    "Concise Answer Statement:"
+)
+
