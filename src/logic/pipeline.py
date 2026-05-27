@@ -121,30 +121,48 @@ class LogicalReasoningPipeline:
                 premises_nl, conclusion_nl, premises_fol
             )
 
-            # Evaluate ALL options: collect every UNSAT candidate with its core size
+            # Evaluate ALL options
             unsat_candidates: list[tuple[str, dict, int]] = []  # (key, verification, core_size)
+            consistent_candidates: list[tuple[str, dict]] = []  # (key, verification)
 
             for k in opt_keys:
                 opt_fol = options_fol.get(k, "")
                 if not opt_fol:
                     continue
                 try:
+                    # 1. Check if the option is entailed (negate_conclusion=True)
                     verification = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=True)
-                    if verification["result"] == z3.unsat:
+                    if verification.get("result") == z3.unsat:
                         core_size = len(verification.get("unsat_core", []))
                         unsat_candidates.append((k, verification, core_size))
+                    elif verification.get("result") == z3.sat:
+                        # 2. Check if the option contradicts the premises (negate_conclusion=False)
+                        verif_contra = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=False)
+                        if verif_contra.get("result") != z3.unsat:
+                            # It is consistent!
+                            consistent_candidates.append((k, verification))
                 except Exception:
                     pass
+
+            correct_option = None
+            correct_verification = None
 
             if unsat_candidates:
                 # Pick the option whose proof uses the fewest premises (tightest entailment)
                 unsat_candidates.sort(key=lambda x: x[2])
                 correct_option, correct_verification, _ = unsat_candidates[0]
+            elif consistent_candidates:
+                # Process of Elimination: Pick the first consistent (non-contradictory) option
+                correct_option, correct_verification = consistent_candidates[0]
 
             if not correct_option and opt_keys:
+                # Fallback to the first option
                 correct_option = opt_keys[0]
                 opt_fol = options_fol.get(correct_option, "")
-                correct_verification = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=True)
+                try:
+                    correct_verification = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=True)
+                except Exception:
+                    correct_verification = {"result": z3.unknown, "unsat_core": [], "model": None}
 
             reasoning, cot = self.generate_cot(
                 premises_nl=filt_premises_nl,
