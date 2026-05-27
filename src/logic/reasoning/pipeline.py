@@ -156,7 +156,7 @@ class ReasoningPipeline:
 
         system_prompt = REASONING_SYSTEM_PROMPT
 
-        return self._generate_text(system_prompt, user_prompt, max_new_tokens=512)
+        return self._generate_text(system_prompt, user_prompt, max_new_tokens=1024)
 
     # ------------------------------------------------------------------
     # Structured Chain-of-Thought output
@@ -268,6 +268,6 @@ class ReasoningPipeline:
 
         system_prompt = COT_SYSTEM_PROMPT
 
-        raw_text = self._generate_text(system_prompt, user_prompt, max_new_tokens=512)
+        raw_text = self._generate_text(system_prompt, user_prompt, max_new_tokens=1024)
         cot_steps = self._parse_cot_steps(raw_text)
         return raw_text, cot_steps
