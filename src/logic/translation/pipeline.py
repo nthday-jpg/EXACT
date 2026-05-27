@@ -68,7 +68,7 @@ class NLToFOLPipeline:
         user_prompt = GLOSSARY_USER_PROMPT_TEMPLATE.format(nl_content=nl_content.strip())
         
         try:
-            response = self._generate_text(system_prompt, user_prompt, max_new_tokens=512)
+            response = self._generate_text(system_prompt, user_prompt, max_new_tokens=1024)
             # Clean markdown code block if present
             cleaned_response = response.strip()
             if cleaned_response.startswith("```"):
@@ -101,7 +101,7 @@ class NLToFOLPipeline:
             # Fallback to standard prompt if glossary generation fails
             system_prompt = TRANSLATE_SYSTEM_PROMPT_FALLBACK
         
-        response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=1024)
+        response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=2048)
         all_extracted_fol = extract_fol_formulas(response_content)
         # Normalize each formula automatically to repair simple syntax and casing issues immediately
         all_extracted_fol = [normalize_logic_fol_entry(fol) for fol in all_extracted_fol]
