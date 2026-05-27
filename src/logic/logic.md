@@ -43,6 +43,7 @@ The EXACT logic system provides a unified framework for executing formal logical
 
 - **`translation/`**: Pipeline 1. Exposes `NLToFOLPipeline` to compile natural language statements into logical representations, with an automatic FOL Repair Loop.
 - **`reasoning/`**: Pipeline 2. Exposes `ReasoningPipeline` with premise relevance filtering, Z3 SMT verification, and human-like CoT explanation generation.
+- **`prompts.py`**: Centralized configuration file storing all LLM system prompts and user prompt templates. Isolates prompt engineering from code execution for easy adjustment.
 - **`pipeline.py`**: A backward-compatible orchestrator class (`LogicalReasoningPipeline`) that stitches both pipelines together for end-to-end processing.
 - **`z3_verifier.py`**: A backward-compatible forwarding interface for legacy scripts importing Z3 utilities.
 

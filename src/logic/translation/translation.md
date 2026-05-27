@@ -5,6 +5,7 @@ This module handles the translation of natural language (NL) premises and conclu
 ## Components
 
 - **`pipeline.py`**: Contains the `NLToFOLPipeline` class. Composes a unified `LLMClient` to delegate LLM model loading and text generation. Manages structured prompt preparation, FOL extraction, and post-generation formula validation/repair.
+- **`src/logic/prompts.py`**: Stores the centralized glossary-constrained system prompt and user prompt templates, as well as the repair-loop corrector prompts.
 
 ## Key Features
 
