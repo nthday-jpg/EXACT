@@ -12,6 +12,8 @@ import sympy as sp
 
 import pint
 
+from src.physics.postprocessing import postprocess_answer
+
 
 
 _PREFIX_FACTORS = {
@@ -48,6 +50,9 @@ def evaluate_physics_answer(model: dict, correct: dict) -> bool:
 	"""
 	if not isinstance(model, dict) or not isinstance(correct, dict):
 		raise TypeError("model and correct must be dicts")
+
+	model = postprocess_answer(model)
+	correct = postprocess_answer(correct)
 
 	model_items = _normalize_items(model)
 	correct_items = _normalize_items(correct)
@@ -171,7 +176,7 @@ def _numeric_match(model_val: float, model_unit: str, correct_val: float, correc
 		return math.isclose(model_val, 0.0, abs_tol=1e-12)
 
 	rel_err = abs(model_val - correct_val) / abs(correct_val)
-	return rel_err <= 0.05
+	return rel_err <= 0.01
 
 
 def _normalize_unit(unit: str) -> str:

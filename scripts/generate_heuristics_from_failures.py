@@ -11,12 +11,22 @@ from src.agents.exploration.generation import generate_heuristics_with_llm
 
 def main() -> None:
     load_dotenv()
-    api_key = os.getenv("HF_API_KEY")
-    model = os.getenv("PHYSICS_MODEL", "Qwen/Qwen3-8B:featherless-ai")
-    system_prompt = os.getenv(
-        "PHYSICS_HEURISTICS_SYSTEM",
-        "You are a physics evaluator. Produce concise heuristics to fix failure patterns.",
-    )
+    api_key = os.getenv("GEMINI_API_KEY")
+    
+    # Use DEFAULT_MODEL as fallback for all LLMs
+    default_model = os.getenv("DEFAULT_MODEL", "gemini-3.5-flash")
+    model = os.getenv("PHYSICS_MODEL") or default_model
+    base_url = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
+    
+    # Load generation instruction as system prompt
+    instruction_path = Path("src/agents/exploration/generation_instruction.md")
+    if instruction_path.exists():
+        system_prompt = instruction_path.read_text(encoding="utf-8")
+    else:
+        system_prompt = os.getenv(
+            "PHYSICS_HEURISTICS_SYSTEM",
+            "You are a physics evaluator. Produce concise heuristics to fix failure patterns."
+        )
 
     failures_path = Path("runs/physics_failures.json")
     output_path = Path("runs/physics_heuristics.md")
@@ -32,10 +42,12 @@ def main() -> None:
         failures=failures,
         model_name=model,
         api_key=api_key,
+        base_url=base_url,
         system_prompt=system_prompt,
-        chunk_size=25,
+        chunk_size=10,
         temperature=0.1,
-        extra_body={"chat_template_kwargs": {"enable_thinking": False}},
+        extra_body={},
+        verbose=True,
     )
     output_path.write_text(content, encoding="utf-8")
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, Iterable, List, Optional
 
+from tqdm import tqdm
+
 from src.llm.llm_client import LLMClient
 
 
@@ -12,9 +14,11 @@ def generate_heuristics_with_llm(
 	model_name: str,
 	api_key: Optional[str],
 	system_prompt: str,
+	base_url: str = "https://router.huggingface.co/v1",
 	chunk_size: int = 25,
 	temperature: float = 0.1,
 	extra_body: Optional[Dict[str, Any]] = None,
+	verbose: bool = False,
 ) -> str:
 	if not failures:
 		return "# Heuristics From Failures\n\nNo failures to summarize.\n"
@@ -22,6 +26,7 @@ def generate_heuristics_with_llm(
 	client = LLMClient(
 		model_name=model_name,
 		api_key=api_key or "",
+		base_url=base_url,
 		system_prompt=system_prompt,
 		temperature=temperature,
 		extra_body=extra_body or {},
@@ -29,7 +34,8 @@ def generate_heuristics_with_llm(
 
 	chunks = list(_chunked(failures, max(1, chunk_size)))
 	outputs: List[str] = []
-	for idx, chunk in enumerate(chunks, start=1):
+	iterator = tqdm(enumerate(chunks, start=1), total=len(chunks), desc="Generating heuristics", disable=not verbose)
+	for idx, chunk in iterator:
 		prompt = _build_prompt(chunk, idx, len(chunks))
 		response = client.generate(prompt)
 		content = response.get("content") if isinstance(response, dict) else str(response)

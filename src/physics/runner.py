@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Iterable, List, Optional
+from typing import TYPE_CHECKING, Iterable, List, Optional
 
 from tqdm import tqdm
 
-from src.agents.self_correct.interface import SelfCorrector
 from src.physics.evaluator import PhysicsEvaluator
 from src.physics.solver import PhysicsSolver
 from src.physics.types import PhysicsEval, PhysicsResult, PhysicsTask
+
+if TYPE_CHECKING:
+    from src.agents.self_correct.interface import SelfCorrector
 
 
 class PhysicsRunner:
@@ -16,7 +18,7 @@ class PhysicsRunner:
         self,
         *,
         solver: PhysicsSolver,
-        evaluator: PhysicsEvaluator,
+        evaluator: Optional[PhysicsEvaluator] = None,
         self_corrector: Optional[SelfCorrector] = None,
         max_attempts: int = 2,
     ) -> None:
@@ -25,7 +27,7 @@ class PhysicsRunner:
         self._self_corrector = self_corrector
         self._max_attempts = max(1, max_attempts)
 
-    def run(self, tasks: Iterable[PhysicsTask], *, verbose: bool = False) -> List[PhysicsEval]:
+    def run(self, tasks: Iterable[PhysicsTask], *, verbose: bool = True) -> List[PhysicsEval]:
         task_list = list(tasks)
         iterator = tqdm(task_list, desc="Physics", disable=not verbose)
         return [self._run_one(task) for task in iterator]
@@ -68,6 +70,9 @@ class PhysicsRunner:
             attempt += 1
             result = self._solver.solve(current_task)
             last_result = result
+            if not self._evaluator:
+                return PhysicsEval(result=result, is_correct=None, reason=None)
+
             evaluation = self._evaluator.evaluate(result)
 
             if evaluation.is_correct is True or not self._self_corrector:
@@ -81,4 +86,6 @@ class PhysicsRunner:
 
         if last_result is None:
             last_result = self._solver.solve(task)
+        if not self._evaluator:
+            return PhysicsEval(result=last_result, is_correct=None, reason=None)
         return self._evaluator.evaluate(last_result)

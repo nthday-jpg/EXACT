@@ -4,11 +4,12 @@ import json
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
+from tqdm import tqdm
+import asyncio
 
+from src.physics.api import run_physics
 from src.physics.evaluator import PhysicsEvaluator
-from src.physics.runner import PhysicsRunner
-from src.physics.solver import PhysicsSolver
-from src.physics.types import PhysicsEval, PhysicsTask
+from src.physics.types import PhysicsEval, PhysicsResult, PhysicsTask
 
 
 def load_physics_tasks(csv_path: str, *, num_samples: int = -1, seed: int = 42) -> List[PhysicsTask]:
@@ -43,35 +44,57 @@ def collect_failures(evals: List[PhysicsEval]) -> List[dict]:
     return failures
 
 
-def run_exploration(
+async def run_exploration(
     *,
     csv_path: str,
     output_path: str,
     model_name: str,
     api_key: Optional[str],
-    system_prompt: str,
-    heuristic_prompt: str,
+    router_model_name: Optional[str] = None,
     num_samples: int = -1,
     seed: int = 42,
     temperature: float = 0.1,
     extra_body: Optional[Dict[str, Any]] = None,
-    verbose: bool = True,
+    concurrency: int = 8,
 ) -> List[dict]:
-    solver = PhysicsSolver(
-        model_name=model_name,
-        api_key=api_key,
-        system_prompt=system_prompt,
-        heuristic_prompt=heuristic_prompt,
-        temperature=temperature,
-        extra_body=extra_body or {"chat_template_kwargs": {"enable_thinking": False}},
-    )
-    evaluator = PhysicsEvaluator()
-    runner = PhysicsRunner(solver=solver, evaluator=evaluator)
-
     tasks = load_physics_tasks(csv_path, num_samples=num_samples, seed=seed)
-    evals = runner.run(tasks, verbose=verbose)
-    failures = collect_failures(evals)
+    evals: List[PhysicsEval] = []
+    semaphore = asyncio.Semaphore(concurrency)
+    evaluator = PhysicsEvaluator()
 
+    async def _run_task(task: PhysicsTask) -> PhysicsEval:
+        async with semaphore:
+            try:
+                return await run_physics(
+                    task,
+                    model_name=model_name,
+                    api_key=api_key,
+                    router_model_name=router_model_name,
+                    evaluator=evaluator,
+                    temperature=temperature,
+                    extra_body=extra_body or {"chat_template_kwargs": {"enable_thinking": False}},
+                )
+            except Exception as exc:
+                result = PhysicsResult(
+                    task=task,
+                    model_answer=None,
+                    raw_response="",
+                    error=str(exc),
+                    tokens=None,
+                    elapsed_s=0.0,
+                )
+                return PhysicsEval(result=result, is_correct=False, reason="exception")
+
+    pending = [_run_task(task) for task in tasks]
+    progress = tqdm(total=len(tasks), desc="Physics")
+    try:
+        for coro in asyncio.as_completed(pending):
+            evaluation = await coro
+            evals.append(evaluation)
+            progress.update(1)
+    finally:
+        progress.close()
+    failures = collect_failures(evals)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(failures, f, indent=4)
 
