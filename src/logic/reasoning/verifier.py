@@ -59,18 +59,28 @@ def verify_with_z3(premises_fol: list[str], conclusion_fol: str, negate_conclusi
     all_formulas = premises_fol + [negated_conclusion_fol]
     
     try:
-        symbols, exprs = parse_formulas(all_formulas)
-    except Exception as e:
-        # Fallback to standardizing common logical operators & balancing parentheses
-        standardized_formulas = []
-        for f_str in all_formulas:
-            f_clean = f_str.replace("¬", "NOT ").replace("∧", " AND ").replace("∨", " OR ").replace("→", " -> ").replace("↔", " <-> ")
-            open_count = f_clean.count("(")
-            close_count = f_clean.count(")")
-            if close_count < open_count:
-                f_clean = f_clean + ")" * (open_count - close_count)
-            standardized_formulas.append(f_clean)
-        symbols, exprs = parse_formulas(standardized_formulas)
+        try:
+            symbols, exprs = parse_formulas(all_formulas)
+        except Exception as e:
+            # Fallback to standardizing common logical operators & balancing parentheses
+            standardized_formulas = []
+            for f_str in all_formulas:
+                f_clean = f_str.replace("¬", "NOT ").replace("∧", " AND ").replace("∨", " OR ").replace("→", " -> ").replace("↔", " <-> ")
+                open_count = f_clean.count("(")
+                close_count = f_clean.count(")")
+                if close_count < open_count:
+                    f_clean = f_clean + ")" * (open_count - close_count)
+                standardized_formulas.append(f_clean)
+            symbols, exprs = parse_formulas(standardized_formulas)
+    except Exception as parse_err:
+        # Return a safe, graceful fallback instead of crashing the pipeline
+        return {
+            "result": z3.unknown,
+            "proof": None,
+            "unsat_core": [],
+            "model": None,
+            "error": f"Z3 parsing failed completely: {str(parse_err)}"
+        }
         
     premise_exprs = exprs[:-1]
     negated_conclusion_expr = exprs[-1]
@@ -144,6 +154,9 @@ def extract_proof_structure(proof) -> str:
 			
     try:
         traverse(proof)
+        # Cap the output to keep LLM context readable and prevent context bloat
+        if len(steps) > 35:
+            steps = steps[:5] + [f"... [Skipped {len(steps) - 15} intermediate deduction steps] ..."] + steps[-10:]
         return "\n".join(steps)
     except Exception as e:
         return f"Proof traversal error: {str(e)}"

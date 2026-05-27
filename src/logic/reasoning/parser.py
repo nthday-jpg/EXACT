@@ -307,14 +307,37 @@ def parse_formulas(
 
     Returns a tuple of (symbols, formula_exprs).
     """
-    # Pre-scan formulas to identify numeric symbols and prevent sort mismatches
+    # Robust pre-scan to identify numeric symbols and prevent sort mismatches
     numeric_symbols = set()
     for f in formulas:
-        # Detect camelCase or snake_case function/constant names involved in arithmetic comparisons
-        matches = re.finditer(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*(?:\(([^()]+)\))?\s*(?:>=|<=|!=|=|>|<)\s*(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\b", f)
-        for match in matches:
-            name = match.group(1)
-            if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN"):
+        # Temporarily replace logical arrows to prevent false matching of '-' or '>'
+        f_temp = f.replace("<->", " BICOND ").replace("->", " IMPLIES ")
+        
+        # 1. Match identifiers on the left of inequality or arithmetic operators
+        left_matches = re.finditer(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*(?:\([^()]*\))?\s*(?:>=|<=|>|<|\+|-)\b", f_temp)
+        for m in left_matches:
+            name = m.group(1)
+            if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
+                numeric_symbols.add(name)
+                
+        # 2. Match identifiers on the right of inequality or arithmetic operators
+        right_matches = re.finditer(r"\b(?:>=|<=|>|<|\+|-)\s*([A-Za-z_][A-Za-z0-9_-]*)\b", f_temp)
+        for m in right_matches:
+            name = m.group(1)
+            if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
+                numeric_symbols.add(name)
+                
+        # 3. Match equality/inequality with numeric or temporal/duration literals on either side
+        eq_matches = re.finditer(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*(?:\([^()]*\))?\s*(?:=|!=)\s*(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\b", f_temp)
+        for m in eq_matches:
+            name = m.group(1)
+            if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
+                numeric_symbols.add(name)
+                
+        eq_rev_matches = re.finditer(r"\b(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\s*(?:=|!=)\s*([A-Za-z_][A-Za-z0-9_-]*)\b", f_temp)
+        for m in eq_rev_matches:
+            name = m.group(1)
+            if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
                 numeric_symbols.add(name)
 
     symbols = Z3Symbols(sort=DeclareSort(sort_name))

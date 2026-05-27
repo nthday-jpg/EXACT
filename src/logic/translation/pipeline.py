@@ -75,7 +75,11 @@ class NLToFOLPipeline:
                 cleaned_response = re.sub(r"^```(?:json)?\n", "", cleaned_response)
                 cleaned_response = re.sub(r"\n```$", "", cleaned_response)
             
-            glossary = json.loads(cleaned_response.strip())
+            # Safely locate the JSON dictionary block in case the LLM adds conversational wrappers
+            json_match = re.search(r"\{.*\}", cleaned_response, re.DOTALL)
+            glossary_str = json_match.group(0) if json_match else cleaned_response
+            
+            glossary = json.loads(glossary_str.strip())
             if isinstance(glossary, dict) and ("predicates" in glossary or "constants" in glossary):
                 return glossary
         except Exception:
