@@ -25,6 +25,7 @@ from z3 import (
     IntVal,
     Not,
     Or,
+    RealSort,
     RealVal,
     StringVal,
     BoolRef,
@@ -49,7 +50,7 @@ class Z3Symbols:
             return self.consts[name]
         use_sort = sort
         if use_sort is None:
-            use_sort = IntSort() if name in self.numeric_symbols else self.sort
+            use_sort = RealSort() if name in self.numeric_symbols else self.sort
         const = Const(name, use_sort)
         self.consts[name] = const
         return const
@@ -58,9 +59,9 @@ class Z3Symbols:
         key = (name, arity)
         if key in self.preds:
             return self.preds[key]
-        # Upgrades predicates to IntSort functions if they are involved in comparisons
+        # Upgrades predicates to RealSort functions if they are involved in comparisons
         if name in self.numeric_symbols:
-            return self.get_func(name, arity, IntSort())
+            return self.get_func(name, arity, RealSort())
         pred = Function(name, *([self.sort] * arity), BoolSort())
         self.preds[key] = pred
         return pred
@@ -71,7 +72,7 @@ class Z3Symbols:
             return self.funcs[key]
         use_sort = sort
         if use_sort is None:
-            use_sort = IntSort() if name in self.numeric_symbols else self.sort
+            use_sort = RealSort() if name in self.numeric_symbols else self.sort
         func = Function(name, *([self.sort] * arity), use_sort)
         self.funcs[key] = func
         return func
@@ -269,12 +270,12 @@ class FolParser:
                     break
             stream.expect(")")
             if prefer_numeric:
-                func = self.symbols.get_func(tok, len(args), IntSort())
+                func = self.symbols.get_func(tok, len(args), RealSort())
                 return func(*args)
             pred = self.symbols.get_pred(tok, len(args))
             return pred(*args)
         if prefer_numeric:
-            return self.symbols.get_const(tok, IntSort())
+            return self.symbols.get_const(tok, RealSort())
         return self.symbols.get_const(tok)
 
     def _build_comparison(self, op: str, left: ExprRef, right: ExprRef) -> BoolRef:
@@ -349,6 +350,12 @@ def parse_formulas(
     return symbols, formula_exprs
 
 
+import threading
+
+# Global lock to ensure thread-safe access to Z3 (which is not thread-safe by default)
+_z3_lock = threading.Lock()
+
+
 def try_parse_fol(formula: str) -> tuple[bool, str]:
     """Try to parse a single FOL formula string into a Z3 expression.
 
@@ -359,8 +366,9 @@ def try_parse_fol(formula: str) -> tuple[bool, str]:
     Used by the translation repair loop to validate each generated formula
     before committing it, without running a full solver check.
     """
-    try:
-        parse_formulas([formula])
-        return True, ""
-    except Exception as exc:
-        return False, str(exc)
+    with _z3_lock:
+        try:
+            parse_formulas([formula])
+            return True, ""
+        except Exception as exc:
+            return False, str(exc)
