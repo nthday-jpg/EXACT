@@ -217,3 +217,84 @@ OPEN_ENDED_USER_PROMPT_TEMPLATE = (
     "{question_nl}\n\n"
     "Concise Answer Statement:"
 )
+
+
+# =====================================================================
+# COMBINED GLOSSARY AND TRANSLATION PROMPTS (PROMPT BATCHING)
+# =====================================================================
+
+COMBINED_GLOSSARY_AND_TRANSLATION_SYSTEM_PROMPT = (
+    "You are a formal logic translator. Your task is to analyze a list of natural language statements, "
+    "generate a unified Glossary of entities (constants) and predicates, and translate each statement into a "
+    "parser-safe first-order logic formula. Make sure all formulas strictly align with the generated Glossary.\n\n"
+    "Strictly follow these rules:\n"
+    "1. Identify all unique predicates. Use camelCase or snake_case consistently for predicate names. E.g., isStudent(x) or is_student(x).\n"
+    "2. Identify all unique constants (names of specific people, courses, events, objects, numbers). Constants must be singular, capitalized names or standardized symbols. Do not use spaces inside constant names; use underscores or camelCase. E.g., Course_A or CourseA.\n"
+    "3. Keep the predicates and constants as simple, generic, and aligned as possible. If two statements refer to the same concept, they MUST map to the same predicate.\n"
+    "4. Output a STRICT valid JSON object with three keys:\n"
+    "   - 'predicates': a dictionary mapping the predicate signature to its English description.\n"
+    "   - 'constants': a dictionary mapping the constant name to its English description.\n"
+    "   - 'formulas': a list of strings containing the first-order logic formulas in the exact order of the input premises.\n\n"
+    "ALLOWED OPERATORS:\n"
+    "AND, OR, NOT, ->, <->, =, !=, >=, <=, >, <, ForAll, Exists\n\n"
+    "QUANTIFIER RULES:\n"
+    "Use nested quantifiers only. E.g., ForAll(x, ForAll(y, P(x,y)))\n\n"
+    "Example output format:\n"
+    "{\n"
+    "  \"predicates\": {\n"
+    "    \"Human(x)\": \"x is a human\",\n"
+    "    \"Mortal(x)\": \"x is mortal\"\n"
+    "  },\n"
+    "  \"constants\": {\n"
+    "    \"Socrates\": \"Socrates\"\n"
+    "  },\n"
+    "  \"formulas\": [\n"
+    "    \"Human(Socrates)\",\n"
+    "    \"ForAll(x, Human(x) -> Mortal(x))\"\n"
+    "  ]\n"
+    "}\n\n"
+    "Return JSON only. Do not include markdown code block formatting (like ```json)."
+)
+
+COMBINED_GLOSSARY_AND_TRANSLATION_USER_PROMPT_TEMPLATE = (
+    "Analyze the following natural language statements, generate a unified Glossary, and translate them into first-order logic formulas:\n"
+    "{nl_content}\n\n"
+    "Generate the strict JSON object containing 'predicates', 'constants', and 'formulas'. Return JSON only."
+)
+
+
+# =====================================================================
+# SEMANTIC FALLBACK PROMPTS (LLM judges when Z3 is inconclusive)
+# =====================================================================
+
+SEMANTIC_YESNO_SYSTEM_PROMPT = (
+    "You are a logical reasoning assistant. "
+    "Given a set of premises and a conclusion, determine whether the conclusion logically follows from the premises.\n\n"
+    "STRICT RULES:\n"
+    "- Answer ONLY with one of: Yes, No, or Uncertain.\n"
+    "- 'Yes' means the conclusion is a logical consequence of the premises.\n"
+    "- 'No' means the conclusion contradicts or is inconsistent with the premises.\n"
+    "- 'Uncertain' means the premises do not provide enough information to determine the conclusion.\n"
+    "- Do NOT add any explanation, punctuation, or extra text."
+)
+
+SEMANTIC_YESNO_USER_PROMPT_TEMPLATE = (
+    "Premises:\n{premises_text}\n\n"
+    "Conclusion:\n{conclusion_nl}\n\n"
+    "Does the conclusion logically follow from the premises? Answer Yes, No, or Uncertain only."
+)
+
+SEMANTIC_MCQ_SYSTEM_PROMPT = (
+    "You are a logical reasoning assistant. "
+    "Given a set of premises and a multiple-choice question, select the single best answer that logically follows from the premises.\n\n"
+    "STRICT RULES:\n"
+    "- Answer ONLY with the capital letter of your chosen option (A, B, C, or D).\n"
+    "- Do NOT add any explanation or extra text."
+)
+
+SEMANTIC_MCQ_USER_PROMPT_TEMPLATE = (
+    "Premises:\n{premises_text}\n\n"
+    "Question:\n{question_nl}\n\n"
+    "Select the single best answer: respond with ONLY the letter (A, B, C, or D)."
+)
+

@@ -74,6 +74,16 @@ class LLMClient:
     def generate(self, prompt: str, max_tokens: int | None = None, system_prompt: str | None = None) -> dict:
         """Generates text from prompt, returning a structured dictionary with token counts."""
         sys_prompt = system_prompt if system_prompt is not None else self.system_prompt
+        limit_tokens = max_tokens if max_tokens is not None else 4096
+        
+        # Ensure sufficient tokens for thinking models to prevent truncation errors
+        enable_thinking = False
+        if isinstance(self.extra_body, dict):
+            chat_kwargs = self.extra_body.get("chat_template_kwargs", {})
+            if isinstance(chat_kwargs, dict) and chat_kwargs.get("enable_thinking", False):
+                enable_thinking = True
+        if enable_thinking:
+            limit_tokens = max(limit_tokens, 4096)
         
         if self.use_local:
             if not self.model:
@@ -90,7 +100,7 @@ class LLMClient:
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
-                    max_new_tokens=max_tokens if max_tokens is not None else 512,
+                    max_new_tokens=limit_tokens,
                     eos_token_id=self.tokenizer.eos_token_id,
                     pad_token_id=self.tokenizer.pad_token_id
                 )
@@ -114,7 +124,9 @@ class LLMClient:
                 model=self.model_name,
                 messages=messages,
                 temperature=self.temperature,
-                max_tokens=max_tokens,  
+                max_tokens=limit_tokens,
+                frequency_penalty=0.3,
+                stop=["<|im_end|>", "<|endoftext|>"],
                 extra_body=self.extra_body,
             )
             total_tokens = response.usage.total_tokens
