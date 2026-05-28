@@ -12,6 +12,8 @@ from src.llm.prompts import (
     TRANSLATE_SYSTEM_PROMPT_FALLBACK,
     REPAIR_FOL_SYSTEM_PROMPT,
     REPAIR_FOL_USER_PROMPT_TEMPLATE,
+    COMBINED_GLOSSARY_AND_TRANSLATION_SYSTEM_PROMPT,
+    COMBINED_GLOSSARY_AND_TRANSLATION_USER_PROMPT_TEMPLATE,
 )
 
 class NLToFOLPipeline:
@@ -87,11 +89,65 @@ class NLToFOLPipeline:
         return None
 
     def translate_list(self, nl_list: list[str]) -> list[str]:
-        """Translates a list of natural language sentences into FOL formulas in a single LLM call."""
+        """Translates a list of natural language sentences into FOL formulas.
+        Uses a combined single LLM call for both glossary generation and translation
+        (Prompt Batching) to reduce API roundtrips and improve alignment.
+        Falls back to two-stage translation if the combined call fails to parse.
+        """
         nl_content = ""
         for i, nl in enumerate(nl_list, start=1):
             nl_content += f"{i}. {nl}\n"
+
+        # Determine if we should bypass the glossary (e.g., if using the finetuned model Qwen3-8B LoRA which was trained on direct flat translation)
+        is_finetuned = False
+        if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
+            model_name_lower = self.llm_client.model_name.lower()
+            if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower:
+                is_finetuned = True
+
+        if is_finetuned:
+            # Direct translation using the fine-tuned model's exact training prompt (No Glossary, 1 LLM call)
+            system_prompt = TRANSLATE_SYSTEM_PROMPT_FALLBACK
+            user_prompt = TRANSLATE_USER_PROMPT_TEMPLATE.format(nl_content=nl_content.strip())
+            try:
+                response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=2048)
+                all_extracted_fol = extract_fol_formulas(response_content)
+                all_extracted_fol = [normalize_logic_fol_entry(fol) for fol in all_extracted_fol]
+                all_extracted_fol = self._validate_and_repair(all_extracted_fol)
+                return all_extracted_fol
+            except Exception as e:
+                print(f"Warning: Direct translation failed ({str(e)}). Falling back to standard pipeline.")
+
+        # Try unified combined glossary and translation in a single LLM call
+        try:
+            system_prompt = COMBINED_GLOSSARY_AND_TRANSLATION_SYSTEM_PROMPT
+            user_prompt = COMBINED_GLOSSARY_AND_TRANSLATION_USER_PROMPT_TEMPLATE.format(nl_content=nl_content.strip())
             
+            response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=2048)
+            cleaned_response = response_content.strip()
+            
+            # Clean markdown code block if present
+            if cleaned_response.startswith("```"):
+                cleaned_response = re.sub(r"^```(?:json)?\n", "", cleaned_response)
+                cleaned_response = re.sub(r"\n```$", "", cleaned_response)
+            
+            # Safely locate the JSON dictionary block in case the LLM adds conversational wrappers
+            json_match = re.search(r"\{.*\}", cleaned_response, re.DOTALL)
+            json_str = json_match.group(0) if json_match else cleaned_response
+            
+            combined_data = json.loads(json_str.strip())
+            if isinstance(combined_data, dict) and "formulas" in combined_data:
+                all_extracted_fol = combined_data["formulas"]
+                if len(all_extracted_fol) > 0:
+                    # Normalize and repair
+                    all_extracted_fol = [normalize_logic_fol_entry(fol) for fol in all_extracted_fol]
+                    all_extracted_fol = self._validate_and_repair(all_extracted_fol)
+                    return all_extracted_fol
+        except Exception as e:
+            # If the combined call fails, print a warning and fallback gracefully to the original two-stage flow
+            print(f"Warning: Combined glossary and translation failed ({str(e)}). Falling back to two-stage translation.")
+
+        # --- Fallback to original two-stage flow ---
         user_prompt = TRANSLATE_USER_PROMPT_TEMPLATE.format(nl_content=nl_content.strip())
         
         # 1. Try to generate a unified glossary to enforce predicate/entity alignment
@@ -119,31 +175,38 @@ class NLToFOLPipeline:
         user_prompt = REPAIR_FOL_USER_PROMPT_TEMPLATE.format(formula=formula, error=error)
         return self._generate_text(system_prompt, user_prompt, max_new_tokens=256).strip()
 
+    def _validate_and_repair_single(self, formula: str, max_retries: int = 2) -> str:
+        """Validate and repair a single FOL formula."""
+        current = formula
+        ok, err = try_parse_fol(current)
+        for _ in range(max_retries):
+            if ok:
+                break
+            candidate = self._repair_fol(current, err)
+            # Normalize the LLM repaired candidate to resolve minor formatting issues
+            candidate = normalize_logic_fol_entry(candidate)
+            new_ok, new_err = try_parse_fol(candidate)
+            if new_ok or len(candidate) > 0:
+                # Accept repaired version even if still broken — it may be closer
+                current = candidate
+                ok, err = new_ok, new_err
+        return current
+
     def _validate_and_repair(self, formulas: list[str], max_retries: int = 2) -> list[str]:
-        """Validate each FOL formula by attempting a parse; repair broken ones via LLM.
+        """Validate each FOL formula by attempting a parse; repair broken ones via LLM in parallel.
 
         For each formula:
           1. Try to parse with Z3.
-          2. If it fails, send (formula, error) to the LLM for repair.
+          2. If it fails, send (formula, error) to the LLM for repair in parallel.
           3. Repeat up to `max_retries` times, then keep whatever is available.
         """
-        repaired: list[str] = []
-        for formula in formulas:
-            current = formula
-            ok, err = try_parse_fol(current)
-            for _ in range(max_retries):
-                if ok:
-                    break
-                candidate = self._repair_fol(current, err)
-                # Normalize the LLM repaired candidate to resolve minor formatting issues
-                candidate = normalize_logic_fol_entry(candidate)
-                new_ok, new_err = try_parse_fol(candidate)
-                if new_ok or len(candidate) > 0:
-                    # Accept repaired version even if still broken — it may be closer
-                    current = candidate
-                    ok, err = new_ok, new_err
-            repaired.append(current)
-        return repaired
+        import concurrent.futures
+        
+        # Parallelize the repair of multiple formulas
+        with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(formulas) + 1, 8)) as executor:
+            # Map single validation and repair over formulas
+            results = list(executor.map(lambda f: self._validate_and_repair_single(f, max_retries), formulas))
+        return results
 
     def translate_premises_and_conclusion(self, premises_nl: list[str], conclusion_nl: str) -> tuple[list[str], str]:
         """Translates natural language premises and conclusion into FOL formulas."""
