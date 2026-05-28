@@ -34,8 +34,14 @@ __all__ = [
     "extract_proof_structure",
 ]
 
-# Enable Z3 proof globally
-z3.set_param('proof', True)
+# Disable Z3 proof globally to ensure process stability (bug in Z3 4.16.0.0 proof generation on complex FOL)
+z3.set_param('proof', False)
+
+
+import threading
+
+# Global lock to ensure thread-safe access to Z3 (which is not thread-safe by default)
+_z3_lock = threading.Lock()
 
 
 def verify_with_z3(premises_fol: list[str], conclusion_fol: str, negate_conclusion: bool = True) -> dict:
@@ -55,66 +61,70 @@ def verify_with_z3(premises_fol: list[str], conclusion_fol: str, negate_conclusi
             - "unsat_core": List of string tracking variables (e.g. ['p_1', 'neg_conclusion'])
             - "model": z3.Model containing the counterexample if sat, else None
     """
-    negated_conclusion_fol = f"NOT ({conclusion_fol})" if negate_conclusion else conclusion_fol
-    all_formulas = premises_fol + [negated_conclusion_fol]
-    
-    try:
+    with _z3_lock:
+        negated_conclusion_fol = f"NOT ({conclusion_fol})" if negate_conclusion else conclusion_fol
+        all_formulas = premises_fol + [negated_conclusion_fol]
+        
         try:
-            symbols, exprs = parse_formulas(all_formulas)
-        except Exception as e:
-            # Fallback to standardizing common logical operators & balancing parentheses
-            standardized_formulas = []
-            for f_str in all_formulas:
-                f_clean = f_str.replace("¬", "NOT ").replace("∧", " AND ").replace("∨", " OR ").replace("→", " -> ").replace("↔", " <-> ")
-                open_count = f_clean.count("(")
-                close_count = f_clean.count(")")
-                if close_count < open_count:
-                    f_clean = f_clean + ")" * (open_count - close_count)
-                standardized_formulas.append(f_clean)
-            symbols, exprs = parse_formulas(standardized_formulas)
-    except Exception as parse_err:
-        # Return a safe, graceful fallback instead of crashing the pipeline
-        return {
-            "result": z3.unknown,
+            try:
+                symbols, exprs = parse_formulas(all_formulas)
+            except Exception as e:
+                # Fallback to standardizing common logical operators & balancing parentheses
+                standardized_formulas = []
+                for f_str in all_formulas:
+                    f_clean = f_str.replace("¬", "NOT ").replace("∧", " AND ").replace("∨", " OR ").replace("→", " -> ").replace("↔", " <-> ")
+                    open_count = f_clean.count("(")
+                    close_count = f_clean.count(")")
+                    if close_count < open_count:
+                        f_clean = f_clean + ")" * (open_count - close_count)
+                    standardized_formulas.append(f_clean)
+                symbols, exprs = parse_formulas(standardized_formulas)
+        except Exception as parse_err:
+            # Return a safe, graceful fallback instead of crashing the pipeline
+            return {
+                "result": z3.unknown,
+                "proof": None,
+                "unsat_core": [],
+                "model": None,
+                "error": f"Z3 parsing failed completely: {str(parse_err)}"
+            }
+            
+        premise_exprs = exprs[:-1]
+        negated_conclusion_expr = exprs[-1]
+        
+        solver = Solver()
+        
+        # Track premises for unsat core
+        tracking_vars = []
+        for idx, expr in enumerate(premise_exprs, 1):
+            track_var = z3.Bool(f"p_{idx}")
+            solver.assert_and_track(expr, track_var)
+            tracking_vars.append(track_var)
+            
+        # Track negated conclusion for unsat core
+        neg_c_var = z3.Bool("neg_conclusion")
+        solver.assert_and_track(negated_conclusion_expr, neg_c_var)
+    	
+        result = solver.check()
+    	
+        verification_result = {
+            "result": result,
             "proof": None,
             "unsat_core": [],
-            "model": None,
-            "error": f"Z3 parsing failed completely: {str(parse_err)}"
+            "model": None
         }
-        
-    premise_exprs = exprs[:-1]
-    negated_conclusion_expr = exprs[-1]
-    
-    solver = Solver()
-    
-    # Track premises for unsat core
-    tracking_vars = []
-    for idx, expr in enumerate(premise_exprs, 1):
-        track_var = z3.Bool(f"p_{idx}")
-        solver.assert_and_track(expr, track_var)
-        tracking_vars.append(track_var)
-        
-    # Track negated conclusion for unsat core
-    neg_c_var = z3.Bool("neg_conclusion")
-    solver.assert_and_track(negated_conclusion_expr, neg_c_var)
-	
-    result = solver.check()
-	
-    verification_result = {
-        "result": result,
-        "proof": None,
-        "unsat_core": [],
-        "model": None
-    }
-	
-    if result == unsat:
-        verification_result["proof"] = solver.proof()
-        core = solver.unsat_core()
-        verification_result["unsat_core"] = [str(var) for var in core]
-    elif result == sat:
-        verification_result["model"] = solver.model()
-		
-    return verification_result
+    	
+        if result == unsat:
+            try:
+                verification_result["proof"] = solver.proof()
+            except Exception:
+                verification_result["proof"] = None
+            core = solver.unsat_core()
+            verification_result["unsat_core"] = [str(var) for var in core]
+        elif result == sat:
+            verification_result["model"] = solver.model()
+    		
+        return verification_result
 
 
 def extract_proof_structure(proof) -> str:

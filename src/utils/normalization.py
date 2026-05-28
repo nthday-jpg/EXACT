@@ -85,6 +85,11 @@ def normalize_logic_fol_entry(text: str) -> str:
     if not text:
         return text
 
+    # Strip <think>...</think> blocks (including space-padded variants) before any processing
+    text = re.sub(r"<\s*think\s*>.*?<\s*/\s*think\s*>", "", text, flags=re.DOTALL | re.IGNORECASE).strip()
+    if not text:
+        return text
+
     text = unicodedata.normalize("NFKC", text)
     text = re.sub(r"\ufffd\s*forall\b", "forall", text, flags=re.IGNORECASE)
     text = re.sub(r"\ufffd\s*exists\b", "exists", text, flags=re.IGNORECASE)
@@ -148,6 +153,13 @@ def normalize_logic_fol_entry(text: str) -> str:
         return f"{pred_name}({', '.join(normalized_args)})"
 
     text = re.sub(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*\(([^()]+)\)", normalize_args, text)
+    
+    # Repair mathematical prefix predicates (e.g. ">= 3Publications(x)" -> "Publications(x) >= 3")
+    text = re.sub(
+        r"(>=|<=|!=|=|>|<)\s*(\d+(?:\.\d+)?)\s*([A-Za-z_][A-Za-z0-9_-]*)\s*\(\s*([^()]+)\s*\)",
+        r"\3(\4) \1 \2",
+        text
+    )
     
     # Standardize spaces around logical operators, comparisons, commas and parentheses
     text = re.sub(r"\s*<->\s*", " <-> ", text)
@@ -330,9 +342,13 @@ def _parse_number(value_text: str) -> Optional[float]:
     except ValueError:
         return None
 
+# Matches <think>, < think >, <think >, < think> etc. — any whitespace inside the angle brackets
+_THINK_TAG_RE = re.compile(r"<\s*think\s*>.*?<\s*/\s*think\s*>", re.DOTALL | re.IGNORECASE)
+
+
 def extract_fol_formulas(text: str) -> list[str]:
     """Extract FOL formulas directly from conversational LLM output without post-processing cleanup."""
-    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    text = _THINK_TAG_RE.sub("", text)
     try:
         cleaned_text = text.strip()
         if cleaned_text.startswith("```"):
