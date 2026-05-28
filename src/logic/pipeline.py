@@ -4,7 +4,11 @@ from src.logic.translation.pipeline import NLToFOLPipeline
 from src.logic.reasoning.pipeline import ReasoningPipeline
 from src.logic.reasoning.verifier import verify_with_z3
 from src.llm import LLMClient
-from src.llm.prompts import OPEN_ENDED_SYSTEM_PROMPT, OPEN_ENDED_USER_PROMPT_TEMPLATE
+from src.llm.prompts import (
+    OPEN_ENDED_SYSTEM_PROMPT, OPEN_ENDED_USER_PROMPT_TEMPLATE,
+    SEMANTIC_YESNO_SYSTEM_PROMPT, SEMANTIC_YESNO_USER_PROMPT_TEMPLATE,
+    SEMANTIC_MCQ_SYSTEM_PROMPT, SEMANTIC_MCQ_USER_PROMPT_TEMPLATE,
+)
 
 
 def parse_mcq_options(text: str) -> dict[str, str]:
@@ -174,10 +178,20 @@ class LogicalReasoningPipeline:
                 offset = len(premises_nl) + idx
                 options_fol[k] = all_fol[offset] if offset < len(all_fol) else ""
 
-            # Filter premises to those most relevant to the question
-            filt_premises_nl, filt_premises_fol, _ = self.reasoning_pipeline.filter_relevant_premises(
-                premises_nl, conclusion_nl, premises_fol
-            )
+            # Determine if we should bypass the premise filtering (e.g., if using the finetuned model)
+            is_finetuned = False
+            if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
+                model_name_lower = self.llm_client.model_name.lower()
+                if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower:
+                    is_finetuned = True
+
+            if is_finetuned:
+                filt_premises_nl, filt_premises_fol = premises_nl, premises_fol
+            else:
+                # Filter premises to those most relevant to the question
+                filt_premises_nl, filt_premises_fol, _ = self.reasoning_pipeline.filter_relevant_premises(
+                    premises_nl, conclusion_nl, premises_fol
+                )
 
             # Evaluate ALL options
             unsat_candidates: list[tuple[str, dict, int]] = []  # (key, verification, core_size)
@@ -228,16 +242,101 @@ class LogicalReasoningPipeline:
             else:
                 # Single Choice: pick the best option
                 if unsat_candidates:
-                    # Pick the option whose proof uses the fewest premises (tightest entailment)
-                    unsat_candidates.sort(key=lambda x: x[2])
-                    correct_options = [unsat_candidates[0][0]]
-                    correct_verifications = [unsat_candidates[0][1]]
+                    if len(unsat_candidates) > 1:
+                        # Hybrid choice: LLM selects the best option among mathematically verified candidates
+                        choices_list = []
+                        for k, ver, core_sz in unsat_candidates:
+                            prem_count = max(0, core_sz - 1)
+                            choices_list.append(f"{k}. {options[k]} (Proven using {prem_count} premise{'s' if prem_count != 1 else ''})")
+                        choices_str = "\n".join(choices_list)
+                        prompt = (
+                            f"You are a logical reasoning assistant.\n"
+                            f"Given the premises and the question:\n\n"
+                            f"Premises:\n" + "\n".join(f"- {p}" for p in premises_nl) + "\n\n"
+                            f"Question: {conclusion_nl}\n\n"
+                            f"Our formal symbolic prover has verified that the following options are mathematically valid conclusions:\n"
+                            f"{choices_str}\n\n"
+                            f"Select the single most appropriate and intended conclusion from the verified options above.\n"
+                            f"Respond with ONLY the capital letter (A, B, C, or D) of your choice."
+                        )
+                        try:
+                            best_opt = self.llm_client.generate_text(prompt, max_new_tokens=5).strip()
+                            match = re.search(r"\b([A-D])\b", best_opt)
+                            if match:
+                                selected_key = match.group(1)
+                                matched = [c for c in unsat_candidates if c[0] == selected_key]
+                                if matched:
+                                    correct_options = [matched[0][0]]
+                                    correct_verifications = [matched[0][1]]
+                                else:
+                                    # Fallback to tightest proof
+                                    unsat_candidates.sort(key=lambda x: x[2])
+                                    correct_options = [unsat_candidates[0][0]]
+                                    correct_verifications = [unsat_candidates[0][1]]
+                            else:
+                                unsat_candidates.sort(key=lambda x: x[2])
+                                correct_options = [unsat_candidates[0][0]]
+                                correct_verifications = [unsat_candidates[0][1]]
+                        except Exception:
+                            unsat_candidates.sort(key=lambda x: x[2])
+                            correct_options = [unsat_candidates[0][0]]
+                            correct_verifications = [unsat_candidates[0][1]]
+                    else:
+                        correct_options = [unsat_candidates[0][0]]
+                        correct_verifications = [unsat_candidates[0][1]]
                 elif consistent_candidates:
-                    # Process of Elimination
-                    correct_options = [consistent_candidates[0][0]]
-                    correct_verifications = [consistent_candidates[0][1]]
+                    if len(consistent_candidates) > 1:
+                        # Hybrid choice: LLM selects the best option among consistent candidates
+                        choices_str = "\n".join(f"{k}. {options[k]}" for k, _ in consistent_candidates)
+                        prompt = (
+                            f"You are a logical reasoning assistant.\n"
+                            f"Given the premises and the question:\n\n"
+                            f"Premises:\n" + "\n".join(f"- {p}" for p in premises_nl) + "\n\n"
+                            f"Question: {conclusion_nl}\n\n"
+                            f"Our formal symbolic prover has verified that the following options are consistent (not contradicted by the premises):\n"
+                            f"{choices_str}\n\n"
+                            f"Select the single most appropriate and intended conclusion from the consistent options above.\n"
+                            f"Respond with ONLY the capital letter (A, B, C, or D) of your choice."
+                        )
+                        try:
+                            best_opt = self.llm_client.generate_text(prompt, max_new_tokens=5).strip()
+                            match = re.search(r"\b([A-D])\b", best_opt)
+                            if match:
+                                selected_key = match.group(1)
+                                matched = [c for c in consistent_candidates if c[0] == selected_key]
+                                if matched:
+                                    correct_options = [matched[0][0]]
+                                    correct_verifications = [matched[0][1]]
+                                else:
+                                    correct_options = [consistent_candidates[0][0]]
+                                    correct_verifications = [consistent_candidates[0][1]]
+                            else:
+                                correct_options = [consistent_candidates[0][0]]
+                                correct_verifications = [consistent_candidates[0][1]]
+                        except Exception:
+                            correct_options = [consistent_candidates[0][0]]
+                            correct_verifications = [consistent_candidates[0][1]]
+                    else:
+                        correct_options = [consistent_candidates[0][0]]
+                        correct_verifications = [consistent_candidates[0][1]]
                 else:
-                    correct_options = [opt_keys[0]] if opt_keys else []
+                    # Fallback: no option passed Z3 checks — use semantic LLM judgment
+                    premises_text = "\n".join(f"- {p}" for p in premises_nl)
+                    try:
+                        sem_prompt = SEMANTIC_MCQ_USER_PROMPT_TEMPLATE.format(
+                            premises_text=premises_text,
+                            question_nl=conclusion_nl
+                        )
+                        sem_resp = self.llm_client.generate_text(
+                            sem_prompt, system_prompt=SEMANTIC_MCQ_SYSTEM_PROMPT, max_new_tokens=10
+                        ).strip()
+                        match = re.search(r"\b([A-D])\b", sem_resp)
+                        if match:
+                            correct_options = [match.group(1)]
+                        else:
+                            correct_options = [opt_keys[0]] if opt_keys else [""]
+                    except Exception:
+                        correct_options = [opt_keys[0]] if opt_keys else [""]
                     correct_verifications = []
                     if correct_options:
                         opt_fol = options_fol.get(correct_options[0], "")
@@ -311,10 +410,20 @@ class LogicalReasoningPipeline:
             # Translate the premises and the generated candidate answer statement
             premises_fol, conclusion_fol = self.translate_premises_and_conclusion(premises_nl, candidate_answer)
 
-            # Filter premises to those most relevant
-            filt_premises_nl, filt_premises_fol, _ = self.reasoning_pipeline.filter_relevant_premises(
-                premises_nl, candidate_answer, premises_fol
-            )
+            # Determine if we should bypass the premise filtering (e.g., if using the finetuned model)
+            is_finetuned = False
+            if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
+                model_name_lower = self.llm_client.model_name.lower()
+                if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower:
+                    is_finetuned = True
+
+            if is_finetuned:
+                filt_premises_nl, filt_premises_fol = premises_nl, premises_fol
+            else:
+                # Filter premises to those most relevant
+                filt_premises_nl, filt_premises_fol, _ = self.reasoning_pipeline.filter_relevant_premises(
+                    premises_nl, candidate_answer, premises_fol
+                )
 
             # Verify entailment of candidate answer with Z3
             verification = self.reasoning_pipeline.verify(filt_premises_fol, conclusion_fol, negate_conclusion=True)
@@ -351,10 +460,20 @@ class LogicalReasoningPipeline:
             # Yes/No or Statement Flow: Dual satisfiability check (both entailed or negated entailed)
             premises_fol, conclusion_fol = self.translate_premises_and_conclusion(premises_nl, conclusion_nl)
 
-            # Filter premises to those most relevant to the conclusion
-            filt_premises_nl, filt_premises_fol, _ = self.reasoning_pipeline.filter_relevant_premises(
-                premises_nl, conclusion_nl, premises_fol
-            )
+            # Determine if we should bypass the premise filtering (e.g., if using the finetuned model)
+            is_finetuned = False
+            if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
+                model_name_lower = self.llm_client.model_name.lower()
+                if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower:
+                    is_finetuned = True
+
+            if is_finetuned:
+                filt_premises_nl, filt_premises_fol = premises_nl, premises_fol
+            else:
+                # Filter premises to those most relevant to the conclusion
+                filt_premises_nl, filt_premises_fol, _ = self.reasoning_pipeline.filter_relevant_premises(
+                    premises_nl, conclusion_nl, premises_fol
+                )
 
             # Check if conclusion is entailed
             verification = self.reasoning_pipeline.verify(filt_premises_fol, conclusion_fol, negate_conclusion=True)
@@ -374,6 +493,27 @@ class LogicalReasoningPipeline:
                         answer = "No"
                 except Exception:
                     pass
+
+                # Semantic LLM fallback: Z3 cannot determine entailment — ask the LLM directly
+                if answer == "Uncertain":
+                    try:
+                        premises_text = "\n".join(f"- {p}" for p in filt_premises_nl)
+                        sem_prompt = SEMANTIC_YESNO_USER_PROMPT_TEMPLATE.format(
+                            premises_text=premises_text,
+                            conclusion_nl=conclusion_nl
+                        )
+                        sem_resp = self.llm_client.generate_text(
+                            sem_prompt, system_prompt=SEMANTIC_YESNO_SYSTEM_PROMPT, max_new_tokens=10
+                        ).strip()
+                        # Accept only clean Yes/No/Uncertain from LLM
+                        sem_lower = sem_resp.lower().strip("., ")
+                        if sem_lower.startswith("yes"):
+                            answer = "Yes"
+                        elif sem_lower.startswith("no"):
+                            answer = "No"
+                        # else keep Uncertain
+                    except Exception:
+                        pass
 
             reasoning, cot = self.generate_cot(filt_premises_nl, conclusion_nl, verification)
 

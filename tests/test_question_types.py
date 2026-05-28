@@ -32,6 +32,32 @@ class MockLLMClient:
             if "what is john's arrival time" in prompt_lower:
                 return "john arrival time is Time800AM"
             return "Unknown answer."
+
+        # 1b. Combined Glossary + Translation
+        if "generate a unified glossary, and translate them" in prompt_lower:
+            if "socrates is a human" in prompt_lower or "every human is mortal" in prompt_lower:
+                return """
+                {
+                  "predicates": {
+                    "Human(x)": "x is a human",
+                    "Mortal(x)": "x is mortal",
+                    "qualifies(x)": "x qualifies"
+                  },
+                  "constants": {
+                    "Socrates": "Socrates",
+                    "John": "John",
+                    "Time800AM": "Time800AM"
+                  },
+                  "formulas": ["Human(Socrates)", "ForAll(x, Human(x) -> Mortal(x))", "Mortal(Socrates)", "Human(Socrates)", "Mortal(Socrates)", "Mortal(John)", "Mortal(Socrates)", "Mortal(John)"]
+                }
+                """
+            if "socrates is mortal" in prompt_lower:
+                return '{"formulas": ["Mortal(Socrates)"]}'
+            if "john is a driver" in prompt_lower:
+                return '{"formulas": ["Driver(John)"]}'
+            if "john qualifies" in prompt_lower:
+                return '{"formulas": ["qualifies(John)"]}'
+            return '{"formulas": ["P(x)"]}'
             
         # 2. Glossary generation (Stage 1 translation)
         if "generate the strict json glossary" in prompt_lower:
