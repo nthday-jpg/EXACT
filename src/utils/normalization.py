@@ -177,10 +177,28 @@ def normalize_logic_fol_entry(text: str) -> str:
     
     text = re.sub(r"\s+", " ", text)
     
+    # Robust parenthesis balancing (remove extra closing parens first, then add missing closing parens)
+    text = text.strip()
+    while True:
+        depth = 0
+        extra_found = False
+        for i, char in enumerate(text):
+            if char == '(':
+                depth += 1
+            elif char == ')':
+                depth -= 1
+                if depth < 0:
+                    text = text[:i] + text[i+1:]
+                    extra_found = True
+                    break
+        if not extra_found:
+            break
+            
     open_count = text.count("(")
     close_count = text.count(")")
     if close_count < open_count:
         text = text + ")" * (open_count - close_count)
+        
     return text.strip()
 
 
@@ -376,3 +394,90 @@ def extract_fol_formulas(text: str) -> list[str]:
         if line:
             fol_formulas.append(line)
     return fol_formulas
+
+
+GENERIC_WORDS = {
+    'project', 'projects', 'python', 'code', 'standard', 'standards',
+    'rule', 'rules', 'requirement', 'requirements', 'practice', 'practices',
+    'convention', 'conventions', 'protocol', 'protocols', 'specification', 'specifications',
+    'constraint', 'constraints', 'condition', 'conditions', 'regulation', 'regulations',
+    'policy', 'policies', 'guideline', 'guidelines', 'recommendation', 'recommendations',
+    'system', 'systems', 'application', 'applications', 'program', 'programs'
+}
+
+RESERVED_WORDS = {'ForAll', 'Exists', 'AND', 'OR', 'NOT', 'implies', 'IN'}
+
+def split_camel_snake(s: str) -> list[str]:
+    """Split camelCase or snake_case string into words."""
+    parts = s.split('_')
+    words = []
+    for part in parts:
+        camel_parts = re.findall(r'[A-Z]?[a-z0-9]+|[A-Z]+(?=[A-Z][a-z0-9]|\b)', part)
+        if camel_parts:
+            words.extend(camel_parts)
+        else:
+            words.append(part)
+    return words
+
+def clean_repetitive_name(name: str) -> str:
+    """Detect and remove repetitive phrases or excessive length in predicate names."""
+    if len(name) <= 50:
+        return name
+    
+    # Try to find repeating subpatterns
+    for length in range(4, 40):
+        for i in range(len(name) - 2 * length):
+            sub = name[i:i+length]
+            j = i + length
+            count = 1
+            while name[j:j+length] == sub:
+                count += 1
+                j += length
+            if count >= 2:
+                repeated_part = sub * count
+                name = name.replace(repeated_part, sub)
+                return clean_repetitive_name(name)
+                
+    if len(name) > 50:
+        name = name[:47] + "Trunc"
+    return name
+
+def unify_fol_predicates(formulas: list[str]) -> list[str]:
+    """Lexically unify predicate names across formulas to resolve mismatches and enforce PascalCase."""
+    if not formulas:
+        return formulas
+
+    # Extract all predicate names
+    predicate_pattern = r'\b([A-Za-z_][A-Za-z0-9_]*)\s*\('
+    predicates = set()
+    for f in formulas:
+        matches = re.findall(predicate_pattern, f)
+        for m in matches:
+            if m not in RESERVED_WORDS:
+                predicates.add(m)
+
+    # Map each predicate to its standardized, generic-stripped PascalCase name
+    mapping = {}
+    for p in predicates:
+        words = split_camel_snake(p)
+        core = [w for w in words if w.lower() not in GENERIC_WORDS]
+        if not core:
+            core = words
+        # Standardize to PascalCase (capitalize first letter of each word)
+        canonical = "".join(w[0].upper() + w[1:] if len(w) > 0 else w for w in core)
+        canonical = clean_repetitive_name(canonical)
+        mapping[p] = canonical
+
+    # Replace in formulas
+    unified_formulas = []
+    for f in formulas:
+        new_f = f
+        # Replace each predicate name cleanly using word boundaries
+        # Sort keys by length descending to avoid partial replacement issues
+        for name in sorted(mapping.keys(), key=len, reverse=True):
+            canonical = mapping[name]
+            if name != canonical:
+                new_f = re.sub(rf'\b{name}\b', canonical, new_f)
+        unified_formulas.append(new_f)
+
+    return unified_formulas

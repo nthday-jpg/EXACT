@@ -8,19 +8,31 @@ class LLMClient:
                  api_key: str = None, 
                  base_url: str = "https://router.huggingface.co/v1",
                  system_prompt: str = "", 
-                 temperature: float = 0.0, 
+                 temperature: float = 0.1, 
+                 frequency_penalty: float = 0.0,
                  extra_body: dict = {},
                  use_local: bool = False,
-                 model_dir: str = None):
+                 model_dir: str = None,
+                 device: str = None):
         
         self.model_name = model_name
         self.system_prompt = system_prompt
         self.temperature = temperature
+        self.frequency_penalty = frequency_penalty
         self.extra_body = extra_body
         self.use_local = use_local
         self.model_dir = model_dir
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        
+        # Resolve default model directory early
+        from pathlib import Path
+        if not self.model_dir:
+            root_dir = Path(__file__).resolve().parents[2]
+            self.model_dir = str(root_dir / "results")
+
+        if device:
+            self.device = device
+        else:
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
         self.tokenizer = None
         self.model = None
         
@@ -30,6 +42,15 @@ class LLMClient:
                 raise RuntimeError("HF_API_KEY is not set")
             self.base_url = base_url
             self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+            
+            # Load tokenizer locally to enable perfect local chat template formatting for remote completions
+            from transformers import AutoTokenizer
+            try:
+                self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir, trust_remote_code=True)
+                if self.tokenizer.pad_token is None:
+                    self.tokenizer.pad_token = self.tokenizer.eos_token
+            except Exception as e:
+                print(f"Warning: Could not load local tokenizer for remote client: {e}")
         else:
             self.api_key = api_key
             self.client = None
@@ -63,7 +84,7 @@ class LLMClient:
         base_model = AutoModelForCausalLM.from_pretrained(
             "Qwen/Qwen3-8B",
             quantization_config=bnb_config if torch.cuda.is_available() else None,
-            device_map="cuda:0" if torch.cuda.is_available() else None,
+            device_map=self.device if torch.cuda.is_available() else None,
             trust_remote_code=True,
             attn_implementation="sdpa" if torch.cuda.is_available() else None
         )
@@ -120,30 +141,61 @@ class LLMClient:
                 messages.append({"role": "system", "content": sys_prompt})
             messages.append({"role": "user", "content": prompt})
 
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                temperature=self.temperature,
-                max_tokens=limit_tokens,
-                frequency_penalty=0.3,
-                stop=["<|im_end|>", "<|endoftext|>"],
-                extra_body=self.extra_body,
-            )
-            total_tokens = response.usage.total_tokens
-            input_tokens = response.usage.prompt_tokens
-            output_tokens = response.usage.completion_tokens
+            if self.tokenizer:
+                # Perfect prompt formatting locally using the exact chat_template.jinja
+                chat_prompt = self.tokenizer.apply_chat_template(
+                    messages, 
+                    tokenize=False, 
+                    add_generation_prompt=True, 
+                    enable_thinking=enable_thinking
+                )
+                
+                # Call vLLM's high-performance raw completion endpoint
+                response = self.client.completions.create(
+                    model=self.model_name,
+                    prompt=chat_prompt,
+                    temperature=self.temperature,
+                    max_tokens=limit_tokens,
+                    frequency_penalty=self.frequency_penalty,
+                    stop=["<|im_end|>", "<|endoftext|>"],
+                )
+                
+                total_tokens = response.usage.total_tokens
+                input_tokens = response.usage.prompt_tokens
+                output_tokens = response.usage.completion_tokens
+                content = response.choices[0].text
+                finish_reason = response.choices[0].finish_reason
+            else:
+                # Fallback if tokenizer couldn't be loaded locally
+                remote_extra_body = self.extra_body.copy() if isinstance(self.extra_body, dict) else {}
+                if "chat_template_kwargs" not in remote_extra_body:
+                    remote_extra_body["chat_template_kwargs"] = {"enable_thinking": enable_thinking}
 
-            msg = response.choices[0].message
-            content = msg.content if msg and msg.content else ""
-            if not content and hasattr(msg, 'reasoning') and msg.reasoning:
-                content = msg.reasoning
+                response = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=messages,
+                    temperature=self.temperature,
+                    max_tokens=limit_tokens,
+                    frequency_penalty=self.frequency_penalty,
+                    stop=["<|im_end|>", "<|endoftext|>"],
+                    extra_body=remote_extra_body,
+                )
+                total_tokens = response.usage.total_tokens
+                input_tokens = response.usage.prompt_tokens
+                output_tokens = response.usage.completion_tokens
+
+                msg = response.choices[0].message
+                content = msg.content if msg and msg.content else ""
+                if not content and hasattr(msg, 'reasoning') and msg.reasoning:
+                    content = msg.reasoning
+                finish_reason = response.choices[0].finish_reason
             
-            if response.choices[0].finish_reason == "length" and content:
+            if finish_reason == "length" and content:
                 print("Warning: Response was truncated by max_tokens.")
                 return {"content": content.strip(), "total_tokens": total_tokens, "input_tokens": input_tokens, "output_tokens": output_tokens}
                 
             if not content:
-                raise RuntimeError(f"Empty content. finish_reason={response.choices[0].finish_reason}")
+                raise RuntimeError(f"Empty content. finish_reason={finish_reason}")
                 
             return {"content": content.strip(),
                     "total_tokens": total_tokens,
