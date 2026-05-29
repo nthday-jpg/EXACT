@@ -1,0 +1,244 @@
+{
+  "evaluation_summary": {
+    "model_name": "Local GPU (localhost)",
+    "total_json_samples": 411,
+    "total_eval_pairs": 808,
+    "evaluated_pairs": 10,
+    "successful_runs": 10,
+    "failed_runs": 0,
+    "matches_count": 8,
+    "mismatches_count": 2,
+    "accuracy_percent": 80.0,
+    "pass_rate_percent": 100.0,
+    "z3_stats": {
+      "unsat (proved contradiction)": 10,
+      "sat (proved consistent/not entailed)": 0,
+      "unknown (Z3 cannot verify)": 0
+    },
+    "total_time_sec": 594.37,
+    "avg_time_per_pair_sec": 59.44
+  },
+  "details": [
+    {
+      "eval_idx": 0,
+      "sample_idx": 0,
+      "question_idx": 0,
+      "success": true,
+      "is_match": true,
+      "correct_ans": "A",
+      "predicted_ans": "A",
+      "confidence": 0.9821,
+      "conclusion_fol": "ForAll(x, (NOT Optimized(x) -> NOT WellTested(x)))",
+      "z3_result": "unsat",
+      "cot": [
+        "The premises state that if a Python project is well-tested, then it is optimized.",
+        "In logic, this is a conditional statement of the form \"If P, then Q\", where P is \"well-tested\" and Q is \"optimized\".",
+        "The contrapositive of a conditional statement \"If P, then Q\" is logically equivalent and takes the form \"If not Q, then not P\".",
+        "Applying the contrapositive rule to the given premise, we derive that if a Python project is not optimized, then it is not well-tested.",
+        "Therefore, the premises logically entail the conclusion that if a Python project is not optimized, then it is not well-tested."
+      ],
+      "elapsed_sec": 87.47035527229309
+    },
+    {
+      "eval_idx": 1,
+      "sample_idx": 0,
+      "question_idx": 1,
+      "success": true,
+      "is_match": true,
+      "correct_ans": "Yes",
+      "predicted_ans": "Yes",
+      "confidence": 0.9643,
+      "conclusion_fol": "ForAll(x, (PythonProject(x) -> WellStructured(x)) -> ForAll(x, (PythonProject(x) -> Optimized(x))))",
+      "z3_result": "unsat",
+      "cot": [
+        "From Premise 10, we know that every Python project is well-structured.",
+        "Premise 7 states that if a Python project is well-structured, then it is optimized.",
+        "Since all Python projects are well-structured (Premise 10), we can apply the rule in Premise 7 to every project.",
+        "Therefore, every Python project must be optimized.",
+        "This means that the statement \"If all Python projects are well-structured, then all Python projects are optimized\" logically follows from the premises."
+      ],
+      "elapsed_sec": 61.01618695259094
+    },
+    {
+      "eval_idx": 2,
+      "sample_idx": 1,
+      "question_idx": 0,
+      "success": true,
+      "is_match": false,
+      "correct_ans": "C",
+      "predicted_ans": "A",
+      "confidence": 0.7955,
+      "conclusion_fol": "UniversityScholarship(sophia)",
+      "z3_result": "unsat",
+      "cot": [
+        "Sophia has completed the core curriculum, which is one of the prerequisites for qualifying for advanced courses.",
+        "Sophia has passed the science assessment, which means she has met the requirements to qualify for advanced courses.",
+        "Since Sophia has both completed the core curriculum and passed the science assessment, she is qualified for advanced courses.",
+        "Sophia has completed the research methodology course, which is a prerequisite for being eligible for the international program.",
+        "Since Sophia is qualified for advanced courses and has completed research methodology, she is eligible for the international program.",
+        "Sophia has completed her capstone project, which is a requirement for being awarded an honors diploma.",
+        "Since Sophia is eligible for the international program and has completed a capstone project, she is awarded an honors diploma.",
+        "Sophia has completed the required community service hours, which is a requirement to qualify for the university scholarship.",
+        "Since Sophia has been awarded an honors diploma and has completed community service, she qualifies for the university scholarship."
+      ],
+      "elapsed_sec": 69.45213079452515
+    },
+    {
+      "eval_idx": 3,
+      "sample_idx": 1,
+      "question_idx": 1,
+      "success": true,
+      "is_match": true,
+      "correct_ans": "Yes",
+      "predicted_ans": "Yes",
+      "confidence": 0.7955,
+      "conclusion_fol": "Scholarship(sophia)",
+      "z3_result": "unsat",
+      "cot": [
+        "Sophia has completed the core curriculum, which is one of the prerequisites for advanced courses.",
+        "Sophia has passed the science assessment, which is the second requirement needed to qualify for advanced courses.",
+        "Since Sophia has completed the core curriculum and passed the science assessment, she is qualified for advanced courses.",
+        "Sophia has completed the research methodology course, which is a prerequisite for being eligible for the international program.",
+        "Combined with the fact that she is qualified for advanced courses, Sophia is now eligible for the international program.",
+        "Sophia has completed her capstone project, which is a requirement to be awarded an honors diploma.",
+        "Since Sophia is eligible for the international program and has completed a capstone project, she is awarded an honors diploma.",
+        "Sophia has completed the required community service hours, which is a prerequisite to qualifying for the university scholarship.",
+        "Since Sophia has been awarded an honors diploma and has completed the required community service hours, she qualifies for the university scholarship."
+      ],
+      "elapsed_sec": 55.59206986427307
+    },
+    {
+      "eval_idx": 4,
+      "sample_idx": 2,
+      "question_idx": 0,
+      "success": true,
+      "is_match": false,
+      "correct_ans": "C",
+      "predicted_ans": "A",
+      "confidence": 0.7955,
+      "conclusion_fol": "QualifiesForUniversityScholarship(sophia)",
+      "z3_result": "unsat",
+      "cot": [
+        "Sophia has completed the core curriculum, as stated in Premise 7.",
+        "Sophia has passed the science assessment, as stated in Premise 8.",
+        "Since Sophia has completed the core curriculum and passed the science assessment, she is qualified for advanced courses, according to Premise 1.",
+        "Sophia has completed the research methodology course, as stated in Premise 9.",
+        "Since Sophia is qualified for advanced courses and has completed research methodology, she is eligible for the international program, according to Premise 2.",
+        "Sophia has completed her capstone project, as stated in Premise 10.",
+        "Since Sophia is eligible for the international program and has completed her capstone project, she has been awarded an honors diploma, according to Premise 4.",
+        "Sophia has completed the required community service hours, as stated in Premise 11.",
+        "Since Sophia has been awarded an honors diploma and has completed community service, she qualifies for the university scholarship, according to Premise 5.",
+        "Therefore, Sophia qualifies for the university scholarship."
+      ],
+      "elapsed_sec": 77.46668481826782
+    },
+    {
+      "eval_idx": 5,
+      "sample_idx": 2,
+      "question_idx": 1,
+      "success": true,
+      "is_match": true,
+      "correct_ans": "Yes",
+      "predicted_ans": "Yes",
+      "confidence": 0.7955,
+      "conclusion_fol": "Scholarship(sophia)",
+      "z3_result": "unsat",
+      "cot": [
+        "Sophia has completed the core curriculum, as stated in Premise 7.",
+        "Sophia has passed the science assessment, as stated in Premise 8.",
+        "Combined with Step 1 and Step 2, Sophia meets the qualifications for advanced courses, as required by Premise 1.",
+        "Sophia has completed the research methodology course, as stated in Premise 9.",
+        "Since Sophia is qualified for advanced courses and has completed research methodology, she is eligible for the international program, as stated in Premise 2.",
+        "Sophia has completed her capstone project, as stated in Premise 10.",
+        "Combined with Step 5 and Step 6, Sophia has fulfilled the requirements to be awarded an honors diploma, as outlined in Premise 4.",
+        "Sophia has completed the required community service hours, as stated in Premise 11.",
+        "Since Sophia has been awarded an honors diploma and completed community service, she qualifies for the university scholarship, as specified in Premise 5.\n\nConclusion: Yes, Sophia qualifies for the university scholarship based on the premises."
+      ],
+      "elapsed_sec": 63.22443342208862
+    },
+    {
+      "eval_idx": 6,
+      "sample_idx": 3,
+      "question_idx": 0,
+      "success": true,
+      "is_match": true,
+      "correct_ans": "A",
+      "predicted_ans": "A",
+      "confidence": 0.7812,
+      "conclusion_fol": "QualifiesForFellowship(john)",
+      "z3_result": "unsat",
+      "cot": [
+        "John has completed all required courses.",
+        "Since John has completed all required courses, he is eligible for graduation.",
+        "John maintains a GPA of 3.8, which is above 3.5.",
+        "Combined with his eligibility for graduation, John's GPA of 3.8 means he graduates with honors.",
+        "John has completed a thesis.",
+        "Since John graduates with honors and completes a thesis, he receives academic distinction.",
+        "If John receives academic distinction, he qualifies for the graduate fellowship program.",
+        "Therefore, John qualifies for the graduate fellowship program."
+      ],
+      "elapsed_sec": 47.03075361251831
+    },
+    {
+      "eval_idx": 7,
+      "sample_idx": 3,
+      "question_idx": 1,
+      "success": true,
+      "is_match": true,
+      "correct_ans": "Yes",
+      "predicted_ans": "Yes",
+      "confidence": 0.7857,
+      "conclusion_fol": "AcademicDistinction(John)",
+      "z3_result": "unsat",
+      "cot": [
+        "John has completed all required courses, as stated in Premise 5.",
+        "John maintains a GPA of 3.8, which is above the 3.5 threshold, as mentioned in Premise 6.",
+        "Since John has completed all required courses and maintains a GPA above 3.5, he is eligible for graduation, according to Premise 1 and Premise 2.",
+        "John has also completed a thesis, as stated in Premise 7.",
+        "If a student graduates with honors and completes a thesis, they receive academic distinction, as outlined in Premise 3.",
+        "John graduates with honors (as inferred in Step 3) and has completed a thesis (as stated in Step 4), so it follows that John receives academic distinction."
+      ],
+      "elapsed_sec": 47.172099351882935
+    },
+    {
+      "eval_idx": 8,
+      "sample_idx": 4,
+      "question_idx": 0,
+      "success": true,
+      "is_match": true,
+      "correct_ans": "C",
+      "predicted_ans": "C",
+      "confidence": 0.7778,
+      "conclusion_fol": "ProposeCourses(john)",
+      "z3_result": "unsat",
+      "cot": [
+        "Since Professor John has completed pedagogical training, he can teach undergraduate courses according to Premise 1.",
+        "Combined with Premise 1 and Premise 6, Professor John can supervise graduate students because he can teach undergraduate courses and holds a PhD.",
+        "From Premise 2 and Premise 7, Professor John can serve on curriculum committees because he can supervise graduate students and has at least 3 publications.",
+        "Using Premise 3 and Premise 8, Professor John can propose new courses because he can serve on curriculum committees and has a positive teaching evaluation.",
+        "Therefore, the conclusion that Professor John can propose new courses follows logically from the premises."
+      ],
+      "elapsed_sec": 51.38540840148926
+    },
+    {
+      "eval_idx": 9,
+      "sample_idx": 4,
+      "question_idx": 1,
+      "success": true,
+      "is_match": true,
+      "correct_ans": "Yes",
+      "predicted_ans": "Yes",
+      "confidence": 0.7778,
+      "conclusion_fol": "ProposeCourse(john)",
+      "z3_result": "unsat",
+      "cot": [
+        "Since Professor John has completed pedagogical training, he satisfies the requirement to teach undergraduate courses.",
+        "Combined with holding a PhD, Professor John is qualified to supervise graduate students.",
+        "With at least 3 publications, Professor John qualifies for serving on curriculum committees.",
+        "Given his positive teaching evaluation, Professor John meets the requirement to propose new courses.",
+        "Therefore, Professor John meets all the criteria to propose new courses, according to the premises."
+      ],
+      "elapsed_sec": 34.56359100341797
+    }
+  ]
+}
