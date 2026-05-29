@@ -15,7 +15,7 @@ from src.logic.reasoning.verifier import try_parse_fol
 from src.utils.normalization import normalize_logic_fol_entry
 
 def main():
-    modal_url = "https://cqktgju--exact-qwen3-8b-lora-api.modal.run"
+    modal_url = "https://cqktgju--exact-qwen3-8b-lora-exactmodel-api-server.modal.run"
     base_url = f"{modal_url}/v1"
     model_name = "exact-qwen3-8b"
     api_key = "modal-placeholder"

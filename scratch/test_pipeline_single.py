@@ -19,7 +19,7 @@ def main():
     load_dotenv()
     
     # Setup remote Modal Labs client
-    modal_url = "https://cqktgju--exact-qwen3-8b-lora-api.modal.run"
+    modal_url = "https://cqktgju--exact-qwen3-8b-lora-exactmodel-api-server.modal.run"
     base_url = f"{modal_url.rstrip('/')}/v1"
     model_name = "exact-qwen3-8b"
     api_key = os.getenv("MODAL_API_KEY") or "modal-placeholder"
@@ -29,7 +29,7 @@ def main():
         model_name=model_name,
         api_key=api_key,
         base_url=base_url,
-        temperature=0.1,
+        temperature=0.0,
         use_local=False,
     )
     
@@ -54,6 +54,9 @@ def main():
     print("\n================ RESULT ================")
     print("Answer predicted:", result["answer"])
     print("Confidence:", result["confidence"])
+    print("Translated Premises FOL:")
+    for idx, p_fol in enumerate(result.get("premises_fol", [])):
+        print(f"  {idx+1}. {p_fol}")
     print("Conclusion FOL:", result["conclusion_fol"])
     print("Z3 Verification Result:", result["verification"]["result"])
     print("Reasoning steps:")

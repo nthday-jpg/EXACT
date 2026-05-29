@@ -13,8 +13,8 @@ load_dotenv()
 from src.llm.llm_client import LLMClient
 
 def main():
-    modal_url = "https://cqktgju--exact-qwen3-8b-lora-api.modal.run"
-    base_url = f"{modal_url}/v1"
+    modal_url = "https://cqktgju--exact-qwen3-8b-lora-exactmodel-api-server.modal.run"
+    base_url = f"{modal_url.rstrip('/')}/v1"
     model_name = "exact-qwen3-8b"
     api_key = "modal-placeholder"
 
