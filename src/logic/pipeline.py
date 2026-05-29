@@ -3,6 +3,7 @@ import z3
 from src.logic.translation.pipeline import NLToFOLPipeline
 from src.logic.reasoning.pipeline import ReasoningPipeline
 from src.logic.reasoning.verifier import verify_with_z3
+from src.utils.normalization import unify_fol_predicates
 from src.llm import LLMClient
 from src.llm.prompts import (
     OPEN_ENDED_SYSTEM_PROMPT, OPEN_ENDED_USER_PROMPT_TEMPLATE,
@@ -94,14 +95,14 @@ class LogicalReasoningPipeline:
     Backward-compatible wrapper for the End-to-End Logical Reasoning Pipeline.
     Delegates to the modular NLToFOLPipeline for translation and ReasoningPipeline for Z3 reasoning.
     """
-    def __init__(self, use_local: bool = True, model_dir: str = None, llm_client = None):
+    def __init__(self, use_local: bool = True, model_dir: str = None, llm_client = None, device: str = None, temperature: float = 0.1):
         self.use_local = use_local
         self.model_dir = model_dir
         
         if llm_client is not None:
             self.llm_client = llm_client
         else:
-            self.llm_client = LLMClient(use_local=use_local, model_dir=model_dir)
+            self.llm_client = LLMClient(use_local=use_local, model_dir=model_dir, device=device, temperature=temperature)
             
         self.translation_pipeline = NLToFOLPipeline(use_local=use_local, model_dir=model_dir, llm_client=self.llm_client)
         self.reasoning_pipeline = ReasoningPipeline(use_local=use_local, model_dir=model_dir, llm_client=self.llm_client)
@@ -167,16 +168,41 @@ class LogicalReasoningPipeline:
         if question_type in ("single_choice", "multiple_choice") or (len(options) >= 2 and not question_type):
             # MCQ Flow
             opt_keys = sorted(options.keys())
-            combined_nl = premises_nl + [options[k] for k in opt_keys]
             
-            # Translate all together to ensure predicate alignment
+            # 1. Unified MCQ Translation: Attempt to translate everything in a single combined list call (1 API request)
+            # This guarantees perfect alignment of predicates/entities and eliminates server flooding.
+            combined_nl = premises_nl + [options[k] for k in opt_keys]
             all_fol = self.translation_pipeline.translate_list(combined_nl)
             
-            premises_fol = all_fol[:len(premises_nl)]
+            used_unified_translation = False
+            if len(all_fol) == len(combined_nl):
+                premises_fol = all_fol[:len(premises_nl)]
+                options_fol = {k: all_fol[len(premises_nl) + idx] for idx, k in enumerate(opt_keys)}
+                used_unified_translation = True
+            else:
+                # 2. Sequential Fallback: Translate one sentence at a time to prevent model degradation
+                # NOTE: Fine-tuned model quality degrades after ~6 sentences in a single call.
+                # One-by-one translation ensures each formula is accurate (proven in task-569).
+                print(f"Warning: Unified translation length mismatch ({len(all_fol)} vs {len(combined_nl)}). Falling back to sequential translation.")
+                premises_fol = []
+                for p in premises_nl:
+                    res = self.translation_pipeline.translate_list([p])
+                    premises_fol.append(res[0] if res else "")
+                options_fol = {}
+                for k in opt_keys:
+                    res = self.translation_pipeline.translate_list([options[k]])
+                    options_fol[k] = res[0] if res else ""
+            
+            # 3. Final Lexical Predicate Unification over the entire set to ensure absolute consistency
+            all_fol_list = premises_fol + [options_fol.get(k, "") for k in opt_keys]
+            unified_fol_list = unify_fol_predicates(all_fol_list)
+            
+            # Deconstruct the unified list back into premises and options
+            premises_fol = unified_fol_list[:len(premises_fol)]
             options_fol = {}
             for idx, k in enumerate(opt_keys):
-                offset = len(premises_nl) + idx
-                options_fol[k] = all_fol[offset] if offset < len(all_fol) else ""
+                offset = len(premises_fol) + idx
+                options_fol[k] = unified_fol_list[offset] if offset < len(unified_fol_list) else ""
 
             # Determine if we should bypass the premise filtering (e.g., if using the finetuned model)
             is_finetuned = False

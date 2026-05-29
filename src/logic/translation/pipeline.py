@@ -1,7 +1,7 @@
 import re
 import json
 import torch
-from src.utils.normalization import extract_fol_formulas, normalize_logic_fol_entry
+from src.utils.normalization import extract_fol_formulas, normalize_logic_fol_entry, unify_fol_predicates
 from src.logic.reasoning.verifier import try_parse_fol
 from src.llm import LLMClient
 from src.llm.prompts import (
@@ -23,13 +23,13 @@ class NLToFOLPipeline:
     
     Supports both local execution (via Hugging Face LoRA models) and remote API execution.
     """
-    def __init__(self, use_local: bool = True, model_dir: str = None, llm_client = None):
+    def __init__(self, use_local: bool = True, model_dir: str = None, llm_client = None, temperature: float = 0.1):
         self.use_local = use_local
         self.model_dir = model_dir
         if llm_client is not None:
             self.llm_client = llm_client
         else:
-            self.llm_client = LLMClient(use_local=use_local, model_dir=model_dir)
+            self.llm_client = LLMClient(use_local=use_local, model_dir=model_dir, temperature=temperature)
 
     @property
     def tokenizer(self):
@@ -88,7 +88,7 @@ class NLToFOLPipeline:
             pass
         return None
 
-    def translate_list(self, nl_list: list[str]) -> list[str]:
+    def translate_list(self, nl_list: list[str], max_new_tokens: int = None) -> list[str]:
         """Translates a list of natural language sentences into FOL formulas.
         Uses a combined single LLM call for both glossary generation and translation
         (Prompt Batching) to reduce API roundtrips and improve alignment.
@@ -109,12 +109,14 @@ class NLToFOLPipeline:
             # Direct translation using the fine-tuned model's exact training prompt (No Glossary, 1 LLM call)
             system_prompt = TRANSLATE_SYSTEM_PROMPT_FALLBACK
             user_prompt = TRANSLATE_USER_PROMPT_TEMPLATE.format(nl_content=nl_content.strip())
+            # Use larger token budget on remote calls to prevent truncation by thinking blocks
+            _max_tokens = max_new_tokens if max_new_tokens is not None else (4096 if not self.use_local else 1024)
             try:
-                response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=2048)
+                response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=_max_tokens)
                 all_extracted_fol = extract_fol_formulas(response_content)
                 all_extracted_fol = [normalize_logic_fol_entry(fol) for fol in all_extracted_fol]
                 all_extracted_fol = self._validate_and_repair(all_extracted_fol)
-                return all_extracted_fol
+                return unify_fol_predicates(all_extracted_fol)
             except Exception as e:
                 print(f"Warning: Direct translation failed ({str(e)}). Falling back to standard pipeline.")
 
@@ -123,7 +125,7 @@ class NLToFOLPipeline:
             system_prompt = COMBINED_GLOSSARY_AND_TRANSLATION_SYSTEM_PROMPT
             user_prompt = COMBINED_GLOSSARY_AND_TRANSLATION_USER_PROMPT_TEMPLATE.format(nl_content=nl_content.strip())
             
-            response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=2048)
+            response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=(4096 if not self.use_local else 2048))
             cleaned_response = response_content.strip()
             
             # Clean markdown code block if present
@@ -142,7 +144,7 @@ class NLToFOLPipeline:
                     # Normalize and repair
                     all_extracted_fol = [normalize_logic_fol_entry(fol) for fol in all_extracted_fol]
                     all_extracted_fol = self._validate_and_repair(all_extracted_fol)
-                    return all_extracted_fol
+                    return unify_fol_predicates(all_extracted_fol)
         except Exception as e:
             # If the combined call fails, print a warning and fallback gracefully to the original two-stage flow
             print(f"Warning: Combined glossary and translation failed ({str(e)}). Falling back to two-stage translation.")
@@ -161,13 +163,13 @@ class NLToFOLPipeline:
             # Fallback to standard prompt if glossary generation fails
             system_prompt = TRANSLATE_SYSTEM_PROMPT_FALLBACK
         
-        response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=2048)
+        response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=(4096 if not self.use_local else 2048))
         all_extracted_fol = extract_fol_formulas(response_content)
         # Normalize each formula automatically to repair simple syntax and casing issues immediately
         all_extracted_fol = [normalize_logic_fol_entry(fol) for fol in all_extracted_fol]
         # Validate each formula and repair any that fail to parse
         all_extracted_fol = self._validate_and_repair(all_extracted_fol)
-        return all_extracted_fol
+        return unify_fol_predicates(all_extracted_fol)
 
     def _repair_fol(self, formula: str, error: str) -> str:
         """Ask the LLM to fix a broken FOL formula given a parse error message."""
@@ -208,17 +210,61 @@ class NLToFOLPipeline:
             results = list(executor.map(lambda f: self._validate_and_repair_single(f, max_retries), formulas))
         return results
 
+    @staticmethod
+    def _strip_question_framing(text: str) -> str:
+        """Remove Yes/No question wrappers from a conclusion string.
+        
+        Converts patterns like:
+          "Does it follow that X?" → "X"
+          "Is it true that X?" → "X"
+          "Can we conclude that X?" → "X"
+        """
+        import re
+        stripped = text.strip()
+        # Match common Yes/No question prefixes
+        patterns = [
+            r"^(?:does it follow that|is it true that|can we conclude that|is it the case that"
+            r"|do the premises imply that|does the passage imply that"
+            r"|does it follow from the premises that)\s*",
+        ]
+        for pat in patterns:
+            m = re.match(pat, stripped, re.IGNORECASE)
+            if m:
+                stripped = stripped[m.end():]
+                break
+        # Remove trailing question mark
+        stripped = stripped.rstrip("?").strip()
+        # Capitalize first letter
+        if stripped:
+            stripped = stripped[0].upper() + stripped[1:]
+        return stripped
+
     def translate_premises_and_conclusion(self, premises_nl: list[str], conclusion_nl: str) -> tuple[list[str], str]:
-        """Translates natural language premises and conclusion into FOL formulas."""
-        combined_nl_list = premises_nl + [conclusion_nl]
+        """Translates natural language premises and conclusion into FOL formulas using a robust fallback."""
+        # Strip question framing from Yes/No conclusions before translation
+        # e.g. "Does it follow that X?" → "X" — prevents model from generating garbage biconditionals
+        conclusion_for_translation = self._strip_question_framing(conclusion_nl)
+
+        combined_nl_list = premises_nl + [conclusion_for_translation]
         all_extracted_fol = self.translate_list(combined_nl_list)
         
         expected_count = len(combined_nl_list)
-        if len(all_extracted_fol) < expected_count:
-            premises_fol = all_extracted_fol[:-1]
-            conclusion_fol = all_extracted_fol[-1] if all_extracted_fol else ""
-        else:
+        if len(all_extracted_fol) == expected_count:
             premises_fol = all_extracted_fol[:len(premises_nl)]
             conclusion_fol = all_extracted_fol[len(premises_nl)]
+        else:
+            # Sequential fallback: translate one-by-one (proven accurate in practice)
+            # Model degrades after ~6 sentences in a combined call — individual calls are more reliable.
+            print(f"Warning: Combined translation length mismatch ({len(all_extracted_fol)} vs {expected_count}). Falling back to sequential translation.")
+            premises_fol = []
+            for p_nl in premises_nl:
+                res_list = self.translate_list([p_nl])
+                premises_fol.append(res_list[0] if res_list else "")
+            
+            res_conclusion = self.translate_list([conclusion_for_translation])
+            conclusion_fol = res_conclusion[0] if res_conclusion else ""
             
         return premises_fol, conclusion_fol
+
+
+

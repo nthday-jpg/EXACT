@@ -11,6 +11,7 @@ Delegates parsing logic to `src.logic.reasoning.parser` for clean modularity.
 
 from __future__ import annotations
 
+import re
 import z3
 from z3 import Solver, unsat, sat
 
@@ -32,6 +33,7 @@ __all__ = [
     "try_parse_fol",
     "verify_with_z3",
     "extract_proof_structure",
+    "format_z3_model",
 ]
 
 # Disable Z3 proof globally to ensure process stability (bug in Z3 4.16.0.0 proof generation on complex FOL)
@@ -93,6 +95,7 @@ def verify_with_z3(premises_fol: list[str], conclusion_fol: str, negate_conclusi
         negated_conclusion_expr = exprs[-1]
         
         solver = Solver()
+        solver.set("timeout", 15000)  # 15-second timeout — complex FOL with 14 quantified premises needs more time
         
         # Track premises for unsat core
         tracking_vars = []
@@ -104,8 +107,18 @@ def verify_with_z3(premises_fol: list[str], conclusion_fol: str, negate_conclusi
         # Track negated conclusion for unsat core
         neg_c_var = z3.Bool("neg_conclusion")
         solver.assert_and_track(negated_conclusion_expr, neg_c_var)
-    	
-        result = solver.check()
+    
+        try:
+            result = solver.check()
+        except Exception as z3_err:
+            # Z3 internal errors (e.g. assertion violations in complex nested quantifiers) — return safe unknown
+            return {
+                "result": z3.unknown,
+                "proof": None,
+                "unsat_core": [],
+                "model": None,
+                "error": f"Z3 solver check failed: {str(z3_err)}"
+            }
     	
         verification_result = {
             "result": result,
@@ -119,10 +132,16 @@ def verify_with_z3(premises_fol: list[str], conclusion_fol: str, negate_conclusi
                 verification_result["proof"] = solver.proof()
             except Exception:
                 verification_result["proof"] = None
-            core = solver.unsat_core()
-            verification_result["unsat_core"] = [str(var) for var in core]
+            try:
+                core = solver.unsat_core()
+                verification_result["unsat_core"] = [str(var) for var in core]
+            except Exception:
+                verification_result["unsat_core"] = []
         elif result == sat:
-            verification_result["model"] = solver.model()
+            try:
+                verification_result["model"] = solver.model()
+            except Exception:
+                verification_result["model"] = None
     		
         return verification_result
 
@@ -170,3 +189,25 @@ def extract_proof_structure(proof) -> str:
         return "\n".join(steps)
     except Exception as e:
         return f"Proof traversal error: {str(e)}"
+
+
+def format_z3_model(model) -> str:
+    """Format Z3 model into a clean, human-readable string representation."""
+    if model is None:
+        return ""
+    try:
+        lines = []
+        for decl in model.decls():
+            name = decl.name()
+            val = model[decl]
+            # Replace messy internal sort valuations like U!val!0 with simplified variable names like val_0
+            val_str = str(val).replace("\n", " ").replace("  ", " ")
+            val_str = re.sub(r"[A-Za-z0-9_]+!val!(\d+)", r"val_\1", val_str)
+            name_clean = re.sub(r"[A-Za-z0-9_]+!val!(\d+)", r"val_\1", name)
+            lines.append(f"- {name_clean} = {val_str}")
+        if not lines:
+            return str(model)
+        return "\n".join(lines)
+    except Exception:
+        return str(model)
+

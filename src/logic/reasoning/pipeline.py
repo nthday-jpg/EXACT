@@ -3,7 +3,7 @@ import re
 import z3
 from z3 import unsat, sat
 import torch
-from src.logic.reasoning.verifier import verify_with_z3, extract_proof_structure
+from src.logic.reasoning.verifier import verify_with_z3, extract_proof_structure, format_z3_model
 from src.llm import LLMClient
 from src.llm.prompts import (
     FILTER_PREMISES_SYSTEM_PROMPT,
@@ -26,13 +26,13 @@ class ReasoningPipeline:
     
     Supports both local execution (via Hugging Face LoRA models) and remote API execution.
     """
-    def __init__(self, use_local: bool = True, model_dir: str = None, llm_client = None):
+    def __init__(self, use_local: bool = True, model_dir: str = None, llm_client = None, temperature: float = 0.1):
         self.use_local = use_local
         self.model_dir = model_dir
         if llm_client is not None:
             self.llm_client = llm_client
         else:
-            self.llm_client = LLMClient(use_local=use_local, model_dir=model_dir)
+            self.llm_client = LLMClient(use_local=use_local, model_dir=model_dir, temperature=temperature)
 
     @property
     def tokenizer(self):
@@ -140,7 +140,7 @@ class ReasoningPipeline:
                 conclusion_nl=conclusion_nl
             )
         elif result == sat:
-            model_str = str(verification["model"])
+            model_str = format_z3_model(verification["model"])
             premises_text = "\n".join(f"- {p}" for p in premises_nl)
             user_prompt = REASONING_SAT_USER_PROMPT_TEMPLATE.format(
                 premises_text=premises_text,
@@ -156,7 +156,7 @@ class ReasoningPipeline:
 
         system_prompt = REASONING_SYSTEM_PROMPT
 
-        return self._generate_text(system_prompt, user_prompt, max_new_tokens=2048)
+        return self._generate_text(system_prompt, user_prompt, max_new_tokens=(2048 if not self.use_local else 768))
 
     # ------------------------------------------------------------------
     # Structured Chain-of-Thought output
@@ -252,7 +252,7 @@ class ReasoningPipeline:
                 proof_skeleton_instruction=proof_skeleton_instruction
             )
         elif result == sat:
-            model_str = str(verification["model"])
+            model_str = format_z3_model(verification["model"])
             premises_text = "\n".join(f"- {p}" for p in premises_nl)
             user_prompt = COT_SAT_USER_PROMPT_TEMPLATE.format(
                 premises_text=premises_text,
@@ -268,6 +268,6 @@ class ReasoningPipeline:
 
         system_prompt = COT_SYSTEM_PROMPT
 
-        raw_text = self._generate_text(system_prompt, user_prompt, max_new_tokens=2048)
+        raw_text = self._generate_text(system_prompt, user_prompt, max_new_tokens=(2048 if not self.use_local else 768))
         cot_steps = self._parse_cot_steps(raw_text)
         return raw_text, cot_steps
