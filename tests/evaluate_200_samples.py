@@ -142,10 +142,19 @@ def main():
                              "'exact-qwen3-8b' for Modal)")
     parser.add_argument("--jobs", "-j", type=int, default=4,
                         help="Number of concurrent worker threads (default: 4)")
+    parser.add_argument("--local", action="store_true",
+                        help="Run evaluation locally on your GPU (loads adapter from results/)")
+    parser.add_argument("--device", type=str, default="cuda:0",
+                        help="CUDA device to use for local model execution (default: 'cuda:0')")
     args = parser.parse_args()
 
     # Resolve endpoint & model name
-    if args.modal_url:
+    if args.local:
+        args.endpoint = "local"
+        args.model_name = "local-exact-qwen3-8b"
+        args.jobs = 1  # Force single thread for local GPU execution to prevent OOM
+        args.modal_url = None
+    elif args.modal_url:
         # Modal URL already includes the full base; /v1 will be appended below
         modal_base = args.modal_url.rstrip("/")
         args.endpoint = modal_base
@@ -153,7 +162,8 @@ def main():
             args.model_name = "exact-qwen3-8b"
     elif not args.endpoint:
         raise RuntimeError(
-            "No endpoint specified. Use --endpoint <URL> or --modal-url <URL>.\n"
+            "No endpoint specified. Use --endpoint <URL>, --modal-url <URL> or --local.\n"
+            "Example (Local):  uv run tests/evaluate_200_samples.py --local\n"
             "Example (Modal):  uv run tests/evaluate_200_samples.py "
             "--modal-url https://<workspace>--exact-qwen3-8b-lora-api.modal.run\n"
             "Example (HF):     uv run tests/evaluate_200_samples.py "
@@ -177,34 +187,57 @@ def main():
     print(f"Will evaluate the first {limit} pairs.")
 
     # 2. Initialize LLM client and pipeline
-    endpoint_url = args.endpoint.rstrip("/")
-    base_url = f"{endpoint_url}/v1"
-    model_name = args.model_name
-
-    is_modal = args.modal_url is not None
-    endpoint_label = "Modal Labs" if is_modal else "HuggingFace Dedicated Endpoint"
-
-    # Modal does not need a real API key — use a placeholder
-    if is_modal:
-        api_key = os.getenv("MODAL_API_KEY") or "modal-placeholder"
+    if args.local:
+        endpoint_label = "Local GPU"
+        endpoint_url = "localhost"
+        base_url = "local"
+        model_name = args.model_name
+        api_key = "local-placeholder"
     else:
-        api_key = os.getenv("HF_API_KEY")
-        if not api_key:
-            raise RuntimeError("HF_API_KEY is not set in environment or .env file.")
+        endpoint_url = args.endpoint.rstrip("/")
+        base_url = f"{endpoint_url}/v1"
+        model_name = args.model_name
+
+        is_modal = args.modal_url is not None
+        endpoint_label = "Modal Labs" if is_modal else "HuggingFace Dedicated Endpoint"
+
+        # Modal does not need a real API key — use a placeholder
+        if is_modal:
+            api_key = os.getenv("MODAL_API_KEY") or "modal-placeholder"
+        else:
+            api_key = os.getenv("HF_API_KEY")
+            if not api_key:
+                raise RuntimeError("HF_API_KEY is not set in environment or .env file.")
 
     print(f"Using {endpoint_label}: {endpoint_url}")
     print(f"  base_url : {base_url}")
     print(f"  model    : {model_name}")
 
-    client = LLMClient(
-        model_name=model_name,
-        api_key=api_key,
-        base_url=base_url,
-        temperature=0.1,
-        extra_body={},
-        use_local=False,
-    )
-    pipeline = LogicalReasoningPipeline(use_local=False, llm_client=client)
+    if args.local:
+        client = LLMClient(
+            model_name=model_name,
+            api_key=api_key,
+            base_url=base_url,
+            temperature=0.3,
+            frequency_penalty=0.0,
+            extra_body={},
+            use_local=True,
+            model_dir=str(root_dir / "results"),
+            device=args.device
+        )
+        pipeline = LogicalReasoningPipeline(use_local=True, llm_client=client, model_dir=str(root_dir / "results"), device=args.device)
+    else:
+        client = LLMClient(
+            model_name=model_name,
+            api_key=api_key,
+            base_url=base_url,
+            temperature=0.3,
+            frequency_penalty=0.0,
+            extra_body={},
+            use_local=False,
+        )
+        pipeline = LogicalReasoningPipeline(use_local=False, llm_client=client)
+    
     model_info = f"{endpoint_label} ({endpoint_url})"
 
     print(f"Running with {args.jobs} worker thread(s)...")
