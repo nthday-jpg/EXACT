@@ -25,6 +25,10 @@ class MockLLMClient:
     def generate_text(self, prompt: str, system_prompt: str = None, max_new_tokens: int = 512) -> str:
         prompt_lower = prompt.lower()
         
+        # Check for Unknown fallbacks first
+        if "insufficient information" in prompt_lower or (system_prompt and "or 'unknown'" in system_prompt.lower()):
+            return "Unknown"
+
         # 1. Open-ended question candidate generation
         if "concise answer statement:" in prompt_lower:
             if "who is mortal" in prompt_lower:
@@ -251,6 +255,41 @@ class TestQuestionTypes(unittest.TestCase):
         self.assertEqual(result["conclusion_fol"], "Mortal(Socrates)")
         self.assertEqual(result["verification"]["result"], z3.unsat)
         self.assertGreaterEqual(result["confidence"], 0.75)
+
+    def test_unknown_fallbacks(self):
+        premises = [
+            "Every human is mortal.",
+            "Socrates is a human."
+        ]
+        
+        # Scenario 1: Open-ended not entailed -> should automatically return "Unknown"
+        def custom_translate_unprovable(premises_nl, conclusion_nl):
+            return (
+                ["ForAll(x, Human(x) -> Mortal(x))", "Human(Socrates)"],
+                "Mortal(Plato)" # Plato is unprovable
+            )
+        self.pipeline.translate_premises_and_conclusion = custom_translate_unprovable
+        
+        result_oe = self.pipeline.run_pipeline(premises, "Who is mortal?", question_type="open_ended")
+        self.assertEqual(result_oe["answer"], "Unknown")
+        self.assertEqual(result_oe["confidence"], 0.60) # sat/not entailed has confidence 0.60
+        
+        # Scenario 2: Single Choice not entailed -> fallback to semantic "Unknown"
+        # Mock translator to return empty list or empty strings for options
+        def custom_translate_empty_options(nl_list):
+            return [""] * len(nl_list)
+        self.pipeline.translation_pipeline.translate_list = custom_translate_empty_options
+        
+        mcq_question = (
+            "Which option is correct?\n"
+            "A. Plato is mortal\n"
+            "B. Socrates is a driver\n"
+            "C. None of the above\n"
+            "D. Something else"
+        )
+        result_mcq = self.pipeline.run_pipeline(premises, mcq_question, question_type="single_choice")
+        self.assertEqual(result_mcq["answer"], "Unknown")
+        self.assertEqual(result_mcq["confidence"], 0.30) # unknown verifications have confidence 0.30
 
 
 if __name__ == "__main__":

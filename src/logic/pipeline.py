@@ -39,8 +39,9 @@ def _compute_confidence(verification: dict, total_premises: int = 0) -> float:
         # Tightness: 1.0 when core has 1 element, approaches 0 as core → total
         denom = max(total_premises, core_size, 1)
         tightness = 1.0 - (core_size - 1) / denom
-        # Map tightness to [0.75, 1.00]
-        return round(0.75 + tightness * 0.25, 4)
+        # Map tightness to [0.75, 1.00] and clamp to range
+        score = 0.75 + tightness * 0.25
+        return round(min(1.0, max(0.0, score)), 4)
     if result == z3.sat:
         return 0.60
     return 0.30
@@ -255,15 +256,45 @@ class LogicalReasoningPipeline:
                     correct_options = [x[0] for x in consistent_candidates]
                     correct_verifications = [x[1] for x in consistent_candidates]
                 else:
-                    # Fallback to the first option
-                    correct_options = [opt_keys[0]] if opt_keys else []
+                    # Fallback: no option passed Z3 checks — use semantic LLM judgment (allowing 'Unknown')
+                    premises_text = "\n".join(f"- {p}" for p in premises_nl)
+                    try:
+                        sem_prompt = (
+                            f"Premises:\n{premises_text}\n\n"
+                            f"Question:\n{conclusion_nl}\n\n"
+                            f"Select all correct options. If none of the options logically follows from the premises or if there is insufficient information, respond with ONLY the word 'Unknown'. Otherwise, respond with a list of capital letters (e.g. A, B) of your choices."
+                        )
+                        sem_resp = self.llm_client.generate_text(
+                            sem_prompt,
+                            system_prompt="You are a precise logical reasoning assistant. Respond with ONLY the chosen letters or 'Unknown'. Do not add any explanation or other text.",
+                            max_new_tokens=15
+                        ).strip()
+                        
+                        sem_clean = sem_resp.strip("., ")
+                        if "unknown" in sem_clean.lower():
+                            correct_options = ["Unknown"]
+                        else:
+                            matches = re.findall(r"\b([A-D])\b", sem_clean)
+                            if matches:
+                                correct_options = list(dict.fromkeys(matches))
+                            else:
+                                correct_options = [opt_keys[0]] if opt_keys else [""]
+                    except Exception:
+                        correct_options = [opt_keys[0]] if opt_keys else [""]
+                    
                     correct_verifications = []
-                    if correct_options:
-                        opt_fol = options_fol.get(correct_options[0], "")
-                        try:
-                            ver = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=True)
-                            correct_verifications.append(ver)
-                        except Exception:
+                    for opt in correct_options:
+                        if opt != "Unknown":
+                            opt_fol = options_fol.get(opt, "")
+                            if opt_fol:
+                                try:
+                                    ver = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=True)
+                                    correct_verifications.append(ver)
+                                except Exception:
+                                    correct_verifications.append({"result": z3.unknown, "unsat_core": [], "model": None})
+                            else:
+                                correct_verifications.append({"result": z3.unknown, "unsat_core": [], "model": None})
+                        else:
                             correct_verifications.append({"result": z3.unknown, "unsat_core": [], "model": None})
             else:
                 # Single Choice: pick the best option
@@ -346,31 +377,45 @@ class LogicalReasoningPipeline:
                         correct_options = [consistent_candidates[0][0]]
                         correct_verifications = [consistent_candidates[0][1]]
                 else:
-                    # Fallback: no option passed Z3 checks — use semantic LLM judgment
+                    # Fallback: no option passed Z3 checks — use semantic LLM judgment (allowing 'Unknown')
                     premises_text = "\n".join(f"- {p}" for p in premises_nl)
                     try:
-                        sem_prompt = SEMANTIC_MCQ_USER_PROMPT_TEMPLATE.format(
-                            premises_text=premises_text,
-                            question_nl=conclusion_nl
+                        sem_prompt = (
+                            f"Premises:\n{premises_text}\n\n"
+                            f"Question:\n{conclusion_nl}\n\n"
+                            f"Select the single best answer. If none of the options A, B, C, or D logically follows from the premises or if there is insufficient information, respond with ONLY the word 'Unknown'. Otherwise, respond with ONLY the capital letter (A, B, C, or D) of your choice."
                         )
                         sem_resp = self.llm_client.generate_text(
-                            sem_prompt, system_prompt=SEMANTIC_MCQ_SYSTEM_PROMPT, max_new_tokens=10
+                            sem_prompt,
+                            system_prompt="You are a precise logical reasoning assistant. Respond with ONLY the chosen letter (A, B, C, D) or 'Unknown'. Do not add any explanation or other text.",
+                            max_new_tokens=10
                         ).strip()
-                        match = re.search(r"\b([A-D])\b", sem_resp)
-                        if match:
-                            correct_options = [match.group(1)]
+                        
+                        sem_clean = sem_resp.strip("., ")
+                        if "unknown" in sem_clean.lower():
+                            correct_options = ["Unknown"]
                         else:
-                            correct_options = [opt_keys[0]] if opt_keys else [""]
+                            match = re.search(r"\b([A-D])\b", sem_clean)
+                            if match:
+                                correct_options = [match.group(1)]
+                            else:
+                                correct_options = [opt_keys[0]] if opt_keys else [""]
                     except Exception:
                         correct_options = [opt_keys[0]] if opt_keys else [""]
+                    
                     correct_verifications = []
-                    if correct_options:
+                    if correct_options and correct_options[0] != "Unknown":
                         opt_fol = options_fol.get(correct_options[0], "")
-                        try:
-                            ver = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=True)
-                            correct_verifications.append(ver)
-                        except Exception:
+                        if opt_fol:
+                            try:
+                                ver = self.reasoning_pipeline.verify(filt_premises_fol, opt_fol, negate_conclusion=True)
+                                correct_verifications.append(ver)
+                            except Exception:
+                                correct_verifications.append({"result": z3.unknown, "unsat_core": [], "model": None})
+                        else:
                             correct_verifications.append({"result": z3.unknown, "unsat_core": [], "model": None})
+                    else:
+                        correct_verifications.append({"result": z3.unknown, "unsat_core": [], "model": None})
 
             if not correct_options:
                 correct_options = [opt_keys[0]] if opt_keys else [""]
@@ -380,7 +425,7 @@ class LogicalReasoningPipeline:
 
             # Generate combined reasoning/CoT
             if len(correct_options) > 1:
-                conclusion_nl_cot = " and ".join(f"Option {opt}: {options[opt]}" for opt in correct_options)
+                conclusion_nl_cot = " and ".join(f"Option {opt}: {options.get(opt, opt)}" for opt in correct_options)
                 # Create a combined verification structure
                 merged_unsat_core = list(set().union(*(v.get("unsat_core", []) for v in correct_verifications)))
                 # If all are unsat, result is unsat
@@ -393,7 +438,8 @@ class LogicalReasoningPipeline:
                     "model": best_verification.get("model")
                 }
             else:
-                conclusion_nl_cot = f"Option {correct_options[0]}: {options[correct_options[0]]}"
+                opt = correct_options[0]
+                conclusion_nl_cot = f"Option {opt}: {options[opt]}" if opt in options else opt
                 combined_verification = best_verification
 
             reasoning, cot = self.generate_cot(
@@ -406,9 +452,9 @@ class LogicalReasoningPipeline:
 
             # For conclusion_fol, we can represent it as AND of the options if multiple, else single
             if len(correct_options) > 1:
-                conclusion_fol_str = f"AND(" + ", ".join(options_fol.get(opt, "") for opt in correct_options) + ")"
+                conclusion_fol_str = f"AND(" + ", ".join(options_fol.get(opt, opt) for opt in correct_options) + ")"
             else:
-                conclusion_fol_str = options_fol.get(correct_options[0], "")
+                conclusion_fol_str = options_fol.get(correct_options[0], correct_options[0])
 
             return {
                 "answer": answer_val,
@@ -458,17 +504,8 @@ class LogicalReasoningPipeline:
             if verification["result"] == z3.unsat:
                 answer_status = candidate_answer
             else:
-                # If Z3 cannot confirm, see if we can disprove it
-                try:
-                    verification_neg = self.reasoning_pipeline.verify(filt_premises_fol, conclusion_fol, negate_conclusion=False)
-                    if verification_neg["result"] == z3.unsat:
-                        # Contradicts!
-                        verification = verification_neg
-                        candidate_answer = f"NOT ({candidate_answer})"
-                        conclusion_fol = f"NOT ({conclusion_fol})"
-                except Exception:
-                    pass
-                answer_status = candidate_answer # Keep candidate but it's not entailed (lower confidence)
+                # Z3 cannot verify the candidate answer, so standard logical answer is Unknown
+                answer_status = "Unknown"
 
             reasoning, cot = self.generate_cot(filt_premises_nl, candidate_answer, verification)
 

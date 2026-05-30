@@ -119,15 +119,16 @@ The following improvements have been applied on top of the baseline:
 
 ### 1. Answer Extraction & MCQ Process of Elimination
 `run_pipeline()` always returns an explicit `answer` field:
-- MCQ → the letter key of the best option (e.g. `"B"`). If no option is logically entailed (`unsat`), a consistency check is run. Direct contradictions (solver returns `unsat` when adding the option itself, i.e., `negate_conclusion=False`) are eliminated. The first consistent option is selected (Process of Elimination).
+- MCQ → the letter key of the best option (e.g. `"B"`). If no option is logically entailed (`unsat`), a consistency check is run. Direct contradictions (solver returns `unsat` when adding the option itself, i.e., `negate_conclusion=False`) are eliminated. The first consistent option is selected (Process of Elimination). If all options fail Z3 verification, a semantic prompt can select `"Unknown"` as the final answer.
 - Yes/No → `"Yes"` if entailed, `"No"` if negation entailed, `"Uncertain"` if Z3 cannot decide.
+- Open-Ended → `"Unknown"` if the generated candidate answer cannot be formally proven by Z3 (`verification["result"] != z3.unsat`).
 
 ### 2. Confidence Score (`_compute_confidence`)
-Derived from the Z3 verification result:
+Derived from the Z3 verification result and clamped to `[0.0, 1.0]` to prevent edge-case overflows:
 
 | Z3 result | Score range | Rationale |
 |-----------|-------------|-----------|
-| `unsat`, tight core | 0.75 – 1.00 | Formal proof with minimal premises |
+| `unsat`, tight core | 0.75 – 1.00 | Formal proof with minimal premises (clamped to at most 1.0) |
 | `sat` | 0.60 | Consistent candidate (MCQ Process of Elimination or statement fallback) |
 | `unknown` | 0.30 | Solver undecided |
 
