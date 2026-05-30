@@ -31,6 +31,7 @@ def collect_failures(evals: List[PhysicsEval]) -> List[dict]:
         if evaluation.is_correct is True:
             continue
         result = evaluation.result
+        tokens = result.tokens or {}
         failures.append(
             {
                 "question": result.task.question,
@@ -39,6 +40,8 @@ def collect_failures(evals: List[PhysicsEval]) -> List[dict]:
                 "raw_response": result.raw_response,
                 "error": result.error,
                 "reason": evaluation.reason,
+                "input_tokens": tokens.get("input_tokens"),
+                "output_tokens": tokens.get("output_tokens"),
             }
         )
     return failures
@@ -81,7 +84,8 @@ async def run_exploration(
                     raw_response="",
                     error=str(exc),
                     tokens=None,
-                    elapsed_s=0.0,
+                        elapsed_s=0.0,
+                        domains=None,
                 )
                 return PhysicsEval(result=result, is_correct=False, reason="exception")
 
