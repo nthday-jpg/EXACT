@@ -16,19 +16,21 @@ class PhysicsSolver:
         *,
         model_name: str,
         api_key: Optional[str],
+        base_url: Optional[str] = None,
         system_prompt: str,
         heuristic_prompt: Optional[str] = None,
         temperature: float = 0.1,
-        extra_body: Optional[Dict[str, Any]] = None,
+        max_tokens: Optional[int] = None,
+        enable_thinking: bool = False,
     ) -> None:
         self._model_name = model_name
         self._api_key = api_key or ""
+        self._base_url = base_url
         self._system_prompt = system_prompt
         self._heuristic_prompt = heuristic_prompt or ""
         self._temperature = temperature
-        self._extra_body = extra_body or {
-            "chat_template_kwargs": {"enable_thinking": False},
-        }
+        self._max_tokens = max_tokens or 1024
+        self._enable_thinking = enable_thinking
 
     def solve(self, task: PhysicsTask) -> PhysicsResult:
         start = time.time()
@@ -39,12 +41,13 @@ class PhysicsSolver:
         client = LLMClient(
             model_name=self._model_name,
             api_key=self._api_key,
+            base_url=self._base_url or "https://router.huggingface.co/v1",
             system_prompt=self._system_prompt,
             temperature=self._temperature,
-            extra_body=self._extra_body,
+            enable_thinking=self._enable_thinking,
         )
         try:
-            response = client.generate(prompt, max_tokens=8192)
+            response = client.generate(prompt, max_tokens=self._max_tokens)
             content, tokens = _extract_content_and_tokens(response)
         except Exception as exc:
             elapsed = time.time() - start
@@ -55,6 +58,7 @@ class PhysicsSolver:
                 error=str(exc),
                 tokens=None,
                 elapsed_s=elapsed,
+                domains=None,
             )
 
         model_answer = None
@@ -74,6 +78,7 @@ class PhysicsSolver:
             error=error,
             tokens=tokens,
             elapsed_s=elapsed,
+            domains=None,
         )
 
 

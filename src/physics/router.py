@@ -28,6 +28,7 @@ def classify_question(
     *,
     model_name: str,
     api_key: str,
+    base_url: str | None = None,
     temperature: float = 0.0,
 ) -> QuestionClassification:
     """
@@ -47,13 +48,19 @@ def classify_question(
     client = LLMClient(
         model_name=model_name,
         api_key=api_key,
+        base_url=base_url or "https://router.huggingface.co/v1",
         system_prompt=config,
         temperature=temperature,
+        enable_thinking=False,
     )
     classification_prompt = "<QUESTION>\n" + question.strip() + "\n</QUESTION>"
-    response = client.generate(classification_prompt, max_tokens=8192)
-    content = response.get("content", "")
-    
+    try:
+        response = client.generate(classification_prompt, max_tokens=128)
+        content = response.get("content", "")
+    except Exception as e: 
+        print(f"[router] classify fallback due to API error: {e}")
+        return QuestionClassification(["electrostatics", "geometry"], "Numerical")
+
     try:
         classification_json = json.loads(content.strip())
         domains = classification_json.get("domains", [])

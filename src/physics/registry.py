@@ -62,9 +62,9 @@ class HeuristicRegistry:
         ... global physics concepts and definitions ...
         </global_ontology>
         
-        <domain_heuristics>
+        <heuristics>
         ... domain-specific reasoning policies ...
-        </domain_heuristics>
+        </heuristics>
         
         <fewshots>
         ... few-shot examples for domains ...
@@ -82,11 +82,11 @@ class HeuristicRegistry:
         for domain in domains:
             policy = self.load_reasoning_policy(domain)
             if policy:
-                domain_heuristics.append(f"## {domain.upper()}\n{policy}")
+                domain_heuristics.append(f"{policy}")
         
         if domain_heuristics:
             combined_heuristics = "\n\n".join(domain_heuristics)
-            sections.append(f"<domain_heuristics>\n{combined_heuristics}\n</domain_heuristics>")
+            sections.append(f"<heuristics>\n{combined_heuristics}\n</heuristics>")
         
         # 3. Load few-shot examples
         if include_fewshot:

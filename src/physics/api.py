@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 from src.physics.evaluator import PhysicsEvaluator
@@ -24,7 +25,7 @@ async def run_physics(
     evaluator: Optional[PhysicsEvaluator] = None,
     output_path: Optional[str] = None,
     temperature: float = 0.1,
-    extra_body: Optional[dict] = None,
+    enable_thinking: bool = False,
     self_corrector: Optional[SelfCorrector] = None,
     max_attempts: int = 2,
 ) -> PhysicsEval:
@@ -39,6 +40,7 @@ async def run_physics(
     router_model = router_model_name or model_name
     system_prompt = _load_solver_instructions()
 
+    start = time.time()
     try:
         classification = await asyncio.to_thread(
             classify_question,
@@ -58,7 +60,7 @@ async def run_physics(
         system_prompt=system_prompt,
         heuristic_prompt=heuristic_prompt,
         temperature=temperature,
-        extra_body=extra_body,
+        enable_thinking=enable_thinking,
     )
     runner = PhysicsRunner(
         solver=solver,
@@ -68,6 +70,13 @@ async def run_physics(
     )
     evaluations = await asyncio.to_thread(runner.run, [task], verbose=False)
     evaluation = evaluations[0]
+
+    # include router domains and account for routing time in elapsed
+    try:
+        evaluation.result.domains = classification.domains
+    except Exception:
+        pass
+    evaluation.result.elapsed_s = time.time() - start
 
     if output_path:
         record = {
