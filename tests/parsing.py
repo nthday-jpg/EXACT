@@ -136,20 +136,14 @@ def main() -> None:
 		api_key=api_key,
 		system_prompt=ontology_instruction,
 		temperature=0.1,
-		extra_body={
-			"chat_template_kwargs": {"enable_thinking": True},
-			"thinking_token_budget": 512  # Optional: limit reasoning token overhead
-		}
+		enable_thinking=True,
 	)
 	logic_compiler = LLMClient(
 		model_name=logic_model_name,
 		api_key=api_key,
 		system_prompt=logic_instruction,
 		temperature=0.1,
-		extra_body={
-			"chat_template_kwargs": {"enable_thinking": True},
-			"thinking_token_budget": 1536  # Optional: limit reasoning token overhead
-		}
+		enable_thinking=True,
 	)
 
 	data = json.loads(load_text(DATA_PATH))

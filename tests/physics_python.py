@@ -32,9 +32,7 @@ def process_question(index, question_raw, correct_answer, correct_units, model, 
         api_key=api_key,
         system_prompt=instructions,
         temperature=0.1,
-        extra_body={
-            "chat_template_kwargs": {"enable_thinking": False},
-        }
+        enable_thinking=False,
     )
     response = llm_client.generate(question)
     total_tokens = response["total_tokens"]

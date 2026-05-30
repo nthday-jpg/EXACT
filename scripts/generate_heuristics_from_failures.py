@@ -46,7 +46,7 @@ def main() -> None:
         system_prompt=system_prompt,
         chunk_size=10,
         temperature=0.1,
-        extra_body={},
+        enable_thinking=False,
         verbose=True,
     )
     output_path.write_text(content, encoding="utf-8")
