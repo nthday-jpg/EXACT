@@ -37,11 +37,40 @@ class LLMClient:
         self.model = None
         
         if not self.use_local:
+            try:
+                from dotenv import load_dotenv
+                load_dotenv()
+            except ImportError:
+                pass
+                
+            self.base_url = base_url
+            
+            # Detect endpoint type based on the base URL
+            is_modal = False
+            if self.base_url and ("modal.run" in self.base_url or "modal" in self.base_url.lower()):
+                is_modal = True
+                
             self.api_key = api_key or os.environ.get("HF_API_KEY")
             if not self.api_key:
-                raise RuntimeError("HF_API_KEY is not set")
-            self.base_url = base_url
-            self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+                if is_modal and (os.environ.get("MODAL_KEY") or os.environ.get("MODAL_SECRET")):
+                    self.api_key = "modal-placeholder"
+                else:
+                    raise RuntimeError("HF_API_KEY is not set")
+            
+            headers = {}
+            if is_modal:
+                modal_key = os.environ.get("MODAL_KEY")
+                modal_secret = os.environ.get("MODAL_SECRET")
+                if modal_key:
+                    headers["Modal-Key"] = modal_key
+                if modal_secret:
+                    headers["Modal-Secret"] = modal_secret
+                
+            self.client = OpenAI(
+                api_key=self.api_key,
+                base_url=self.base_url,
+                default_headers=headers if headers else None
+            )
             
             # Load tokenizer locally to enable perfect local chat template formatting for remote completions
             from transformers import AutoTokenizer
