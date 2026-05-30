@@ -1,5 +1,3 @@
-<GLOBAL_ONTOLOGY>
-
 ## 1. ENTITY EXTRACTION
 Identify and isolate from text:
 - Physical variables, source charges/components, and target points.
@@ -18,5 +16,3 @@ Identify spatial layouts:
 ## 4. TARGET EXPECTATION
 Determine target destination parameter:
 - Scalar calculation vs. algebraic formula vs. conceptual behavior/trends.
-
-</GLOBAL_ONTOLOGY>
