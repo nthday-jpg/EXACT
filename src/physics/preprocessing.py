@@ -21,7 +21,7 @@ def preprocess(text: str) -> str:
     pattern = (
         r"(?<![a-zA-Z])"
         r"(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*"
-        r"(\\[mM]u|μ|mu|u|[TGMkdcmunp])?"
+        r"(\\[mM]u|μ|µ|mu|u|[TGMkdcmunp])?"
         r"([A-Z][a-zA-Z]*|m|s|g)"
         r"(?:\^?(\d+))?\b"
     )
@@ -32,7 +32,7 @@ def preprocess(text: str) -> str:
         exp = int(exp_str) if exp_str else 1
         
         prefix_clean = prefix_raw.replace("\\", "") if prefix_raw else ""
-        if prefix_clean in ("mu", "Mu", "μ"):
+        if prefix_clean in ("mu", "Mu", "μ", "µ"):
             multiplier = 1e-6
         elif prefix_clean == "T":
             multiplier = 1e12
