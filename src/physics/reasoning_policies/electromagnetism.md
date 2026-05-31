@@ -15,7 +15,7 @@ L = abs(emf/(dI/dt))
 L = mu0*N**2*A/l
 
 ## 5. CONSTANT
-mu0 = 4*pi*1e-7
+- Permeability of free space constant syntax: `mu0 = sp.Float('4') * sp.pi * sp.Float('1e-7')`
 
 ## 6. ENERGY DENSITY
 u = B**2/(2*mu0)

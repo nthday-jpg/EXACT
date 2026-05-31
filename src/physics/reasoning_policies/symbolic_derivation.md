@@ -13,3 +13,4 @@ Detect questions that ask for an algebraic formula, expression, equation, or rel
 - Do not add text explanations inside the answer string.
 - The 'ans' variable inside 'python_code' must be a raw Python-compatible symbolic string enclosed in a list.
   Example: ans = ["(mu0 * N * I) / l"]; unit = ["-"]
+- CODE EXECUTION GUARD: Do not attempt to use `sp.solve()` or create mathematical operations on division symbols (like `V/I`) inside the executable code. Simply assign the final symbolic string answer directly to the list: e.g., ans = ["1 / (omega * C)"]

@@ -127,37 +127,21 @@ Use when:
 
 ## Multi-Domain Rules
 
-Questions may require multiple domains.
+Questions can and should require multiple domains where applicable.
 
-Examples:
+Examples of complete responses:
 
-Electrostatic triangle force:
-[
-  "electrostatic_force",
-  "coordinate_geometry",
-  "vector_semantics"
-]
+### Example 1: Electrostatic triangle force
+{"domains": ["electrostatic_force", "coordinate_geometry", "vector_semantics"], "question_type": "Numerical", "multi_state": false}
 
-Electric field at midpoint:
-[
-  "electrostatic_field",
-  "spatial_topology",
-  "vector_semantics"
-]
+### Example 2: Electric field at midpoint
+{"domains": ["electrostatic_field", "spatial_topology", "vector_semantics"], "question_type": "Numerical", "multi_state": false}
 
-Resonance after frequency doubling:
-[
-  "frequency_scaling",
-  "resonance",
-  "ac_impedance"
-]
+### Example 3: Resonance after frequency doubling
+{"domains": ["frequency_scaling", "resonance", "ac_impedance"], "question_type": "Numerical", "multi_state": true}
 
-AC power at resonance:
-[
-  "circuit_power",
-  "resonance",
-  "ac_impedance"
-]
+### Example 4: AC power at resonance
+{"domains": ["circuit_power", "resonance", "ac_impedance"], "question_type": "Numerical", "multi_state": false}
 
 ## Question Types
 
@@ -189,22 +173,14 @@ Use when:
 ## Additional Field
 
 ### multi_state
-Set:
-true
-
-when problem contains:
+Set true when problem contains:
 - before/after states
 - transformed systems
 - frequency changes
 - state transitions
-
-Otherwise:
-false
+Otherwise set false.
 
 ## OUTPUT FORMAT
-
-Return ONLY a single JSON object:
-
 {
   "domains": ["domain1", "domain2"],
   "question_type": "Numerical",
@@ -216,7 +192,7 @@ Rules:
 - Prefer specific domains over broad ones.
 - Include reasoning domains if required for solving.
 - Do not include irrelevant domains.
-- Output valid JSON only.
+- Output one valid JSON object only.
 - No markdown.
 - No explanations.
-- No chain-of-thought.
+- No chain-of-thought. 

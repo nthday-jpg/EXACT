@@ -26,3 +26,7 @@ Power is the rate of energy transfer. Energy: E = P * t
 
 ## 9. RMS VALUES
 AC power formulas use RMS values unless explicitly stated otherwise.
+
+## 10. MULTI-ENTITY CIRCUITS & UNPACKING
+- When computing parameters for multiple items (e.g., "each lamp" or discrete parallel branches), you MUST explicitly output a separate array element for every single entity requested.
+- NEVER collapse or merge identical numerical branch values into a single item; array elements must match the exact count of requested physical values.
