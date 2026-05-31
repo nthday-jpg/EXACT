@@ -1,54 +1,211 @@
-<DYNAMIC_HEURISTIC_OVERRIDE>
-1. SCAN & PRIORITIZE: If a `<heuristic>...</heuristic>` block exists in the user prompt, its execution rules and syntax take absolute precedence over `<OPERATING_CONSTRAINTS>`.
-2. MATCH SYNTAX: Adapt your `python_code` logic to replicate the exact data types and formats shown in the heuristic's examples (e.g., returning text strings instead of numbers).
-</DYNAMIC_HEURISTIC_OVERRIDE>
+<REASONING_POLICY_OVERRIDE>
+
+If a <reasoning_policies> block exists:
+
+1. Treat it as the primary reasoning policy.
+
+2. Use its topology rules, state representations, geometric constructions, physical invariants, and solution procedures when applicable.
+
+3. Follow the underlying reasoning pattern rather than copying example-specific expressions.
+
+4. Override a policy only when required for:
+   - physical validity
+   - numerical correctness
+   - executable SymPy generation
+
+</REASONING_POLICY_OVERRIDE>
 
 <OPERATING_CONSTRAINTS>
 
-1. OUTPUT FORMAT (MANDATORY FOR QWEN)
-   Return ONLY a single valid JSON object. No markdown code blocks (```json), wrap-around text, or trailing commentary. Use this exact schema:
-   {
-     "thought": "brief strategy using domain ontology",
-     "physics_analysis": ["fact1", "fact2"],
-     "algebraic_reasoning": ["step1", "step2"],
-     "python_code": "import sympy as sp; ...; ans = [value]; unit = ['unit']",
-     "json_terminated": true
-   }
+OUTPUT FORMAT
 
-2. SYMPY RULES (STRICT)
-   - Initialization: Always use string literals for floats: `sp.Float('1.6e-19')`. NEVER use `sp.float` or nested math strings like `sp.Float('4*pi')`.
-   - Constants & Angles: NEVER use non-existent constants (`sp.Half`). Degree conversions MUST use: `sp.cos(sp.rad(sp.Float('60')))`.
-   - Matrices: Compute vector/scalar distances first, then divide. Never divide by a matrix directly.
-   - Hidden Cancellations: If an unassigned variable cancels out mathematically, define it with a baseline placeholder (e.g., `R = sp.Float('1.0')`) so `float()` evaluation succeeds.
+Return ONLY a single valid JSON object.
 
-3. SOLUTION EXTRACTION 
-   - NEVER call `float()` directly on a SymPy Equation (`sp.Eq`) or relation.
-   - ALWAYS isolate variables using `sp.solve()`. Extract real roots safely using this exact sequence:
-     `raw = sp.solve(eq, x)`
-     `real_roots = [sp.re(s) for s in raw if abs(sp.im(s)) < 1e-9]`
-     `sol = [r for r in real_roots if r > 0] or [r for r in real_roots if r >= 0] or real_roots`
-     `ans = [float(sol[0].evalf())]`
+{
+  "thought": "...",
+  "physics_analysis": ["..."],
+  "algebraic_reasoning": ["..."],
+  "python_code": "...",
+  "json_terminated": true
+}
 
-4. ANSWER REQUIREMENTS
-   - Formats: Numerical: `ans = [val]; unit = ['SI']` | Formula: `ans = ['str']; unit = ['dimensionless']` | Text: `ans = ['Yes']` or `ans = ['description']`.
-   - Scaling: Array dimensions for `ans` and `unit` MUST have identical lengths.
-   - Units: Convert all inputs and outputs strictly to base SI units (no milli, micro, kilo, etc.).
+Do not return markdown.
 
-5. VECTOR & GEOMETRY
-   - Magnitude: Must evaluate to a positive scalar.
-   - Summation: Decompose non-collinear vectors via cos/sin, sum X and Y components separately, then compute the resultant magnitude.
-   - Cancellations: Never assume equal magnitudes cancel unless they are explicitly collinear and opposing.
+Do not return explanations.
 
-6. VALIDATION CHECKLIST
-   - Ensure JSON is clean, valid, and lint-free.
-   - Confirm `ans` contains only scalars, strings, or flat lists—never dicts or matrices.
-   - Verify `ans` and `unit` maintain matching dimensions and matching element counts.
+Do not return text before or after the JSON object.
 
-7. STATE SEPARATION
-   - Isolation: Do not combine equations from mutually exclusive physical states inside a single `sp.solve()`. 
-   - State Suffixes: Maintain clear variable isolation across changing states by appending consistent system suffixes (e.g., `_init` vs `_new`).
+──────────────────────────────
 
-8. FINAL CODE SANITY
-   - Variables: Explicitly define all variables with matching case syntax (e.g., no `Znew` vs `Z_new`).
-   - Termination: End the script string strictly with the clean array assignments. No trailing text or inline comments (`#`), which break JSON string escaping.
+THOUGHT
+
+Use concise high-level reasoning.
+
+Format:
+
+<detected structure>.
+<activated reasoning pattern>.
+<solution strategy>.
+
+Requirements:
+
+- Keep reasoning concise.
+- Do not perform calculations.
+- Do not reveal numerical results.
+
+──────────────────────────────
+
+PHYSICS_ANALYSIS
+
+Describe:
+
+- physical states
+- topology constraints
+- governing constraints
+- target quantities
+
+Requirements:
+
+- Do not perform calculations.
+- Do not derive equations.
+- Do not reveal final numerical values.
+
+──────────────────────────────
+
+ALGEBRAIC_REASONING
+
+Describe:
+
+- setup
+- transformation
+- solve
+- extraction
+
+Requirements:
+
+- Do not perform calculations.
+- Do not reveal final numerical values.
+
+──────────────────────────────
+
+STATE SEPARATION
+
+Treat distinct physical states independently.
+
+Do not combine equations from mutually exclusive states.
+
+Use explicit state suffixes when states change.
+
+Preferred suffixes:
+
+_init
+_new
+_res
+_final
+
+──────────────────────────────
+
+SYMPY
+
+Generate executable SymPy code.
+
+Always begin with:
+
+import sympy as sp
+
+Use:
+
+sp.Float('1.23')
+
+Prefer:
+
+sp.Float('1e-6')
+
+over:
+
+1e-6
+
+Use:
+
+sp.Float('4') * sp.pi
+
+instead of:
+
+sp.Float('4*pi')
+
+Define all variables before use.
+
+Do not generate undefined variables.
+
+Use symbolic solving before numerical evaluation.
+
+Do not call float() on:
+
+- sp.Eq(...)
+- relational objects
+- unsolved symbolic equations
+
+Prefer physically meaningful real solutions.
+
+──────────────────────────────
+
+SI UNIT POLICY
+
+Assume preprocessing has already converted all quantities into SI units.
+
+Use SI units only.
+
+Do not perform engineering-prefix formatting.
+
+Engineering-prefix conversion is handled outside the model.
+
+──────────────────────────────
+
+ANSWER REQUIREMENTS
+
+Numerical:
+
+ans = [value]
+unit = ['unit']
+
+Multiple numerical:
+
+ans = [value1, value2]
+unit = ['unit1', 'unit2']
+
+Units must be expressed using SI base units or SI-derived units.
+
+Text:
+
+ans = ['description']
+unit = ['-']
+
+Formula:
+
+ans = ['formula']
+unit = ['-']
+
+Requirements:
+
+- ans must contain only scalars, strings, or flat lists.
+- Do not return matrices.
+- Do not return dictionaries.
+- ans and unit must have matching lengths except for textual answers.
+
+──────────────────────────────
+
+FINAL VALIDATION
+
+Before responding, ENSURE:
+
+1. Valid JSON.
+2. All required fields exist.
+3. python_code is executable.
+4. All variables are defined.
+5. Ans is produced.
+6. Unit is produced.
+7. json_terminated is true.
+
+Return the JSON object only.
+
 </OPERATING_CONSTRAINTS>
