@@ -1,12 +1,12 @@
 # Physics Module
 
-This folder provides a router-based physics pipeline that assembles domain heuristics on the fly and executes a solver with strict output constraints.
+This folder provides a router-based physics pipeline that assembles domain reasoning policies on the fly and executes a solver with strict output constraints.
 
 ## Overview
 
 - api.py: Entry point for routed execution. Loads solver instructions internally.
 - router.py: LLM classifier for domains + question type.
-- registry.py: Heuristic assembly (global ontology + domain heuristics + few-shots).
+- registry.py: Reasoning Polices assembly (global ontology + domain reasoning policies + few-shots).
 - solver.py: LLM-based solver that builds a prompt and executes returned code.
 - evaluator.py: Marks answers as correct/incorrect.
 - runner.py: Orchestrates execution with optional self-correction.
@@ -26,7 +26,7 @@ src/physics/
 ├── instructions/
 │   ├── router.md      # router config (domains, question types)
 │   └── solver.md      # solver constraints & output format
-├── reasoning_policies/ # domain heuristics
+├── reasoning_policies/ # domain reasoning policies
 ├── fewshot/            # few-shot examples by domain
 └── global_ontology/    # optional global ontology (global.md)
 ```
@@ -36,13 +36,13 @@ src/physics/
 ```
 Question
   -> classify_question()
-  -> registry.get_heuristic_prompt(classification)
+  -> registry.get_solver_prompt(classification)
   -> solver.solve(task)
   -> evaluator.evaluate(result)
   -> PhysicsEval
 ```
 
-## Heuristic Assembly Format
+## Reasoning Polices Assembly Format
 
 The registry assembles prompts in this order:
 
@@ -51,9 +51,9 @@ The registry assembles prompts in this order:
 ... optional global concepts ...
 </global_ontology>
 
-<domain_heuristics>
+<domain_reasoning policies>
 ... domain reasoning policies ...
-</domain_heuristics>
+</domain_reasoning policies>
 
 <fewshots>
 ... few-shot examples ...

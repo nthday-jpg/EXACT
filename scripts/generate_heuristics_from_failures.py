@@ -6,7 +6,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from src.agents.exploration.generation import generate_heuristics_with_llm
+from src.agents.exploration.generation import generate_policies_with_llm
 
 
 def main() -> None:
@@ -23,13 +23,11 @@ def main() -> None:
     if instruction_path.exists():
         system_prompt = instruction_path.read_text(encoding="utf-8")
     else:
-        system_prompt = os.getenv(
-            "PHYSICS_HEURISTICS_SYSTEM",
-            "You are a physics evaluator. Produce concise heuristics to fix failure patterns."
-        )
+        system_prompt = "You are a physics evaluator. Produce concise policies to fix failure patterns."
+
 
     failures_path = Path("runs/physics_failures.json")
-    output_path = Path("runs/physics_heuristics.md")
+    output_path = Path("runs/physics_policies.md")
 
     if not failures_path.exists():
         raise FileNotFoundError(str(failures_path))
@@ -38,7 +36,7 @@ def main() -> None:
     if not isinstance(failures, list):
         raise ValueError("failures file must contain a list")
 
-    content = generate_heuristics_with_llm(
+    content = generate_policies_with_llm(
         failures=failures,
         model_name=model,
         api_key=api_key,
@@ -52,7 +50,7 @@ def main() -> None:
     output_path.write_text(content, encoding="utf-8")
 
     print(f"Loaded {len(failures)} failures")
-    print(f"Wrote heuristics to {output_path}")
+    print(f"Wrote policies to {output_path}")
 
 
 if __name__ == "__main__":

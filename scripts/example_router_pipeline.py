@@ -3,8 +3,8 @@ Example: Using the Physics Router Pipeline
 
 This demonstrates the complete flow from question to answer:
 1. Question → Router (LLM classification)
-2. Classification → Heuristic Assembly (domains + type)
-3. Heuristics → Full Prompt (with reasoning policies + few-shots)
+2. Classification → Reasoning Polices Assembly (domains + type)
+3. Reasoning Policies → Full Prompt (with reasoning policies + few-shots)
 4. Solver → Answer (with structured JSON output)
 """
 
@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from src.physics.api import run_physics
 from src.physics.types import PhysicsTask
 from src.physics.router import QuestionClassification, classify_question
-from src.physics.registry import get_heuristic_prompt
+from src.physics.registry import get_solver_prompt
 
 
 def example_router():
@@ -43,16 +43,16 @@ def example_router():
     print(f"Question Type: {classification.question_type}")
 
 
-def example_heuristic_assembly():
-    """Example 2: Assemble heuristics for selected domains."""
+def example_policies_assembly():
+    """Example 2: Assemble policiess for selected domains."""
     domains = ["electrostatic_field", "coordinate_geometry"]
     question_type = "Numerical"
     
     classification = QuestionClassification(domains, question_type)
-    heuristic_prompt = get_heuristic_prompt(classification)
+    solver_prompt = get_solver_prompt(classification)
     
-    print("=== Assembled Heuristic Prompt ===")
-    print(heuristic_prompt[:500])  # First 500 chars
+    print("=== Assembled Reasoning Polices Prompt ===")
+    print(solver_prompt[:500])  # First 500 chars
     print("\n... [truncated] ...")
 
 
@@ -93,9 +93,9 @@ if __name__ == "__main__":
     print("-" * 50)
     example_router()
     
-    print("\n2. HEURISTIC ASSEMBLY")
+    print("\n2. policies ASSEMBLY")
     print("-" * 50)
-    example_heuristic_assembly()
+    example_policies_assembly()
     
     print("\n3. FULL PIPELINE EXECUTION")
     print("-" * 50)

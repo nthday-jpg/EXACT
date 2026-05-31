@@ -18,7 +18,7 @@ class PhysicsSolver:
         api_key: Optional[str],
         base_url: Optional[str] = None,
         system_prompt: str,
-        heuristic_prompt: Optional[str] = None,
+        solver_prompt: Optional[str] = None,
         temperature: float = 0.1,
         max_tokens: Optional[int] = None,
         enable_thinking: bool = False,
@@ -27,7 +27,7 @@ class PhysicsSolver:
         self._api_key = api_key or ""
         self._base_url = base_url
         self._system_prompt = system_prompt
-        self._heuristic_prompt = heuristic_prompt or ""
+        self._solver_prompt = solver_prompt or ""
         self._temperature = temperature
         self._max_tokens = max_tokens or 1024
         self._enable_thinking = enable_thinking
@@ -35,8 +35,8 @@ class PhysicsSolver:
     def solve(self, task: PhysicsTask) -> PhysicsResult:
         start = time.time()
         prompt = preprocess(task.question)
-        if self._heuristic_prompt:
-            prompt = f"{self._heuristic_prompt}\n\n{prompt}"
+        if self._solver_prompt:
+            prompt = f"{self._solver_prompt}\n\n{prompt}"
 
         client = LLMClient(
             model_name=self._model_name,

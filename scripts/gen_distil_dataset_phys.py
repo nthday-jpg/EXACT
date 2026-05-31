@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from tqdm import tqdm
 
-from src.physics.registry import get_heuristic_prompt
+from src.physics.registry import get_solver_prompt
 from src.physics.router import QuestionClassification, classify_question
 from src.physics.runner import PhysicsRunner
 from src.physics.solver import PhysicsSolver
@@ -128,16 +128,16 @@ async def _run_distillation(
 				api_key=router_api_key or classifier_key,
 				temperature=0.0,
 			)
-			heuristic_prompt = get_heuristic_prompt(classification)
+			solver_prompt = get_solver_prompt(classification)
 			if teacher_fewshot:
 				fewshot_block = f"<fewshots>\n{teacher_fewshot}\n</fewshots>"
-				heuristic_prompt = f"{heuristic_prompt}\n\n{fewshot_block}" if heuristic_prompt else fewshot_block
+				solver_prompt = f"{solver_prompt}\n\n{fewshot_block}" if solver_prompt else fewshot_block
 			solver = PhysicsSolver(
 				model_name=model_name,
 				api_key=api_key,
 				base_url=base_url,
 				system_prompt=teacher_prompt,
-				heuristic_prompt=heuristic_prompt,
+				solver_prompt=solver_prompt,
 				temperature=temperature,
 				max_tokens=4096,
 			)

@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 from src.physics.evaluator import PhysicsEvaluator
-from src.physics.registry import get_heuristic_prompt
+from src.physics.registry import get_solver_prompt
 from src.physics.router import QuestionClassification, classify_question
 from src.physics.runner import PhysicsRunner
 from src.physics.solver import PhysicsSolver
@@ -30,11 +30,11 @@ async def run_physics(
     max_attempts: int = 2,
 ) -> PhysicsEval:
     """
-    Run a single physics task with LLM-based routing and heuristic assembly.
+    Run a single physics task with LLM-based routing and reasoning policy assembly.
 
     1. Route question to domains + question_type using LLM router
-    2. Assemble heuristics (reasoning policies + few-shots) from registry
-    3. Solve with assembled heuristic prompt
+    2. Assemble policies (reasoning policies + few-shots) from registry
+    3. Solve with assembled policy prompt
     4. Evaluate result
     """
     router_model = router_model_name or model_name
@@ -52,13 +52,13 @@ async def run_physics(
     except Exception:
         classification = QuestionClassification(["electrostatics", "geometry"], "Numerical")
 
-    heuristic_prompt = get_heuristic_prompt(classification)
+    solver_prompt = get_solver_prompt(classification)
 
     solver = PhysicsSolver(
         model_name=model_name,
         api_key=api_key,
         system_prompt=system_prompt,
-        heuristic_prompt=heuristic_prompt,
+        solver_prompt=solver_prompt,
         temperature=temperature,
         enable_thinking=enable_thinking,
     )

@@ -7,10 +7,10 @@ from typing import List, Optional
 from src.physics.router import QuestionClassification
 
 
-class HeuristicRegistry:
-    """Load and assemble domain-specific heuristics with hierarchical structure:
+class RPRegistry:
+    """Load and assemble domain-specific reasoning policies with hierarchical structure:
     
-    GLOBAL_ONTOLOGY -> DOMAIN_HEURISTICS -> FEWSHOTS -> QUESTION
+    GLOBAL_ONTOLOGY -> DOMAIN_REASONING_POLICIES -> FEWSHOTS -> QUESTION
     """
     
     def __init__(self, base_path: Optional[str] = None):
@@ -54,17 +54,12 @@ class HeuristicRegistry:
             return path.read_text(encoding="utf-8")
         return ""
     
-    def assemble_heuristics(self, domains: List[str], include_fewshot: bool = True) -> str:
+    def assemble_reasoning_policies(self, domains: List[str], include_fewshot: bool = True) -> str:
         """
-        Assemble heuristics following hierarchical structure:
-        
-        <global_ontology>
-        ... global physics concepts and definitions ...
-        </global_ontology>
-        
-        <heuristics>
+        Assemble reasoning_policies following hierarchical structure:
+        <reasoning_policies>
         ... domain-specific reasoning policies ...
-        </heuristics>
+        </reasoning_policies>
         
         <fewshots>
         ... few-shot examples for domains ...
@@ -72,21 +67,16 @@ class HeuristicRegistry:
         """
         sections = []
         
-        # 1. Load global ontology (once at the top)
-        global_ontology = self.load_global_ontology()
-        if global_ontology:
-            sections.append(f"<global_ontology>\n{global_ontology}\n</global_ontology>")
-        
-        # 2. Load domain-specific heuristics (reasoning policies)
-        domain_heuristics = []
+        # 2. Load domain-specific reasoning policies
+        domain_policies = []
         for domain in domains:
             policy = self.load_reasoning_policy(domain)
             if policy:
-                domain_heuristics.append(f"{policy}")
+                domain_policies.append(f"{policy}")
         
-        if domain_heuristics:
-            combined_heuristics = "\n\n".join(domain_heuristics)
-            sections.append(f"<heuristics>\n{combined_heuristics}\n</heuristics>")
+        if domain_policies:
+            combined_policies = "\n\n".join(domain_policies)
+            sections.append(f"<reasoning_policies>\n{combined_policies}\n</reasoning_policies>")
         
         # 3. Load few-shot examples
         if include_fewshot:
@@ -104,34 +94,34 @@ class HeuristicRegistry:
     
 
     
-    def build_heuristic_prompt_from_classification(
+    def build_solver_prompt_from_classification(
         self, classification: QuestionClassification
     ) -> str:
-        """Build heuristic prompt from router classification.
+        """Build solver prompt from router classification.
         
         Returns hierarchical prompt:
-        GLOBAL_ONTOLOGY -> DOMAIN_HEURISTICS -> FEWSHOTS
+        REASONING_POLICIES -> FEWSHOTS
         """
-        heuristics = self.assemble_heuristics(classification.domains, include_fewshot=True)
+        reasoning_policies = self.assemble_reasoning_policies(classification.domains, include_fewshot=True)
         header = f"<question_type>\n{classification.question_type}\n</question_type>"
         if classification.warnings:
             warning_text = "\n".join(classification.warnings)
             header = f"{header}\n\n<warning>\n{warning_text}\n</warning>"
-        if heuristics:
-            return f"{header}\n\n{heuristics}"
+        if reasoning_policies:
+            return f"{header}\n\n{reasoning_policies}"
         return header
 
 
-def get_heuristic_prompt(classification: QuestionClassification) -> str:
-    """Build heuristic prompt from router classification for solver.
+def get_solver_prompt(classification: QuestionClassification) -> str:
+    """Build solver prompt from router classification for solver.
     
-    Integrates with router output to provide hierarchical heuristics:
-    GLOBAL_ONTOLOGY -> DOMAIN_HEURISTICS -> FEWSHOTS
+    Integrates with router output to provide hierarchical reasoning policies:
+    REASONING_POLICIES -> FEWSHOTS
     
     Usage:
         classification = classify_question(question, model_name=..., api_key=...)
-        heuristic_prompt = get_heuristic_prompt(classification)
-        solver_result = run_solver(question, heuristic_prompt)
+        solver_prompt = get_solver_prompt(classification)
+        solver_result = run_solver(question, solver_prompt)
     """
-    registry = HeuristicRegistry()
-    return registry.build_heuristic_prompt_from_classification(classification)
+    registry = RPRegistry()
+    return registry.build_solver_prompt_from_classification(classification)
