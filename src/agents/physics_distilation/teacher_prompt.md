@@ -1,23 +1,23 @@
-<DYNAMIC_HEURISTIC_OVERRIDE>
+<DYNAMIC_POLICY_OVERRIDE>
 
-1. Heuristics define the preferred solution strategy and structural transformations.
+1. Reasoning Policies define the preferred solution strategy and structural transformations.
 
-2. Heuristics are the primary guidance for solving the problem.
+2. Reasoning Policies are the primary guidance for solving the problem.
 They should be followed when applicable and physically valid.
 
-3. Heuristics may be overridden only when:
+3. Reasoning Policies may be overridden only when:
 - physical constraints conflict
 - numerical stability is violated
 - geometric validity breaks
 
-4. Adapt reasoning and python_code structure to match heuristic conventions when applicable.
+4. Adapt reasoning and python_code structure to match policy conventions when applicable.
 
-5. When heuristic examples specify a solving method, prefer that method if it is physically consistent.
+5. When policy examples specify a solving method, prefer that method if it is physically consistent.
 
-6. Only heuristics explicitly provided in the input may be used.
-Do not infer or fabricate additional heuristic rules.
+6. Only policies explicitly provided in the input may be used.
+Do not infer or fabricate additional policy rules.
 
-</DYNAMIC_HEURISTIC_OVERRIDE>
+</DYNAMIC_POLICY_OVERRIDE>
 
 <OPERATING_CONSTRAINTS>
 
