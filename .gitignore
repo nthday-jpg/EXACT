@@ -11,4 +11,7 @@ wheels/
 
 .env
 
+# Large model fine-tuning results and checkpoints
+results/
+!results/evaluation_logic_200.json
 runs/

@@ -976,16 +976,16 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(s, ForAll(m, (attendance(s,m) >= 80) -> allowed_exam(s,m)))",
-      "ForAll(s, ForAll(m, (allowed_exam(s,m) AND completes_exam(s,m)) -> can_pass(s,m)))",
-      "ForAll(s, ForAll(m, NOT pass(s,m) -> retake(s,m)))",
-      "ForAll(m, requires_assignment(m) -> ForAll(s, completes_assignment(s,m) OR takes_exam(s,m)))",
-      "ForAll(s, ForAll(m, (attendance(s,m) < 50) -> NOT allowed_exam(s,m)))",
-      "ForAll(s, (Exists(m1, Exists(m2, Exists(m3, m1 != m2 AND m2 != m3 AND m1 != m3 AND grade(s,m1) > 8.5 AND grade(s,m2) > 8.5 AND grade(s,m3) > 8.5) -> scholarship(s)))))",
-      "ForAll(s, ForAll(m, (takes_exam(s,m) AND score(s,m) < passing_score) -> NOT pass(s,m)))",
-      "ForAll(s, ForAll(m, (attendance(s,m) = 100 AND NOT completes_exam(s,m)) -> NOT pass(s,m)))",
-      "ForAll(s, (Exists(m1, Exists(m2, Exists(m3, m1 != m2 AND m2 != m3 AND m1 != m3 AND pass(s,m1) AND pass(s,m2) AND pass(s,m3) AND required(m1) AND required(m2) AND required(m3)) -> graduate(s)))))",
-      "ForAll(s, ForAll(m, (attendance(s,m) < 50 AND completes_assignment(s,m) AND professor_approval(s,m)) -> allowed_exam(s,m)))"
+      "ForAll(s, ForAll(m, (attendance(s, m) >= 80) -> allowed_exam(s, m)))",
+      "ForAll(s, ForAll(m, (allowed_exam(s, m) AND completes_exam(s, m)) -> can_pass(s, m)))",
+      "ForAll(s, ForAll(m, NOT pass(s, m) -> retake(s, m)))",
+      "ForAll(m, requires_assignment(m) -> ForAll(s, completes_assignment(s, m) OR takes_exam(s, m)))",
+      "ForAll(s, ForAll(m, (attendance(s, m) < 50) -> NOT allowed_exam(s, m)))",
+      "ForAll(s, (Exists(m1, Exists(m2, Exists(m3, m1 != m2 AND m2 != m3 AND m1 != m3 AND grade(s, m1) > 8.5 AND grade(s, m2) > 8.5 AND grade(s, m3) > 8.5) -> scholarship(s)))))",
+      "ForAll(s, ForAll(m, (takes_exam(s, m) AND score(s, m) < passing_score) -> NOT pass(s, m)))",
+      "ForAll(s, ForAll(m, (attendance(s, m) = 100 AND NOT completes_exam(s, m)) -> NOT pass(s, m)))",
+      "ForAll(s, (Exists(m1, Exists(m2, Exists(m3, m1 != m2 AND m2 != m3 AND m1 != m3 AND pass(s, m1) AND pass(s, m2) AND pass(s, m3) AND required(m1) AND required(m2) AND required(m3)) -> graduate(s)))))",
+      "ForAll(s, ForAll(m, (attendance(s, m) < 50 AND completes_assignment(s, m) AND professor_approval(s, m)) -> allowed_exam(s, m)))"
     ],
     "premises-NL": [
       "If a student attends at least 80% of classes, they will be allowed to take the final exam.",
@@ -1027,16 +1027,16 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(s, (study(s,'PoliticalTheory') > 12) -> understand(s,'PoliticalIdeologies'))",
-      "ForAll(s, understand(s,'PoliticalIdeologies') -> analyze(s,'GovernmentPolicies'))",
-      "ForAll(s, analyze(s,'GovernmentPolicies') -> (debate(s) OR write_essay(s)))",
+      "ForAll(s, (study(s, 'PoliticalTheory') > 12) -> understand(s, 'PoliticalIdeologies'))",
+      "ForAll(s, understand(s, 'PoliticalIdeologies') -> analyze(s, 'GovernmentPolicies'))",
+      "ForAll(s, analyze(s, 'GovernmentPolicies') -> (debate(s) OR write_essay(s)))",
       "ForAll(s, NOT debate(s) -> write_essay(s))",
-      "ForAll(s, (study(s,'PoliticalTheory') < 6) -> struggle(s,'PoliticalIdeologies'))",
-      "ForAll(s, professor_requires(s,'Debate') -> (debate(s) OR justified_reason(s)))",
+      "ForAll(s, (study(s, 'PoliticalTheory') < 6) -> struggle(s, 'PoliticalIdeologies'))",
+      "ForAll(s, professor_requires(s, 'Debate') -> (debate(s) OR justified_reason(s)))",
       "ForAll(s, (write_essay(s) AND high_quality(s)) -> academic_recognition(s))",
-      "ForAll(s, (academic_recognition(s) AND field(s,'PoliticalStudies')) -> qualify_fellowship(s))",
-      "ForAll(p, controversial(p) -> ForAll(s, must_analyze(s,p)))",
-      "ForAll(s, (NOT debate(s) AND NOT write_essay(s)) -> fail(s,'PoliticalTheory'))"
+      "ForAll(s, (academic_recognition(s) AND field(s, 'PoliticalStudies')) -> qualify_fellowship(s))",
+      "ForAll(p, controversial(p) -> ForAll(s, must_analyze(s, p)))",
+      "ForAll(s, (NOT debate(s) AND NOT write_essay(s)) -> fail(s, 'PoliticalTheory'))"
     ],
     "premises-NL": [
       "If a student studies political theory for more than Duration12Hours, they will understand fundamental political ideologies.",
@@ -1079,16 +1079,16 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(s, (study(s,quantum_mechanics) >= 15) -> understand(s,superposition))",
-      "ForAll(s, understand(s,superposition) -> explain(s,quantum_measurement))",
-      "ForAll(s, explain(s,quantum_measurement) -> (write_paper(s) OR give_presentation(s)))",
+      "ForAll(s, (study(s, quantum_mechanics) >= 15) -> understand(s, superposition))",
+      "ForAll(s, understand(s, superposition) -> explain(s, quantum_measurement))",
+      "ForAll(s, explain(s, quantum_measurement) -> (write_paper(s) OR give_presentation(s)))",
       "ForAll(s, NOT give_presentation(s) -> write_paper(s))",
-      "ForAll(s, (study(s,quantum_mechanics) < 8) -> struggle(s,superposition))",
-      "ForAll(s, professor_requires(s,presentation) -> (give_presentation(s) OR justified_reason(s)))",
+      "ForAll(s, (study(s, quantum_mechanics) < 8) -> struggle(s, superposition))",
+      "ForAll(s, professor_requires(s, presentation) -> (give_presentation(s) OR justified_reason(s)))",
       "ForAll(s, (write_paper(s) AND original_work(s)) -> academic_recognition(s))",
-      "ForAll(s, (academic_recognition(s) AND field(s,quantum_mechanics)) -> qualify_scholarship(s))",
-      "ForAll(e, experiment(e,entanglement) -> ForAll(s, must_analyze(s,e)))",
-      "ForAll(s, (NOT write_paper(s) AND NOT give_presentation(s)) -> fail(s,quantum_mechanics))"
+      "ForAll(s, (academic_recognition(s) AND field(s, quantum_mechanics)) -> qualify_scholarship(s))",
+      "ForAll(e, experiment(e, entanglement) -> ForAll(s, must_analyze(s, e)))",
+      "ForAll(s, (NOT write_paper(s) AND NOT give_presentation(s)) -> fail(s, quantum_mechanics))"
     ],
     "premises-NL": [
       "Mastery of quantum superposition requires at least Duration15Hours of dedicated study.",
@@ -1196,16 +1196,16 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(s, ForAll(t, Retention(s,t) = e^(-t/S)))",
+      "ForAll(s, ForAll(t, Retention(s, t) = e AND (-t/S)))",
       "ForAll(s, use_spaced_repetition(s) -> better_memory_retention(s))",
-      "ForAll(s, ForAll(m, sleep_well(s) AND review_material(s,m) -> stronger_memory_connections(s,m)))",
-      "ForAll(s, ForAll(f, use_flashcards(s,f) -> higher_retention_rate(s,f)))",
-      "ForAll(s, ForAll(m, ReviewBeforeForgetting(s,m) -> HigherMemoryEfficiency(s,m)))",
-      "ForAll(s, ForAll(m, self_test(s,m) -> (activate_hippocampus(s) AND improve_recall(s,m))))",
-      "ForAll(s, ForAll(m, encounter_different_contexts(s,m) -> higher_long_term_retention(s,m)))",
-      "ForAll(s, ForAll(m, too_short_intervals(s,m) -> inefficient_learning(s,m)))",
-      "ForAll(s, ForAll(m, too_long_intervals(s,m) -> high_forgetting_rate(s,m)))",
-      "ForAll(s, ForAll(m, ai_personalized_schedule(s,m) -> most_efficient_learning(s,m)))"
+      "ForAll(s, ForAll(m, sleep_well(s) AND review_material(s, m) -> stronger_memory_connections(s, m)))",
+      "ForAll(s, ForAll(f, use_flashcards(s, f) -> higher_retention_rate(s, f)))",
+      "ForAll(s, ForAll(m, ReviewBeforeForgetting(s, m) -> HigherMemoryEfficiency(s, m)))",
+      "ForAll(s, ForAll(m, self_test(s, m) -> (activate_hippocampus(s) AND improve_recall(s, m))))",
+      "ForAll(s, ForAll(m, encounter_different_contexts(s, m) -> higher_long_term_retention(s, m)))",
+      "ForAll(s, ForAll(m, too_short_intervals(s, m) -> inefficient_learning(s, m)))",
+      "ForAll(s, ForAll(m, too_long_intervals(s, m) -> high_forgetting_rate(s, m)))",
+      "ForAll(s, ForAll(m, ai_personalized_schedule(s, m) -> most_efficient_learning(s, m)))"
     ],
     "premises-NL": [
       "Ebbinghaus forgetting curve formula: R = e^(-t/S), where R is retention rate, t is elapsed time, and S is review interval.",
@@ -1246,16 +1246,16 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(s, ForAll(t, Retention(s,t) = e^(-t/S)))",
+      "ForAll(s, ForAll(t, Retention(s, t) = e AND (-t/S)))",
       "ForAll(s, use_spaced_repetition(s) -> better_memory_retention(s))",
-      "ForAll(s, ForAll(m, sleep_well(s) AND review_material(s,m) -> stronger_memory_connections(s,m)))",
-      "ForAll(s, ForAll(f, use_flashcards(s,f) -> higher_retention_rate(s,f)))",
-      "ForAll(s, ForAll(m, ReviewBeforeForgetting(s,m) -> HigherMemoryEfficiency(s,m)))",
-      "ForAll(s, ForAll(m, self_test(s,m) -> (activate_hippocampus(s) AND improve_recall(s,m))))",
-      "ForAll(s, ForAll(m, encounter_different_contexts(s,m) -> higher_long_term_retention(s,m)))",
-      "ForAll(s, ForAll(m, too_short_intervals(s,m) -> inefficient_learning(s,m)))",
-      "ForAll(s, ForAll(m, too_long_intervals(s,m) -> high_forgetting_rate(s,m)))",
-      "ForAll(s, ForAll(m, ai_personalized_schedule(s,m) -> most_efficient_learning(s,m)))"
+      "ForAll(s, ForAll(m, sleep_well(s) AND review_material(s, m) -> stronger_memory_connections(s, m)))",
+      "ForAll(s, ForAll(f, use_flashcards(s, f) -> higher_retention_rate(s, f)))",
+      "ForAll(s, ForAll(m, ReviewBeforeForgetting(s, m) -> HigherMemoryEfficiency(s, m)))",
+      "ForAll(s, ForAll(m, self_test(s, m) -> (activate_hippocampus(s) AND improve_recall(s, m))))",
+      "ForAll(s, ForAll(m, encounter_different_contexts(s, m) -> higher_long_term_retention(s, m)))",
+      "ForAll(s, ForAll(m, too_short_intervals(s, m) -> inefficient_learning(s, m)))",
+      "ForAll(s, ForAll(m, too_long_intervals(s, m) -> high_forgetting_rate(s, m)))",
+      "ForAll(s, ForAll(m, ai_personalized_schedule(s, m) -> most_efficient_learning(s, m)))"
     ],
     "premises-NL": [
       "Ebbinghaus forgetting curve formula: R = e^(-t/S), where R is retention rate, t is elapsed time, and S is review interval.",
@@ -1479,18 +1479,18 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(s, ForAll(c, (complete_modules(s,c) AND (uptime(c) >= 99)) -> master_content(s,c)))",
-      "ForAll(s, ForAll(c, master_content(s,c) -> (pass_exam(s,c) OR submit_capstone(s,c))))",
-      "ForAll(s, ForAll(c, NOT submit_capstone(s,c) -> take_exam(s,c)))",
+      "ForAll(s, ForAll(c, (complete_modules(s, c) AND (uptime(c) >= 99)) -> master_content(s, c)))",
+      "ForAll(s, ForAll(c, master_content(s, c) -> (pass_exam(s, c) OR submit_capstone(s, c))))",
+      "ForAll(s, ForAll(c, NOT submit_capstone(s, c) -> take_exam(s, c)))",
       "ForAll(c, require_exam(c) -> (secure_system(c) OR external_proctor(c)))",
-      "ForAll(s, ForAll(c, (downtime(s,c) > 5) -> NOT master_content(s,c)))",
+      "ForAll(s, ForAll(c, (downtime(s, c) > 5) -> NOT master_content(s, c)))",
       "ForAll(s, (pass_count(s) >= 6) -> digital_certificate(s))",
-      "ForAll(s, ForAll(c, (live_sessions(s,c) = 100) -> NOT take_exam(s,c)))",
-      "ForAll(s, ForAll(c1, ForAll(c2, ForAll(c3, (master_content(s,c1) AND master_content(s,c2) AND master_content(s,c3) AND NOT submit_capstone(s,c1) AND NOT submit_capstone(s,c2) AND NOT submit_capstone(s,c3)) -> (take_exam(s,c1) AND take_exam(s,c2) AND take_exam(s,c3))))))",
-      "ForAll(s, ForAll(c, ((downtime(s,c) < 5) AND submit_capstone(s,c) AND high_stakes(c)) -> need_verification(s,c)))",
-      "ForAll(s, ForAll(c1, ForAll(c2, ForAll(c3, ForAll(c4, (complete_modules(s,c1) AND complete_modules(s,c2) AND complete_modules(s,c3) AND complete_modules(s,c4) AND (uptime(c1) >= 99) AND (uptime(c2) >= 99) AND (uptime(c3) >= 99) AND (uptime(c4) >= 99) AND pass_exam(s,c1) AND pass_exam(s,c2) AND pass_exam(s,c3) AND pass_exam(s,c4)) -> advanced_credential(s))))))",
+      "ForAll(s, ForAll(c, (live_sessions(s, c) = 100) -> NOT take_exam(s, c)))",
+      "ForAll(s, ForAll(c1, ForAll(c2, ForAll(c3, (master_content(s, c1) AND master_content(s, c2) AND master_content(s, c3) AND NOT submit_capstone(s, c1) AND NOT submit_capstone(s, c2) AND NOT submit_capstone(s, c3)) -> (take_exam(s, c1) AND take_exam(s, c2) AND take_exam(s, c3))))))",
+      "ForAll(s, ForAll(c, ((downtime(s, c) < 5) AND submit_capstone(s, c) AND high_stakes(c)) -> need_verification(s, c)))",
+      "ForAll(s, ForAll(c1, ForAll(c2, ForAll(c3, ForAll(c4, (complete_modules(s, c1) AND complete_modules(s, c2) AND complete_modules(s, c3) AND complete_modules(s, c4) AND (uptime(c1) >= 99) AND (uptime(c2) >= 99) AND (uptime(c3) >= 99) AND (uptime(c4) >= 99) AND pass_exam(s, c1) AND pass_exam(s, c2) AND pass_exam(s, c3) AND pass_exam(s, c4)) -> advanced_credential(s))))))",
       "ForAll(c, secure_system(c) AND crash_during_exam(c) -> reschedule_exam(c))",
-      "ForAll(s, ForAll(c, (NOT master_content(s,c) AND submit_capstone(s,c)) -> (NOT accept_capstone(s,c) OR re_enroll(s,c))))"
+      "ForAll(s, ForAll(c, (NOT master_content(s, c) AND submit_capstone(s, c)) -> (NOT accept_capstone(s, c) OR re_enroll(s, c))))"
     ],
     "premises-NL": [
       "If a student completes all online modules on a platform with 99% uptime, they master the course content.",
@@ -1991,8 +1991,8 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(s, ForAll(t, (identical_answers(s,t) > 90 -> cheating(s,t) OR further_review(s,t))))",
-      "ForAll(s, ForAll(t, (time_diff(s,t) < 1) -> further_review(s,t)))",
+      "ForAll(s, ForAll(t, (identical_answers(s, t) > 90 -> cheating(s, t) OR further_review(s, t))))",
+      "ForAll(s, ForAll(t, (time_diff(s, t) < 1) -> further_review(s, t)))",
       "ForAll(s, (completion_time(s) < 0.5 * class_average -> anomalous(s)))",
       "ForAll(s, (plagiarized_material(s) AND NOT cited(s) -> plagiarism(s)))",
       "ForAll(s, (gaze_deviation(s) > 10 -> screen_cheating(s)))",
@@ -2016,15 +2016,15 @@
       "ForAll(s, (unusual_format(s) -> technical_inspection(s)))",
       "ForAll(s, (NOT correct_login(s) -> NOT exam_accepted(s)))",
       "ForAll(s, (camera_evidence(s) -> additional_fine(s) = 500000))",
-      "identical_answers(A,B) = 95 AND date('25/3/2025')",
+      "identical_answers(A, B) = 95 AND date('25/3/2025')",
       "(time_diff(A, B) = 0.5)",
       "completion_time(A) = 15 AND class_average = 40",
-      "plagiarized_material(A,'History 101') AND NOT cited(A)",
+      "plagiarized_material(A, 'History_101') AND NOT cited(A)",
       "gaze_deviation(A) = 12",
-      "cheating_history(A,'12/2024')",
+      "cheating_history(A, '12/2024')",
       "ai_detection(A) = 97",
-      "board_meeting(A,'27/3/2025','10:00')",
-      "appeal(A,'28/3/2025','8:00')"
+      "board_meeting(A, '27/3/2025', '10:00')",
+      "appeal(A, '28/3/2025', '8:00')"
     ],
     "premises-NL": [
       "If a students answers are identical to another students in over 90% of the exam, it may indicate cheating.",
@@ -2173,16 +2173,16 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(x, (NOT Motivated(x)->NOT Pass(x)))",
+      "ForAll(x, (NOT Motivated(x) -> NOT Pass(x)))",
       "ForAll(x, (Submit(x)))",
       "Exists(x, (Registered(x)))",
       "Exists(x, (Pass(x)))",
-      "ForAll(x, (Participate(x)->Submit(x)))",
-      "ForAll(x, (NOT Motivated(x)->NOT Participate(x)))",
-      "ForAll(x, (Submit(x)->Pass(x)))",
-      "ForAll(x, (Registered(x)->Motivated(x)))",
-      "ForAll(x, (Pass(x)->Graduate(x)))",
-      "ForAll(x, (Graduate(x)->Success(x)))"
+      "ForAll(x, (Participate(x) -> Submit(x)))",
+      "ForAll(x, (NOT Motivated(x) -> NOT Participate(x)))",
+      "ForAll(x, (Submit(x) -> Pass(x)))",
+      "ForAll(x, (Registered(x) -> Motivated(x)))",
+      "ForAll(x, (Pass(x) -> Graduate(x)))",
+      "ForAll(x, (Graduate(x) -> Success(x)))"
     ],
     "premises-NL": [
       "If a student is not motivated, they will not pass the exams.",
@@ -3053,24 +3053,24 @@
     ],
     "premises-FOL": [
       "Exists(x, Functional(x))",
-      "ForAll(x, (not Stable(x) implies not OperatesEfficiently(x)))",
-      "ForAll(x, (not OperatesEfficiently(x) implies not Stable(x)))",
+      "ForAll(x, (NOT Stable(x) -> NOT OperatesEfficiently(x)))",
+      "ForAll(x, (NOT OperatesEfficiently(x) -> NOT Stable(x)))",
       "ForAll(x, PassesQualityTests(x))",
       "Exists(x, MeetsPerformanceStandards(x))",
-      "ForAll(x, (not Functional(x) implies not Stable(x)))",
-      "ForAll(x, (not Functional(x) implies not MeetsPerformanceStandards(x)))",
+      "ForAll(x, (NOT Functional(x) -> NOT Stable(x)))",
+      "ForAll(x, (NOT Functional(x) -> NOT MeetsPerformanceStandards(x)))",
       "ForAll(x, Functional(x))",
-      "ForAll(x, (Functional(x) implies ProperlyIntegrated(x)))",
+      "ForAll(x, (Functional(x) -> ProperlyIntegrated(x)))",
       "Exists(x, ProperlyIntegrated(x))",
-      "(ForAll(x, PassesQualityTests(x)) implies (not Stable(x) implies not OperatesEfficiently(x)))",
-      "((not Functional(x) implies not Stable(x)) implies Exists(x, MeetsPerformanceStandards(x)))",
-      "ForAll(x, (Functional(x) implies Stable(x)))",
-      "ForAll(x, (not ProperlyIntegrated(x) implies not Stable(x)))",
+      "(ForAll(x, PassesQualityTests(x)) -> (NOT Stable(x) -> NOT OperatesEfficiently(x)))",
+      "((NOT Functional(x) -> NOT Stable(x)) -> Exists(x, MeetsPerformanceStandards(x)))",
+      "ForAll(x, (Functional(x) -> Stable(x)))",
+      "ForAll(x, (NOT ProperlyIntegrated(x) -> NOT Stable(x)))",
       "ForAll(x, OperatesEfficiently(x))",
-      "ForAll(x, (not MeetsPerformanceStandards(x) implies not Functional(x)))",
-      "ForAll(x, (not OperatesEfficiently(x) implies not MeetsPerformanceStandards(x)))",
+      "ForAll(x, (NOT MeetsPerformanceStandards(x) -> NOT Functional(x)))",
+      "ForAll(x, (NOT OperatesEfficiently(x) -> NOT MeetsPerformanceStandards(x)))",
       "Exists(x, PassesQualityTests(x))",
-      "ForAll(x, (ProperlyIntegrated(x) implies MeetsPerformanceStandards(x)))"
+      "ForAll(x, (ProperlyIntegrated(x) -> MeetsPerformanceStandards(x)))"
     ],
     "premises-NL": [
       "There exists at least one functional microchip.",
@@ -3327,8 +3327,8 @@
       "Exists(x, Engaging(x))",
       "ForAll(x, Performance(x) -> Tested(x))",
       "ForAll(x, Smooth(x))",
-      "ForAll(x, x = x)",
-      "ForAll(x, x = x)",
+      "ForAll(x, x_ = _x)",
+      "ForAll(x, x_ = _x)",
       "ForAll(x, Smooth(x) -> Performance(x))",
       "ForAll(x, Stable(x))",
       "ForAll(x, Performance(x))",
@@ -3439,7 +3439,7 @@
       "ForAll(x, ThoroughlyTested(x) -> Safe(x))",
       "Exists(x, EnergyEfficient(x))",
       "Exists(x, EnergyEfficient(x)) -> ForAll(x, Safe(x) -> ThoroughlyTested(x))",
-      "ForAll(x, x = x)",
+      "ForAll(x, x_ = _x)",
       "ForAll(x, NOT Reliable(x) -> NOT MarketAdopted(x))",
       "ForAll(x, NOT Reliable(x) -> NOT ThoroughlyTested(x))"
     ],
@@ -3587,7 +3587,7 @@
       "ForAll(x, EnergyEfficient(x) -> UserFriendly(x))",
       "NOT ForAll(x, EnergyEfficient(x))",
       "(ForAll(x, NOT Secure(x) -> NOT EnergyEfficient(x)) -> NOT Exists(x, EnergyEfficient(x)))",
-      "ForAll(x, x = x)",
+      "ForAll(x, x_ = _x)",
       "ForAll(x, NOT CompatibleWithEcosystem(x) -> NOT UserFriendly(x))",
       "Exists(x, SupportsVoiceControl(x))",
       "NOT ForAll(x, CompatibleWithEcosystem(x))"
@@ -3903,13 +3903,13 @@
     ],
     "premises-FOL": [
       "ForAll(x, DetectsAttack(x) -> Secure(x))",
-      "ForAll(x, ~Secure(x) -> ~DetectsAttack(x))",
-      "Exists(x, ~DetectsAttack(x))",
+      "ForAll(x, NOT Secure(x) -> NOT DetectsAttack(x))",
+      "Exists(x, NOT DetectsAttack(x))",
       "ForAll(x, MachineLearning(x))",
-      "Exists(x, MachineLearning(x) & DetectsAttack(x))",
-      "Exists(x, MachineLearning(x) & ~Secure(x))",
-      "ForAll(x, (MachineLearning(x) & ~DetectsAttack(x)) -> ~Secure(x))",
-      "ForAll(x, (MachineLearning(x) & DetectsAttack(x)) -> Secure(x))"
+      "Exists(x, MachineLearning(x) AND DetectsAttack(x))",
+      "Exists(x, MachineLearning(x) AND NOT Secure(x))",
+      "ForAll(x, (MachineLearning(x) AND NOT DetectsAttack(x)) -> NOT Secure(x))",
+      "ForAll(x, (MachineLearning(x) AND DetectsAttack(x)) -> Secure(x))"
     ],
     "premises-NL": [
       "If a biometric system can detect presentation attacks, then it is secure.",
@@ -5063,7 +5063,7 @@
       "ForAll(x, NOT CompleteMandatoryCourses(x) -> NOT EligibleForGraduation(x))",
       "ForAll(x, Lecturer(x) -> UnderstandAdmissionRegulations(x))",
       "ForAll(x, NOT UnderstandAdmissionRegulations(x) -> AdditionalTesting(x))",
-      "ForAll(x, Student(x) -> MaxStudyDuration(x, 2 * StandardDuration))",
+      "ForAll(x, Student(x) -> MaxStudyDuration(x, 2_*_StandardDuration))",
       "ForAll(x, (StudyDurationExceeded(x) AND NOT EligibleForGraduation(x)) -> CompleteRequirementsWithin3Years(x))",
       "ForAll(x, TuitionFee(x) -> DeterminedByFieldAndYear(x))",
       "ForAll(x, Student(x) -> CompleteTuitionPayment(x))"
@@ -5180,7 +5180,7 @@
       "(Exists(x, OutstandingPerformance(x)) -> Exists(x, Scholarship(x)))",
       "(Exists(x, ViolateExam(x)) -> Exists(x, DisciplinaryAction(x)))",
       "(ForAll(x, ExamCompliant(x)) -> NOT Exists(x, DisciplinaryAction(x)))",
-      "ForAll(x, x = x)",
+      "ForAll(x, x_ = _x)",
       "(Exists(x, DisciplinaryAction(x)) -> Exists(x, ViolateExam(x)))",
       "ForAll(x, Student(x) -> CanAchievePerformance(x))",
       "ForAll(x, OutstandingPerformance(x) -> ExchangeEligible(x))"
@@ -6877,7 +6877,7 @@
     ],
     "premises-FOL": [
       "ForAll(x, (Freshman(x) -> (Pass(x, Calculus1) AND Pass(x, Calculus2))))",
-      "ForAll(x, (Student(x) AND >=(Score(x, Calculus1), 4) -> Took(x, Calculus2)))",
+      "ForAll(x, (Student(x) AND >= (Score(x, Calculus1), 4) -> Took(x, Calculus2)))",
       "Took(Jake, Calculus2)"
     ],
     "premises-NL": [
@@ -8276,7 +8276,7 @@
     "premises-FOL": [
       "ForAll(x, Stressed(x))",
       "ForAll(x, ReviewsRegularly(x) -> Understands(x))",
-      "ForAll(x, x = x)",
+      "ForAll(x, x_ = _x)",
       "ForAll(x, NOT Understands(x) -> Procrastinates(x))",
       "ForAll(x, NOT ReviewsRegularly(x) -> NOT Procrastinates(x))",
       "ForAll(x, Procrastinates(x))",
@@ -8344,7 +8344,7 @@
     "premises-FOL": [
       "ForAll(x, Stressed(x))",
       "ForAll(x, ReviewsRegularly(x) -> Understands(x))",
-      "ForAll(x, x = x)",
+      "ForAll(x, x_ = _x)",
       "ForAll(x, NOT Understands(x) -> Procrastinates(x))",
       "ForAll(x, NOT ReviewsRegularly(x) -> NOT Procrastinates(x))",
       "ForAll(x, Procrastinates(x))",
@@ -18130,15 +18130,15 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(x, ForAll(y, Studies(x, y, >=10) -> Knowledge(x, y)))",
+      "ForAll(x, ForAll(y, Studies(x, y, >= 10) -> Knowledge(x, y)))",
       "ForAll(x, ForAll(y, Knowledge(x, y) -> (ExamPass(x, y) OR Project(x, y))))",
       "ForAll(x, ForAll(y, NOT Project(x, y) -> ExamTake(x, y)))",
       "ForAll(y, RequiresExam(y) -> (ProfessorPrepares(y) OR SystemGenerates(y)))",
-      "ForAll(x, ForAll(y, Studies(x, y, <10) -> ExamTake(x, y)))",
-      "ForAll(x, PassesSubjects(x, >=3) -> Scholarship(x))",
-      "ForAll(x, ForAll(y, Studies(x, y, >=15) -> NOT ExamTake(x, y)))",
+      "ForAll(x, ForAll(y, Studies(x, y, < 10) -> ExamTake(x, y)))",
+      "ForAll(x, PassesSubjects(x, >= 3) -> Scholarship(x))",
+      "ForAll(x, ForAll(y, Studies(x, y, >= 15) -> NOT ExamTake(x, y)))",
       "ForAll(x, (KnowledgeThreeSubjects(x) AND NOT ProjectAny(x)) -> ExamTakeThree(x))",
-      "ForAll(x, ForAll(y, (Studies(x, y, <10) AND Project(x, y) AND ProfessorRequires(y)) -> Assessment(x, y)))"
+      "ForAll(x, ForAll(y, (Studies(x, y, < 10) AND Project(x, y) AND ProfessorRequires(y)) -> Assessment(x, y)))"
     ],
     "premises-NL": [
       "If a student studies a subject for Duration10Hours or more, they will gain the required knowledge.",
@@ -18228,16 +18228,16 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(x, Graduate(x) -> Credits(x, >=150))",
+      "ForAll(x, Graduate(x) -> Credits(x, >= 150))",
       "ForAll(x, ForAll(c, CoreCourse(c) AND Fails(x, c) -> (Retake(x, c) AND Passes(x, c) -> Graduate(x))))",
       "ForAll(x, Enroll(x, Capstone) -> (Completed(x, AdvAlgorithms) AND Completed(x, ResearchMethods)))",
       "ForAll(x, Completed(x, AdvAlgorithms) -> (Passes(x, DataStructures) AND Passes(x, DiscreteMath)))",
-      "ForAll(x, (CreditsPerSemester(x, >=12) AND GPA(x, >=3.0)) -> ApplyEarlyGraduation(x))",
+      "ForAll(x, (CreditsPerSemester(x, >= 12) AND GPA(x, >= 3_0)) -> ApplyEarlyGraduation(x))",
       "ForAll(x, ForAll(c, NOT MeetsPrerequisites(x, c) -> NOT Enroll(x, c)))",
       "ForAll(x, ForAll(c, Fails(x, c) -> (RetakeNext(x, c) OR Approval(x, c))))",
       "ForAll(x, ForAll(c, CoreCourse(c) AND DelaysRetake(x, c) AND NOT Approval(x, c) -> NOT Graduate(x)))",
       "Credits(Nam, 138) AND Passes(Nam, DataStructures) AND NOT Passes(Nam, DiscreteMath)",
-      "CreditsPerSemester(Nam, 15) AND GPA(Nam, 3.2)",
+      "CreditsPerSemester(Nam, 15) AND GPA(Nam, 3_2)",
       "CoreCourse(OperatingSystems) AND Fails(Nam, OperatingSystems) AND NOT Retake(Nam, OperatingSystems)"
     ],
     "premises-NL": [
@@ -18710,7 +18710,7 @@
       ]
     ],
     "premises-FOL": [
-      "ForAll(x, ((Student(x) & Valid(x)) & ~Fined(x)) -> Borrow(x))",
+      "ForAll(x, ((Student(x) AND Valid(x)) AND NOT Fined(x)) -> Borrow(x))",
       "ForAll(x, (Overdue(x) -> Fined(x)))",
       "ForAll(x, (Fined(x) -> NOT Borrow(x)))",
       "Student(An)",
@@ -19149,7 +19149,7 @@
       "MaxScorePerCourse = 4.0 AND EnrolledCourses(Phong) = 4",
       "PartTimeJob(Hoa) AND Ranking(Hoa, Excellent)",
       "ReviewDeadline = December20",
-      "SubmittedOnTime(Phong, FinalProject) AND NOT Penalty(Phong, 0.5)"
+      "SubmittedOnTime(Phong, FinalProject) AND NOT Penalty(Phong, 0_5)"
     ],
     "premises-NL": [
       "Students are ranked based on their average semester scores as follows: Excellent (3.6 to 4.0), Good (3.2 to 3.6), Fair (2.5 to 3.2), Average (2.0 to 2.5), Weak (1.0 to 2.0), Poor (below 1.0).",
