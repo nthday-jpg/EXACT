@@ -8,7 +8,7 @@ from tqdm import tqdm
 from src.llm.llm_client import LLMClient
 
 
-def generate_heuristics_with_llm(
+def generate_policies_with_llm(
 	*,
 	failures: List[dict],
 	model_name: str,
@@ -21,7 +21,7 @@ def generate_heuristics_with_llm(
 	verbose: bool = False,
 ) -> str:
 	if not failures:
-		return "# Heuristics From Failures\n\nNo failures to summarize.\n"
+		return "# Reasoning Policies From Failures\n\nNo failures to summarize.\n"
 
 	client = LLMClient(
 		model_name=model_name,
@@ -34,7 +34,7 @@ def generate_heuristics_with_llm(
 
 	chunks = list(_chunked(failures, max(1, chunk_size)))
 	outputs: List[str] = []
-	iterator = tqdm(enumerate(chunks, start=1), total=len(chunks), desc="Generating heuristics", disable=not verbose)
+	iterator = tqdm(enumerate(chunks, start=1), total=len(chunks), desc="Generating policies", disable=not verbose)
 	for idx, chunk in iterator:
 		prompt = _build_prompt(chunk, idx, len(chunks))
 		response = client.generate(prompt)
@@ -63,7 +63,7 @@ def _build_prompt(chunk: List[dict], index: int, total: int) -> str:
 	}
 
 	return (
-		"Summarize common failure patterns and propose concise heuristics. "
+		"Summarize common failure patterns and propose concise policies. "
 		"Return markdown with short bullet points.\n\n"
 		+ json.dumps(payload, ensure_ascii=True)
 	)
