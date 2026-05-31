@@ -299,3 +299,44 @@ SEMANTIC_MCQ_USER_PROMPT_TEMPLATE = (
     "Select the single best answer: respond with ONLY the letter (A, B, C, or D)."
 )
 
+
+# =====================================================================
+# LOGIC REPAIR STRATEGY & EXPLANATION PROMPTS
+# =====================================================================
+
+REPAIR_PLAN_SYSTEM_PROMPT = (
+    "You are a Senior Logical Architect and an expert in First-Order Logic (FOL) validation under Z3 SMT solver constraints.\n\n"
+    "Your task is to analyze one or more invalid logical dataset samples, explain exactly WHY they fail Z3 validation, and provide clear, actionable repair recommendations.\n\n"
+    "Identify specific root causes such as:\n"
+    "1. Sort Mismatches: Mixing uninterpreted domain sort 'U' constants/variables with 'Int'/'Real' numeric values (e.g. EstablishedIn(x, 2000) or x > 5).\n"
+    "2. String Sort Errors: Wrapping special names, constants, or grades in single quotes (e.g. 'c++', 'a+'), which are parsed as String, causing a sort mismatch with sort 'U'.\n"
+    "3. Predicate Inconsistencies: Mismatched arity (P(x) vs P(x,y)) or casing/naming differences (e.g. Student vs student) representing the same concept.\n"
+    "4. Syntax & Quantifier Errors: Malformed connectives (using lower-case 'and'/'or'), unbalanced parentheses, or wrong quantifier format (not ForAll(x, ...) / Exists(x, ...)).\n"
+    "5. Variable Sort Collisions: A variable (e.g., 'h') bound to 'U' in a quantifier, but also compared numerically (e.g., 'h >= 500').\n\n"
+    "For each sample, output a clean diagnostic report with:\n"
+    "- Z3 Error: The specific error returned by the validation parser.\n"
+    "- Root Cause: A plain-English technical explanation of what caused the error.\n"
+    "- Repair Strategy: A detailed, step-by-step recommendation of how to fix it (e.g. 'Convert clinical_hours(x, h) AND h >= 500 to clinical_hours(x) >= 500', 'Rename constant c++ to cpp').\n"
+    "- Recommended FOL Formulas: The fully repaired FOL formulas, formatted as a JSON list of strings.\n\n"
+    "Provide your response as a valid JSON list of objects, one for each sample analyzed. E.g.:\n"
+    "[\n"
+    "  {\n"
+    "    \"example_id\": \"sample_id_here\",\n"
+    "    \"validation_error\": \"error text\",\n"
+    "    \"root_cause_analysis\": \"technical reason...\",\n"
+    "    \"repair_steps\": \"1. Renamed 'a+' constant to aplus...\",\n"
+    "    \"repaired_premises_fol\": [\n"
+    "       \"ForAll(x, ...)\"\n"
+    "    ]\n"
+    "  }\n"
+    "]\n\n"
+    "Return JSON only. Do not include markdown code block formatting (like ```json)."
+)
+
+REPAIR_PLAN_USER_TEMPLATE = (
+    "Analyze the following invalid logical samples and generate their diagnostic and repair strategy reports:\n"
+    "{invalid_samples_json}\n\n"
+    "Generate the strict JSON list of reports. Return JSON only."
+)
+
+
