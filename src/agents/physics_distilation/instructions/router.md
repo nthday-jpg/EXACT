@@ -1,6 +1,6 @@
 # Router Configuration
 
-## Domain Options
+## Valid Domain List
 
 Physics domains:
 - electrostatic_force
@@ -19,180 +19,126 @@ Reasoning domains:
 - qualitative_reasoning
 - symbolic_derivation
 
+## Hard Constraints
+
+- Output ONLY domain names from the Valid Domain List above.
+- Never invent, shorten, or generalize domain names.
+- Invalid examples: "electrostatic", "geometry", "vector", "topology", "impedance", "power", "energy"
+- Valid examples: "electrostatic_force", "coordinate_geometry", "vector_semantics"
+- If uncertain between two domains, include both.
+
+──────────────────────────────
+
 ## Domain Selection Rules
 
 ### electrostatic_force
-Use when:
-- electric force
-- Coulomb force
-- attraction/repulsion
-- force on a charge
-- net force between charges
+Select when the problem asks for force between charges, net force on a charge, or Coulomb interaction magnitude or direction.
+Do NOT select for electric field intensity questions — use electrostatic_field instead.
 
 ### electrostatic_field
-Use when:
-- electric field
-- field intensity
-- field at a point
-- superposition of fields
+Select when the problem asks for electric field strength, field intensity at a point, or superposition of fields from multiple sources.
+Do NOT select for force questions — use electrostatic_force instead.
 
 ### ac_impedance
-Use when:
-- impedance
-- phase angle
-- phasor voltage
-- RMS voltage/current
-- AC circuit analysis
-- RLC circuits
+Select when the problem involves total impedance, phase angle, phasor voltage/current, or RLC circuit analysis.
 
 ### resonance
-Use when:
-- resonance
-- resonant frequency
-- XL = XC
-- maximal current
-- resonance behavior
+Select when the problem mentions resonant frequency, XL = XC condition, maximal current, or asks whether resonance occurs.
 
 ### frequency_scaling
-Use when:
-- frequency changes
-- doubled/halved frequency
-- transformed reactance
-- scaling relations
-- before/after frequency states
+Select when the problem involves a frequency change (doubled, halved, scaled) and asks for transformed reactances or new circuit behavior.
+Always pair with resonance if the transformed state is checked for resonance.
 
 ### electromagnetism
-Use when:
-- magnetic flux
-- inductance
-- induced emf
-- solenoid
-- magnetic energy
+Select when the problem involves magnetic flux, inductance, induced EMF, solenoid parameters, or magnetic energy.
 
 ### oscillation_energy
-Use when:
-- LC energy exchange
-- capacitor energy
-- inductor energy
-- oscillation energy conservation
+Select when the problem involves energy exchange between capacitor and inductor in an LC circuit, or asks about stored electric/magnetic energy at a specific oscillation phase.
 
 ### circuit_power
-Use when:
-- electric power
-- RMS power
-- Joule heating
-- power factor
-- energy consumption
+Select when the problem asks for power consumption, Joule heating, power factor, or energy dissipated over time.
 
 ### spatial_topology
-Use when:
-- midpoint
-- collinear points
-- perpendicular bisector
-- equal-distance constraints
-- topology inference
+Select when the problem requires locating a zero-point, midpoint, or equal-distance constraint along a line or between charges.
+Do NOT select merely because positions are mentioned — select only when the spatial relationship itself must be derived.
 
 ### coordinate_geometry
-Use when:
-- coordinates required
-- triangle reconstruction
-- geometric anchoring
-- distance reconstruction
+Select when the problem requires constructing coordinates for a geometric figure (triangle, square) to compute distances or angles.
+Do NOT select for purely collinear problems — use spatial_topology instead.
+Output exactly: coordinate_geometry — never "geometry"
 
 ### vector_semantics
-Use when:
-- vector decomposition
-- force/field components
-- cancellation analysis
-- directional reasoning
-- vector addition
-- AC circuits & phasor geometry (RMS voltage/current, impedance, RLC resonance combinations)
+Select when the problem requires decomposing forces or fields into orthogonal components, summing them, and resolving a resultant magnitude.
+Also select for AC phasor geometry involving RMS voltage/current combinations.
+Do NOT select if all contributing vectors are perfectly collinear — scalar addition suffices.
 
 ### qualitative_reasoning
-Use when:
-- conceptual explanation
-- trend/behavior
-- increase/decrease
-- yes/no conceptual reasoning
-- qualitative relationships
-- "depends on which quantities/factors..."
-- yes/no conceptual reasoning
+Select when the problem asks for a conceptual explanation, a trend (increases/decreases), a yes/no judgment, or which quantities a variable depends on.
+Do NOT select if the answer requires a numerical value or formula — use the appropriate physics domain instead.
 
 ### symbolic_derivation
-Use when:
-- "Find the formula for..."
-- "Express X in terms of Y..."
-- "Derive the relationship equation..."
-- Answer format must be a raw symbolic equation string instead of a numerical value.
+Select when the problem explicitly asks to express a variable in terms of others, find a formula, or derive a relationship.
+The expected answer is a symbolic string, not a number.
 
-## Multi-Domain Rules
-
-Questions can and should require multiple domains where applicable.
-
-Examples of complete responses:
-
-### Example 1: Electrostatic triangle force
-{"domains": ["electrostatic_force", "coordinate_geometry", "vector_semantics"], "question_type": "Numerical", "multi_state": false}
-
-### Example 2: Electric field at midpoint
-{"domains": ["electrostatic_field", "spatial_topology", "vector_semantics"], "question_type": "Numerical", "multi_state": false}
-
-### Example 3: Resonance after frequency doubling
-{"domains": ["frequency_scaling", "resonance", "ac_impedance"], "question_type": "Numerical", "multi_state": true}
-
-### Example 4: AC power at resonance
-{"domains": ["circuit_power", "resonance", "ac_impedance"], "question_type": "Numerical", "multi_state": false}
-
-## Question Types
-
-- Numerical
-- Formula
-- Qualitative
+──────────────────────────────
 
 ## Question Type Rules
 
 ### Numerical
-Use when:
-- asks for numerical value
-- asks for magnitude
-- requires units
+Select when the problem asks for a numerical value with units.
 
 ### Formula
-Use when:
-- asks for equation
-- asks for symbolic relation
-- asks for derivation
+Select when the problem asks for a symbolic equation or derivation.
 
 ### Qualitative
-Use when:
-- asks what happens
-- asks for explanation
-- asks increase/decrease
-- asks conceptual relationship
+Select when the problem asks for a conceptual answer, trend, or yes/no judgment.
 
-## Additional Field
+──────────────────────────────
 
-### multi_state
-Set true when problem contains:
-- before/after states
-- transformed systems
-- frequency changes
-- state transitions
-Otherwise set false.
+## multi_state
+
+Set true when the problem contains before/after states, frequency transitions, or any system transformation.
+Set false otherwise.
+
+──────────────────────────────
+
+## Multi-Domain Examples
+
+### Electrostatic triangle force
+{"domains": ["electrostatic_force", "coordinate_geometry", "vector_semantics"], "question_type": "Numerical", "multi_state": false}
+
+### Electric field at midpoint
+{"domains": ["electrostatic_field", "spatial_topology", "vector_semantics"], "question_type": "Numerical", "multi_state": false}
+
+### Resonance after frequency doubling
+{"domains": ["frequency_scaling", "resonance", "ac_impedance"], "question_type": "Numerical", "multi_state": true}
+
+### AC power at resonance
+{"domains": ["circuit_power", "resonance", "ac_impedance"], "question_type": "Numerical", "multi_state": false}
+
+### Field zero-point on a line
+{"domains": ["electrostatic_field", "spatial_topology"], "question_type": "Numerical", "multi_state": false}
+
+### Solenoid inductance formula
+{"domains": ["electromagnetism", "symbolic_derivation"], "question_type": "Formula", "multi_state": false}
+
+### Will resonance occur at given frequency
+{"domains": ["resonance", "qualitative_reasoning"], "question_type": "Qualitative", "multi_state": false}
+
+──────────────────────────────
 
 ## OUTPUT FORMAT
+
 {
   "domains": ["domain1", "domain2"],
   "question_type": "Numerical",
   "multi_state": true
 }
 
-Rules:
-- Multiple domains are allowed.
-- Prefer specific domains over broad ones.
-- Include reasoning domains if required for solving.
-- Do not include irrelevant domains.
+- domains must contain only names from the Valid Domain List.
+- question_type must be exactly one of: Numerical, Formula, Qualitative
+- multi_state must be exactly true or false
 - Output one valid JSON object only.
 - No markdown.
 - No explanations.
-- No chain-of-thought. 
+- No chain-of-thought.
