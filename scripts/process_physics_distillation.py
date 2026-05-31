@@ -1,16 +1,27 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import json
+import random
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, List
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+	sys.path.insert(0, str(ROOT_DIR))
+
+from src.physics.registry import RPRegistry
 
 
 def _parse_args() -> argparse.Namespace:
 	parser = argparse.ArgumentParser(description="Process a physics distillation dataset.")
 	parser.add_argument("--input", default="runs/physics_distillation_incorrect.json", help="Path to the source distillation JSON")
 	parser.add_argument("--output", default="data/processed/physics_distillation.json", help="Path to the processed JSON output")
+	parser.add_argument("--reasoning-ratio", type=float, default=0.6, help="Fraction of records that should include reasoning policies in the input field")
+	parser.add_argument("--seed", type=int, default=42, help="Random seed for reasoning-prompt sampling")
 	return parser.parse_args()
 
 
@@ -105,6 +116,56 @@ def _normalize_model_output(record: Dict[str, Any]) -> None:
 	record["model_output"] = json.dumps(inner, ensure_ascii=False)
 
 
+def _domain_list(record: Dict[str, Any]) -> List[str]:
+	domains = record.get("domains")
+	if not isinstance(domains, list):
+		return []
+	return [domain for domain in domains if isinstance(domain, str) and domain.strip()]
+
+
+def _count_domains(records: List[Dict[str, Any]]) -> Counter[str]:
+	counts: Counter[str] = Counter()
+	for record in records:
+		for domain in set(_domain_list(record)):
+			counts[domain] += 1
+	return counts
+
+
+def _build_input_text(question: str, reasoning_policies: str) -> str:
+	prefix = reasoning_policies.strip() if reasoning_policies.strip() else "<reasoning_policies></reasoning_policies>"
+	return f"{prefix}\n\n<question>\n{question}\n</question>"
+
+
+def _build_summary_table(title: str, counts: Counter[str], total: int) -> str:
+	lines = [f"## {title}", "", "| Domain | Count |", "| --- | ---: |"]
+	for domain, count in sorted(counts.items()):
+		lines.append(f"| {domain} | {count} |")
+	lines.append(f"| **Total records** | **{total}** |")
+	return "\n".join(lines)
+
+
+def _write_summary_md(
+	*,
+	output_path: Path,
+	source_stats: List[Dict[str, Any]],
+	processed_records: List[Dict[str, Any]],
+	reasoning_count: int,
+	reasoning_ratio: float,
+) -> None:
+	summary_path = output_path.with_name(f"{output_path.stem}_summary.md")
+	lines: List[str] = [
+		"# Physics Distillation Summary",
+		"",
+		f"- Output file: {output_path.name}",
+		f"- Reasoning ratio: {reasoning_ratio:.2f}",
+		f"- Records with reasoning policies: {reasoning_count} / {len(processed_records)}",
+		"",
+	]
+	lines.append(_build_summary_table("Processed Output", _count_domains(processed_records), len(processed_records)))
+	summary_path.write_text("\n".join(lines).strip() + "\n", encoding="utf-8")
+	print(f"Wrote summary to {summary_path}")
+
+
 def _keep_correct_records(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 	kept: List[Dict[str, Any]] = []
 	for record in records:
@@ -119,6 +180,8 @@ def process_dataset(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 	for record in filtered:
 		_normalize_correct_answer(record)
 		_normalize_model_output(record)
+		record["output"] = record.pop("model_output", "")
+		record["answer"] = record.pop("model_answer", None)
 		record.pop("is_correct", None)
 		record.pop("correct_answer", None)
 	return filtered
@@ -129,15 +192,44 @@ def main() -> None:
 	input_path = _resolve_path(args.input)
 	output_path = _resolve_path(args.output)
 	output_path.parent.mkdir(parents=True, exist_ok=True)
+	registry = RPRegistry()
+	rng = random.Random(args.seed)
 
 	input_paths = _candidate_input_paths(input_path)
 	if not input_paths:
 		raise FileNotFoundError(str(input_path))
+	source_stats: List[Dict[str, Any]] = []
 	records: List[Dict[str, Any]] = []
 	for candidate_path in input_paths:
-		records.extend(_read_json_list(candidate_path))
+		candidate_records = _read_json_list(candidate_path)
+		records.extend(candidate_records)
+		source_stats.append(
+			{
+				"title": candidate_path.name,
+				"counts": _count_domains(candidate_records),
+				"total": len(candidate_records),
+			}
+		)
 	processed = process_dataset(records)
+	if processed:
+		reasoning_count = min(len(processed), max(0, round(len(processed) * args.reasoning_ratio)))
+		sampled_indices = set(rng.sample(range(len(processed)), reasoning_count))
+	else:
+		reasoning_count = 0
+		sampled_indices = set()
+	for index, record in enumerate(processed):
+		domains = _domain_list(record)
+		reasoning_policies = registry.assemble_reasoning_policies(domains, include_fewshot=False) if index in sampled_indices else ""
+		question = record.get("question", "")
+		record["input"] = _build_input_text(question, reasoning_policies)
 	output_path.write_text(json.dumps(processed, indent=2, ensure_ascii=False), encoding="utf-8")
+	_write_summary_md(
+		output_path=output_path,
+		source_stats=source_stats,
+		processed_records=processed,
+		reasoning_count=reasoning_count,
+		reasoning_ratio=args.reasoning_ratio,
+	)
 
 	print(f"Loaded {len(records)} records from {', '.join(str(path) for path in input_paths)}")
 	print(f"Kept {len(processed)} correct unique records")
