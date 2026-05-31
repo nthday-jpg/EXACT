@@ -3,26 +3,13 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List, Optional
 
-import pandas as pd
 from tqdm import tqdm
 import asyncio
 
 from src.physics.api import run_physics
 from src.physics.evaluator import PhysicsEvaluator
 from src.physics.types import PhysicsEval, PhysicsResult, PhysicsTask
-
-
-def load_physics_tasks(csv_path: str, *, num_samples: int = -1, seed: int = 42) -> List[PhysicsTask]:
-    df = pd.read_csv(csv_path)
-    if num_samples != -1:
-        num_samples = min(num_samples, len(df))
-        df = df.sample(n=num_samples, random_state=seed)
-    tasks: List[PhysicsTask] = []
-    for _, row in df.iterrows():
-        correct = {"ans": row["answer"], "unit": row["unit"]}
-        task = PhysicsTask(question=row["question"], correct=correct)
-        tasks.append(task)
-    return tasks
+from src.utils.physics_tasks import load_physics_tasks
 
 
 def collect_failures(evals: List[PhysicsEval]) -> List[dict]:

@@ -10,13 +10,13 @@ from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from tqdm import tqdm
 
-from src.agents.exploration.runner import load_physics_tasks
 from src.physics.registry import get_heuristic_prompt
 from src.physics.router import QuestionClassification, classify_question
 from src.physics.runner import PhysicsRunner
 from src.physics.solver import PhysicsSolver
 from src.physics.types import PhysicsTask
 from src.physics.evaluator import PhysicsEvaluator
+from src.utils.physics_tasks import load_physics_tasks
 
 
 class DistillationError(RuntimeError):
@@ -27,7 +27,7 @@ class DistillationError(RuntimeError):
 
 def _parse_args() -> argparse.Namespace:
 	parser = argparse.ArgumentParser(description="Create a physics distillation dataset.")
-	parser.add_argument("--csv", default="data/processed/physics.csv", help="Path to the source physics CSV")
+	parser.add_argument("--input", "--csv", dest="input_path", default="data/processed/physics.csv", help="Path to the source physics input file (CSV, JSON, or JSONL)")
 	parser.add_argument("--output", default="runs/physics_distillation.json", help="Path to the output JSON")
 	parser.add_argument("--n-samples", "--n_samples", dest="n_sample", type=int, default=-1, help="Number of samples to process (-1 for all)")
 	parser.add_argument("--seed", type=int, default=42, help="Random seed for sampling")
@@ -72,7 +72,28 @@ def _read_existing_json_records(path: Path) -> List[Dict[str, Any]]:
 	return []
 
 
+def _question_key(record: Dict[str, Any]) -> str:
+	question = record.get("question")
+	return question.strip() if isinstance(question, str) else ""
+
+
 def _append_json_records(path: Path, new_records: List[Dict[str, Any]]) -> None:
+	records = _read_existing_json_records(path)
+	records.extend(new_records)
+	unique_records: List[Dict[str, Any]] = []
+	seen_questions = set()
+	for record in reversed(records):
+		key = _question_key(record)
+		if key and key in seen_questions:
+			continue
+		if key:
+			seen_questions.add(key)
+		unique_records.append(record)
+	records = list(reversed(unique_records))
+	path.write_text(json.dumps(records, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _append_json_records_allow_duplicates(path: Path, new_records: List[Dict[str, Any]]) -> None:
 	records = _read_existing_json_records(path)
 	records.extend(new_records)
 	path.write_text(json.dumps(records, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -200,11 +221,11 @@ def main() -> None:
 	router_model_name = "Qwen/Qwen3-8B:featherless-ai"
 	router_api_key = os.getenv("HF_API_KEY") or ""
 
-	csv_path = _resolve_path(args.csv)
+	input_path = _resolve_path(args.input_path)
 	output_path = _resolve_path(args.output)
 	output_path.parent.mkdir(parents=True, exist_ok=True)
 
-	tasks = load_physics_tasks(str(csv_path), num_samples=args.n_sample, seed=args.seed)
+	tasks = load_physics_tasks(str(input_path), num_samples=args.n_sample, seed=args.seed)
 	try:
 		records = asyncio.run(
 			_run_distillation(
@@ -225,7 +246,7 @@ def main() -> None:
 		correct_path = output_path.parent / (output_path.stem + "_correct" + output_path.suffix)
 		incorrect_path = output_path.parent / (output_path.stem + "_incorrect" + output_path.suffix)
 		_append_json_records(correct_path, correct)
-		_append_json_records(incorrect_path, incorrect)
+		_append_json_records_allow_duplicates(incorrect_path, incorrect)
 		print(f"Appended {len(correct)} correct and {len(incorrect)} incorrect partial records to {correct_path} and {incorrect_path} before failure")
 		print("Error:", str(e))
 		raise SystemExit(1)
@@ -236,7 +257,7 @@ def main() -> None:
 	correct_path = output_path.parent / (output_path.stem + "_correct" + output_path.suffix)
 	incorrect_path = output_path.parent / (output_path.stem + "_incorrect" + output_path.suffix)
 	_append_json_records(correct_path, correct)
-	_append_json_records(incorrect_path, incorrect)
+	_append_json_records_allow_duplicates(incorrect_path, incorrect)
 	print(f"Appended {len(correct)} correct records to {correct_path}")
 	print(f"Appended {len(incorrect)} incorrect records to {incorrect_path}")
 
