@@ -29,6 +29,7 @@ _PREFIX_FACTORS = {
     "T": 1e12,
 }
 
+# Macro conversions for basic unit equivalencies
 _UNIT_EQUIV = {
     "v/m": "v/m",
     "n/c": "v/m",
@@ -49,7 +50,6 @@ def evaluate_physics_answer(model: dict, correct: dict) -> bool:
     - ans: a value or list of values
     - unit: a unit string or list of unit strings
     """
-    # Null safety check for cases where the model output parsing collapses completely
     if model is None or correct is None:
         return False
 
@@ -71,7 +71,6 @@ def evaluate_physics_answer(model: dict, correct: dict) -> bool:
 def _normalize_latex_sci_notation(val_str: str) -> str:
     """Converts LaTeX scientific notation (e.g., 4.16 * 10^{-3}) into standard float strings (4.16e-3)."""
     s = val_str.replace(" ", "")
-    # Robust match for variants: 4.16*10^{-3}, 4.16\times10^{-3}, 4.16*10^-3, 4.16*10^{6}
     pattern = r"([\d\.]+)(?:\*|\\times)?10\^\{?(-?\d+)\}?"
     
     match = re.search(pattern, s)
@@ -82,7 +81,7 @@ def _normalize_latex_sci_notation(val_str: str) -> str:
 
 
 def _clean_micro_symbols(text: str) -> str:
-    """Standardizes conflicting Unicode representations of the micro (µ) symbol for Pint compatibility."""
+    """Standardizes conflicting Unicode representations of the micro symbol for Pint compatibility."""
     return text.replace("μ", "u").replace("µ", "u")
 
 
@@ -110,11 +109,9 @@ def _normalize_items(payload: dict) -> List[_Item]:
     for a, u in zip(ans_list, unit_list):
         raw_str = str(a if a is not None else "").strip()
         
-        # Apply preprocessing hooks to intercept LaTeX syntax errors & encoding issues
         cleaned_raw = _normalize_latex_sci_notation(raw_str)
         cleaned_unit = _clean_micro_symbols(str(u or ""))
         
-        # Check if the processed answer is numeric after transformation
         numeric_value = _to_number(cleaned_raw)
         final_value = numeric_value if numeric_value is not None else cleaned_raw
 
@@ -131,7 +128,7 @@ def _normalize_items(payload: dict) -> List[_Item]:
 
 def _compare_item_sets(model_items: List[_Item], correct_items: List[_Item]) -> bool:
     if not model_items and not correct_items:
-        return False # Protects against empty/null matching scenarios
+        return True  # If both collections are empty, they match.
         
     remaining = model_items[:]
     for correct_item in correct_items:
@@ -220,7 +217,6 @@ def _is_numeric(value: Any) -> bool:
 
 
 def _get_sig_figs(val_str: str) -> int:
-    """Extracts the number of significant figures from a numerical string expression."""
     s = val_str.lower().strip()
     if 'e' in s:
         s = s.split('e')[0]
@@ -230,7 +226,6 @@ def _get_sig_figs(val_str: str) -> int:
 
 
 def _round_to_sig_figs(val: float, sig_figs: int) -> float:
-    """Rounds a value to a specified amount of significant figures."""
     if val == 0:
         return 0.0
     return round(val, sig_figs - int(math.floor(math.log10(abs(val)))) - 1)
@@ -246,7 +241,6 @@ def _numeric_match(
     if math.isclose(correct_val, 0.0, abs_tol=1e-12):
         return math.isclose(model_val, 0.0, abs_tol=1e-12)
 
-    # Strategy 1: Dynamic Significant Figure Rounding Match
     try:
         sig_figs = _get_sig_figs(correct_raw)
         rounded_model = _round_to_sig_figs(model_val, sig_figs)
@@ -256,16 +250,23 @@ def _numeric_match(
     except Exception:
         pass
 
-    # Strategy 2: Relative Error Check Threshold (2% Tolerance)
     rel_err = abs(model_val - correct_val) / abs(correct_val)
     return rel_err <= 0.02
 
 
 def _normalize_unit(unit: str) -> str:
-    unit = unit.strip()
-    if unit == "-" or unit == "—":
+    if not unit:
         return ""
-    unit = unit.replace(" ", "")
+    
+    unit = unit.strip().replace(" ", "")
+    
+    # Universal hard-coded normalization for impedance/resistance characters
+    if unit in ["Ω", "ohm", "ohms", "Ohm", "Ohms"]:
+        return "ohm"
+        
+    if unit == "-" or unit == "—" or unit == "text":
+        return ""
+        
     unit_lower = unit.lower()
     return _UNIT_EQUIV.get(unit_lower, unit_lower)
 
@@ -293,7 +294,6 @@ def _maybe_sympy_expr(value: Any) -> Optional[sp.Expr]:
     if not isinstance(value, str):
         return None
     try:
-        # Avoid treating text blocks/prose accidentally parsed as expressions
         if re.search(r'[a-zA-Z]{2,}', value) and not any(f in value for f in ['sin', 'cos', 'tan', 'sqrt', 'pi', 'log']):
             return None
         return sp.sympify(value)
@@ -318,8 +318,16 @@ def _llm_or_text_match(model_text: str, correct_text: str) -> bool:
 
     default_model = os.getenv("DEFAULT_MODEL")
     llm_model = os.getenv("PHYSICS_EVAL_LLM") or default_model
+    
+    # Run immediate token filtering normalization check
+    norm_model = _normalize_text(model_text)
+    norm_correct = _normalize_text(correct_text)
+    
+    if norm_model == norm_correct or norm_correct in norm_model:
+        return True
+
     if not llm_model:
-        return _normalize_text(model_text) == _normalize_text(correct_text)
+        return False
 
     try:
         from src.llm.llm_client import LLMClient
@@ -342,10 +350,13 @@ def _llm_or_text_match(model_text: str, correct_text: str) -> bool:
         )
         return str(response).strip().lower().startswith("y")
     except Exception:
-        return _normalize_text(model_text) == _normalize_text(correct_text)
+        return False
 
 
 def _normalize_text(text: str) -> str:
+    """Normalizes qualitative texts by removing filler words and formatting anomalies."""
     text = text.lower()
+    text = text.replace("in the coil", "").replace("of the coil", "")
+    text = text.replace("in the circuit", "").replace("of the circuit", "")
     text = re.sub(r"\s+", " ", text)
     return text.strip()

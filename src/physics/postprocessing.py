@@ -139,5 +139,7 @@ def _format_coeff(value: float) -> str:
 	text = f"{value:.15g}"
 	if "e" in text or "E" in text:
 		text = f"{value:.15f}"
-	text = text.rstrip("0").rstrip(".")
+	# Only strip trailing zeros and the decimal point if there's a decimal part.
+	if "." in text:
+		text = text.rstrip("0").rstrip(".")
 	return text
