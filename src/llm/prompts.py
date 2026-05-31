@@ -35,10 +35,10 @@ GLOSSARY_USER_PROMPT_TEMPLATE = (
 )
 
 TRANSLATE_USER_PROMPT_TEMPLATE = (
-    "Convert the following premises into canonical first-order logic.\n\n"
+    "Convert the following {num_premises} premises into canonical first-order logic.\n\n"
     "Premises:\n"
     "{nl_content}\n\n"
-    "Return a JSON list of strings containing the formulas."
+    "Return a JSON list of exactly {num_premises} strings containing the formulas, in the exact same order."
 )
 
 TRANSLATE_SYSTEM_PROMPT_GLOSSARY_TEMPLATE = (
@@ -59,7 +59,8 @@ TRANSLATE_SYSTEM_PROMPT_GLOSSARY_TEMPLATE = (
 
 TRANSLATE_SYSTEM_PROMPT_FALLBACK = (
     "You convert natural-language premises into parser-safe first-order logic formulas.\n\n"
-    "Output a STRICT valid JSON list of strings containing the first-order logic formulas in the exact order of the input premises.\n\n"
+    "Output a STRICT valid JSON list of strings containing the first-order logic formulas in the exact order of the input premises.\n"
+    "You must output EXACTLY the same number of formulas as the input premises. Do not skip any premises or merge them.\n\n"
     "ALLOWED OPERATORS:\n"
     "AND, OR, NOT, ->, <->, =, !=, >=, <=, >, <, ForAll, Exists\n\n"
     "QUANTIFIER RULES:\n"
