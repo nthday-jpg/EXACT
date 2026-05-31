@@ -131,7 +131,7 @@ def main():
         description="Evaluate current logic pipeline. Each (sample, question) pair is one eval item."
     )
     parser.add_argument("--limit", "-l", type=int, default=50,
-                        help="Max number of (sample, question) pairs to evaluate (default: 200)")
+                        help="Max number of (sample, question) pairs to evaluate (default:  200)")
     parser.add_argument("--endpoint", type=str, default=None,
                         help="Remote endpoint base URL (without /v1). Ignored if --modal-url is set.")
     parser.add_argument("--modal-url", type=str, default="https://cqktgju--exact-qwen3-8b-lora-exactmodel-api-server.modal.run",
