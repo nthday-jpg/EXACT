@@ -57,7 +57,7 @@ async def run_exploration(
     num_samples: int = -1,
     seed: int = 42,
     temperature: float = 0.1,
-    extra_body: Optional[Dict[str, Any]] = None,
+    enable_thinking: bool = False,
     concurrency: int = 8,
 ) -> List[dict]:
     tasks = load_physics_tasks(csv_path, num_samples=num_samples, seed=seed)
@@ -75,7 +75,7 @@ async def run_exploration(
                     router_model_name=router_model_name,
                     evaluator=evaluator,
                     temperature=temperature,
-                    extra_body=extra_body or {"chat_template_kwargs": {"enable_thinking": False}},
+                    enable_thinking=enable_thinking,
                 )
             except Exception as exc:
                 result = PhysicsResult(

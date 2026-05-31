@@ -17,7 +17,7 @@ def generate_heuristics_with_llm(
 	base_url: str = "https://router.huggingface.co/v1",
 	chunk_size: int = 25,
 	temperature: float = 0.1,
-	extra_body: Optional[Dict[str, Any]] = None,
+	enable_thinking: bool = False,
 	verbose: bool = False,
 ) -> str:
 	if not failures:
@@ -29,7 +29,7 @@ def generate_heuristics_with_llm(
 		base_url=base_url,
 		system_prompt=system_prompt,
 		temperature=temperature,
-		extra_body=extra_body or {},
+		enable_thinking=enable_thinking,
 	)
 
 	chunks = list(_chunked(failures, max(1, chunk_size)))
