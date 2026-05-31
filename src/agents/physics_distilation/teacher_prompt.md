@@ -338,8 +338,8 @@ Requirements:
 
 TEXTUAL EXACT-MATCH GRADEOVERRIDE RULES:
 1. For qualitative text questions regarding where energy is stored or what form it takes, always explicitly output the phrase inclusive of "all energy is entirely stored in the...".
-2. If energy is entirely magnetic, use: ans = ["all energy is entirely stored in the magnetic field of the inductor"] and unit = ["—"]
-3. If energy is entirely electric, use: ans = ["all energy is entirely stored in the electric field of the capacitor"] and unit = ["—"]
+2. If energy is entirely magnetic, use: ans = ["all energy is entirely stored in the magnetic field of the inductor"] and unit = ["-"]
+3. If energy is entirely electric, use: ans = ["all energy is entirely stored in the electric field of the capacitor"] and unit = ["-"]
 
 ──────────────────────────────
 

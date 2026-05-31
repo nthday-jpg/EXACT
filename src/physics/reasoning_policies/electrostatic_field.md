@@ -20,3 +20,11 @@
 ## 4. AGGREGATION & MIDPOINTS
 - Never add or subtract raw scalar field magnitudes directly unless sources are perfectly collinear. 
 - Opposing charges on either side of a midpoint reinforce—they do not cancel. Decompose into orthogonal components, sum X and Y separately, and resolve the final magnitude via sp.Abs(sp.sqrt(Ex_total**2 + Ey_total**2)).
+
+## 5. CO-LOCATED TARGET EXCLUSION (SELF-FIELD / SELF-FORCE INTEGRITY)
+- If a problem states that multiple source charges occupy the vertices of a geometric figure (such as a triangle or square) and asks for the net electric field or force at one of those specific vertices, you MUST apply the self-exclusion principle.
+- A point charge cannot exert an interaction field or force upon its own coordinate position. 
+- Identify the target vertex coordinate and completely exclude the charge residing at that coordinate from your list of active field/force sources. 
+- For an isosceles right triangle of leg length 'a' with identical charges 'q' at all three vertices, the field at the right-angle vertex is generated EXCLUSIVELY by the two leg charges. Since they act along mutually perpendicular axes relative to the origin, the exact execution line must resolve to:
+  E1 = ke * q / a**2; E_net = sp.sqrt(E1**2 + E1**2) -> sp.sqrt(sp.Float('2')) * E1
+- Never add ghost scaling terms or include the target coordinate charge as an active source vector.

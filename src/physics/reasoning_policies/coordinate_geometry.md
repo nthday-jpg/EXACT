@@ -14,10 +14,14 @@ A = (sp.Float('0'), sp.Float('0'))
 B = (a, sp.Float('0'))
 C = (a / sp.Float('2'), a * sp.sqrt(sp.Float('3')) / sp.Float('2'))
 
-## 4. RIGHT ISOSCELES TRIANGLE
-A = (sp.Float('0'), sp.Float('0'))
-B = (L, sp.Float('0'))
-C = (sp.Float('0'), L)
+## 4.a RIGHT-ANGLED TRIANGLE EXPLICIT BINDING (PYTHAGOREAN TRIPLE GUARD)
+- Before applying any general algebraic projection formula (Law of Cosines) for an oblique triangle, check if the given side lengths (e.g., 6, 8, 10 or 12, 16, 20) satisfy the Pythagorean theorem: leg1**2 + leg2**2 == hypotenuse**2.
+- If a right-angle configuration is verified, you MUST bypass general projection rules and anchor the right-angle vertex directly at the origin (sp.Float('0'), sp.Float('0')).
+- Map the two perpendicular legs cleanly along the absolute, flat 1D coordinate axes:
+  - Right-Angle Vertex (Target): Matrix([0, 0])
+  - Source 1 (Leg 1): Matrix([leg1, 0])
+  - Source 2 (Leg 2): Matrix([0, leg2])
+- This eliminates floating-point projection tilt and maintains rigid component geometry.
 
 ## 5. PERPENDICULAR BISECTOR
 - M = (ab / sp.Float('2'), h)

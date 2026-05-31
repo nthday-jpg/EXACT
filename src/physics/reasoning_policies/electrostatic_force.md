@@ -33,3 +33,20 @@
 - ENERGY VS WORK BOUNDARY:
   - IF calculating the change in stored electrostatic energy inside the capacitor, use: Delta_E = sp.Float('0.5') * U**2 * (C_final - C_init)
   - IF calculating the work supplied or absorbed by the external voltage source/battery, use: Delta_W = U**2 * (C_final - C_init). Never include the 0.5 factor for battery work computations.
+  
+## 6. RIGHT-ANGLED TRIANGLE MANDATORY BINDING (PYTHAGOREAN triple GUARD)
+- Before executing any general oblique triangle formula (such as a generic Law of Cosines coordinate projection), always verify if the given system distances (e.g., 6, 8, 10 or 12, 16, 20 cm) form a perfect right-angled Pythagorean triple (leg1**2 + leg2**2 == hypotenuse**2).
+- If a right-angle configuration is verified, you MUST completely bypass general oblique projection rules to prevent decimal scaling drift.
+- Bind the system geometry directly to the absolute orthogonal 1D X and Y axes of the coordinate plane by anchoring the right-angle vertex at the absolute origin:
+  - Right-Angle Vertex Coordinate (Target_Pos): sp.Matrix([sp.Float('0'), sp.Float('0')])
+  - Source 1 Coordinate (on X-axis): sp.Matrix([leg1, sp.Float('0')])
+  - Source 2 Coordinate (on Y-axis): sp.Matrix([sp.Float('0'), leg2])
+- Keep all matrix fields explicit; never omit the matching y-coordinate axis field even for purely linear properties to maintain operational dimensionality.
+
+## 7. CO-LOCATED TARGET EXCLUSION (SELF-FORCE INTERIOR INTEGRITY)
+- If a problem states that multiple source charges occupy the vertices of a geometric figure (such as a triangle or square) and asks for the net electrostatic force acting on a charge located at one of those specific vertices, you MUST apply the self-exclusion principle.
+- A point charge cannot exert a force upon its own coordinate position because its distance r approaches 0, which would mathematically cause the Coulomb expression (ke * q / r**2) to evaluate to infinity.
+- Identify your target vertex position and completely exclude the charge residing at that exact position from your list of active programmatic force sources. 
+- For an isosceles right triangle of leg length 'a' with identical charges 'q' at all three vertices, the net force on the right-angle vertex is generated EXCLUSIVELY by the two remaining leg charges. Since they act along mutually perpendicular axes relative to the origin, the exact execution line must resolve to:
+  F1 = ke * sp.Abs(q * q) / a**2; F_mag = sp.sqrt(F1**2 + F1**2) -> sp.sqrt(sp.Float('2')) * F1
+- Never add ghost scaling terms or treat the target coordinate's charge as its own interaction source vector.
