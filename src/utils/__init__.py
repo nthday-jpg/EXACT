@@ -9,6 +9,7 @@ from .normalization import (
     normalize_physics_scientific_text,
     extract_fol_formulas,
 )
+from .physics_tasks import load_physics_tasks
 
 __all__ = [
     "extract_value_unit_explanation",
@@ -18,4 +19,5 @@ __all__ = [
     "normalize_physics_output",
     "normalize_physics_scientific_text",
     "extract_fol_formulas",
+    "load_physics_tasks",
 ]

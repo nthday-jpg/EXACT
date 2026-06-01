@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 
 from src.llm.llm_client import LLMClient
 from src.physics.llm_execution import execute_llm_code
+from src.physics.postprocessing import postprocess_answer
 from src.physics.preprocessing import preprocess
 from src.physics.types import PhysicsResult, PhysicsTask
 
@@ -15,40 +16,57 @@ class PhysicsSolver:
         *,
         model_name: str,
         api_key: Optional[str],
+        base_url: Optional[str] = None,
         system_prompt: str,
-        heuristic_prompt: Optional[str] = None,
+        solver_prompt: Optional[str] = None,
         temperature: float = 0.1,
-        extra_body: Optional[Dict[str, Any]] = None,
+        max_tokens: Optional[int] = None,
+        enable_thinking: bool = False,
     ) -> None:
         self._model_name = model_name
         self._api_key = api_key or ""
+        self._base_url = base_url
         self._system_prompt = system_prompt
-        self._heuristic_prompt = heuristic_prompt or ""
+        self._solver_prompt = solver_prompt or ""
         self._temperature = temperature
-        self._extra_body = extra_body or {}
+        self._max_tokens = max_tokens or 1024
+        self._enable_thinking = enable_thinking
 
     def solve(self, task: PhysicsTask) -> PhysicsResult:
         start = time.time()
         prompt = preprocess(task.question)
-        if self._heuristic_prompt:
-            prompt = f"{self._heuristic_prompt}\n\n{prompt}"
+        if self._solver_prompt:
+            prompt = f"{self._solver_prompt}\n\n{prompt}"
 
         client = LLMClient(
             model_name=self._model_name,
             api_key=self._api_key,
+            base_url=self._base_url or "https://router.huggingface.co/v1",
             system_prompt=self._system_prompt,
             temperature=self._temperature,
-            extra_body=self._extra_body,
+            enable_thinking=self._enable_thinking,
         )
-        response = client.generate(prompt)
-        content, tokens = _extract_content_and_tokens(response)
+        try:
+            response = client.generate(prompt, max_tokens=self._max_tokens)
+            content, tokens = _extract_content_and_tokens(response)
+        except Exception as exc:
+            elapsed = time.time() - start
+            return PhysicsResult(
+                task=task,
+                model_answer=None,
+                raw_response="",
+                error=str(exc),
+                tokens=None,
+                elapsed_s=elapsed,
+                domains=None,
+            )
 
         model_answer = None
         error = None
         try:
             ans, unit = execute_llm_code(content)
             if ans is not None:
-                model_answer = {"ans": ans, "unit": unit}
+                model_answer = postprocess_answer({"ans": ans, "unit": unit})
         except Exception as exc:  # pragma: no cover - safety fallback
             error = str(exc)
 
@@ -60,6 +78,7 @@ class PhysicsSolver:
             error=error,
             tokens=tokens,
             elapsed_s=elapsed,
+            domains=None,
         )
 
 

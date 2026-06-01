@@ -116,15 +116,16 @@ def run_pipeline(
 
 def main() -> None:
 	load_dotenv()
-	logic_model_name = os.getenv("LOGIC_COMPILER_MODEL")
-	ontology_model_name = os.getenv("ONTOLOGY_BUILDER_MODEL")
+	default_model = os.getenv("DEFAULT_MODEL")
+	logic_model_name = os.getenv("LOGIC_COMPILER_MODEL") or default_model
+	ontology_model_name = os.getenv("ONTOLOGY_BUILDER_MODEL") or default_model
 	api_key = os.getenv("HF_API_KEY")
 	if not api_key:
 		raise RuntimeError("HF_API_KEY is not set")
 
 	if not logic_model_name or not ontology_model_name:
 		raise RuntimeError(
-			"Set LOGIC_COMPILER_MODEL and ONTOLOGY_BUILDER_MODEL in the environment."
+			"Set DEFAULT_MODEL or define LOGIC_COMPILER_MODEL and ONTOLOGY_BUILDER_MODEL."
 		)
 
 	ontology_instruction = load_text(INSTRUCTIONS_DIR / "ontology_builder.md")
@@ -137,20 +138,14 @@ def main() -> None:
 		api_key=api_key,
 		system_prompt=ontology_instruction,
 		temperature=0.1,
-		extra_body={
-			"chat_template_kwargs": {"enable_thinking": True},
-			"thinking_token_budget": 512  # Optional: limit reasoning token overhead
-		}
+		enable_thinking=True,
 	)
 	logic_compiler = LLMClient(
 		model_name=logic_model_name,
 		api_key=api_key,
 		system_prompt=logic_instruction,
 		temperature=0.1,
-		extra_body={
-			"chat_template_kwargs": {"enable_thinking": True},
-			"thinking_token_budget": 1536  # Optional: limit reasoning token overhead
-		}
+		enable_thinking=True,
 	)
 
 	data = json.loads(load_text(DATA_PATH))
