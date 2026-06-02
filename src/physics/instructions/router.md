@@ -103,3 +103,14 @@ Set true when problem contains: before/after states, transformed systems, freque
   "question_type": "Numerical",
   "multi_state": true
 }
+
+Rules:
+
+- Multiple domains are allowed.
+- Prefer specific domains over broad ones.
+- Include reasoning domains if required for solving.
+- Do not include irrelevant domains.
+- Output one valid JSON object only.
+- No markdown.
+- No explanations.
+- No chain-of-thought.
