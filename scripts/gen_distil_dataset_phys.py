@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -216,10 +217,14 @@ def main() -> None:
 	load_dotenv()
 
 	api_key = args.api_key or os.getenv("HF_API_KEY")
+	if not api_key:
+		print("[physics-distill] HF_API_KEY not set and no --api-key provided.", file=sys.stderr)
 	base_url = "https://router.huggingface.co/v1"
 	model_name = "openai/gpt-oss-120b:groq"
 	router_model_name = "Qwen/Qwen3-8B:featherless-ai"
 	router_api_key = os.getenv("HF_API_KEY") or ""
+	if not router_api_key:
+		print("[physics-distill] Router HF_API_KEY not set; router calls may fail.", file=sys.stderr)
 
 	input_path = _resolve_path(args.input_path)
 	output_path = _resolve_path(args.output)

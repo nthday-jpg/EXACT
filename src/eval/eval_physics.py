@@ -5,6 +5,8 @@ from __future__ import annotations
 import math
 import os
 import re
+import sys
+import sys
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Optional, Tuple
 
@@ -15,6 +17,8 @@ from src.physics.postprocessing import postprocess_answer
 
 # Instantiate the UnitRegistry globally to prevent object comparison clashes
 ureg = pint.UnitRegistry()
+
+_PHYSICS_EVAL_ENV_NOTICE_EMITTED = False
 
 _PREFIX_FACTORS = {
     "p": 1e-12,
@@ -317,7 +321,16 @@ def _llm_or_text_match(model_text: str, correct_text: str) -> bool:
         return False
 
     default_model = os.getenv("DEFAULT_MODEL")
-    llm_model = os.getenv("PHYSICS_EVAL_LLM") or default_model
+    physics_eval_llm = os.getenv("PHYSICS_EVAL_LLM")
+    llm_model = physics_eval_llm or default_model
+    if not physics_eval_llm and default_model:
+        global _PHYSICS_EVAL_ENV_NOTICE_EMITTED
+        if not _PHYSICS_EVAL_ENV_NOTICE_EMITTED:
+            print(
+                f"PHYSICS_EVAL_LLM not set; using DEFAULT_MODEL={default_model} for physics eval.",
+                file=sys.stderr,
+            )
+            _PHYSICS_EVAL_ENV_NOTICE_EMITTED = True
     
     # Run immediate token filtering normalization check
     norm_model = _normalize_text(model_text)
