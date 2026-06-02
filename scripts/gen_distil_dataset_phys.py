@@ -250,8 +250,8 @@ def main() -> None:
 		incorrect = [r for r in e.records if r.get("is_correct") is False]
 		correct_path = output_path.parent / (output_path.stem + "_correct" + output_path.suffix)
 		incorrect_path = output_path.parent / (output_path.stem + "_incorrect" + output_path.suffix)
-		_append_json_records(correct_path, correct)
-		_append_json_records_allow_duplicates(incorrect_path, incorrect)
+		_append_json_records_allow_duplicates(correct_path, correct)
+		_append_json_records(incorrect_path, incorrect)
 		print(f"Appended {len(correct)} correct and {len(incorrect)} incorrect partial records to {correct_path} and {incorrect_path} before failure")
 		print("Error:", str(e))
 		raise SystemExit(1)
@@ -261,8 +261,8 @@ def main() -> None:
 	incorrect = [r for r in records if r.get("is_correct") is False]
 	correct_path = output_path.parent / (output_path.stem + "_correct" + output_path.suffix)
 	incorrect_path = output_path.parent / (output_path.stem + "_incorrect" + output_path.suffix)
-	_append_json_records(correct_path, correct)
-	_append_json_records_allow_duplicates(incorrect_path, incorrect)
+	_append_json_records_allow_duplicates(correct_path, correct)
+	_append_json_records(incorrect_path, incorrect)
 	print(f"Appended {len(correct)} correct records to {correct_path}")
 	print(f"Appended {len(incorrect)} incorrect records to {incorrect_path}")
 
