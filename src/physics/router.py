@@ -59,7 +59,7 @@ def classify_question(
         content = response.get("content", "")
     except Exception as e: 
         print(f"[router] classify fallback due to API error: {e}")
-        return QuestionClassification(["electrostatics", "geometry"], "Numerical")
+        return QuestionClassification([], "Numerical")
 
     try:
         classification_json = json.loads(content.strip())
