@@ -131,9 +131,18 @@ def _count_domains(records: List[Dict[str, Any]]) -> Counter[str]:
 	return counts
 
 
-def _build_input_text(question: str, reasoning_policies: str) -> str:
+def _build_input_text(
+	question: str,
+	reasoning_policies: str,
+	question_type: str,
+) -> str:
 	prefix = reasoning_policies.strip() if reasoning_policies.strip() else "<reasoning_policies></reasoning_policies>"
-	return f"{prefix}\n\n<question>\n{question}\n</question>"
+	parts = [prefix]
+	question_type = question_type.strip()
+	if question_type:
+		parts.append(f"<question_type>\n{question_type}\n</question_type>")
+	parts.append(f"<question>\n{question}\n</question>")
+	return "\n\n".join(parts)
 
 
 def _build_summary_table(title: str, counts: Counter[str], total: int) -> str:
@@ -221,7 +230,8 @@ def main() -> None:
 		domains = _domain_list(record)
 		reasoning_policies = registry.assemble_reasoning_policies(domains, include_fewshot=False) if index in sampled_indices else ""
 		question = record.get("question", "")
-		record["input"] = _build_input_text(question, reasoning_policies)
+		question_type = record.get("question_type", "")
+		record["input"] = _build_input_text(question, reasoning_policies, question_type)
 	output_path.write_text(json.dumps(processed, indent=2, ensure_ascii=False), encoding="utf-8")
 	_write_summary_md(
 		output_path=output_path,
