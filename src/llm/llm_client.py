@@ -18,6 +18,7 @@ class LLMClient:
                  system_prompt: str = "",
                  temperature: float = 0.0,
                  frequency_penalty: float = 0.0,
+                 enable_thinking: bool = False,
                  use_local: bool = False,
                  model_dir: str | None = None,
                  device: str | None = None):
@@ -26,6 +27,7 @@ class LLMClient:
         self.system_prompt = system_prompt
         self.temperature = temperature
         self.frequency_penalty = frequency_penalty
+        self._enable_thinking = enable_thinking
         self.use_local = use_local
         self.model_dir = model_dir
         self.tokenizer = None
@@ -48,11 +50,29 @@ class LLMClient:
             self.client: OpenAI | None = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
             # Load tokenizer locally for exact chat template formatting
-            from transformers import AutoTokenizer
             try:
-                self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir, trust_remote_code=True)
-                if self.tokenizer.pad_token is None:
-                    self.tokenizer.pad_token = self.tokenizer.eos_token
+                from pathlib import Path
+
+                model_path = Path(self.model_dir) if self.model_dir else None
+                tokenizer_files = (
+                    "tokenizer.json",
+                    "tokenizer_config.json",
+                    "special_tokens_map.json",
+                )
+                has_tokenizer_files = (
+                    model_path is not None
+                    and model_path.exists()
+                    and any((model_path / name).exists() for name in tokenizer_files)
+                )
+                if has_tokenizer_files:
+                    from transformers import AutoTokenizer
+
+                    self.tokenizer = AutoTokenizer.from_pretrained(
+                        str(model_path),
+                        trust_remote_code=True,
+                    )
+                    if self.tokenizer.pad_token is None:
+                        self.tokenizer.pad_token = self.tokenizer.eos_token
             except Exception as e:
                 print(f"Warning: Could not load local tokenizer for remote client: {e}")
         else:
@@ -117,7 +137,10 @@ class LLMClient:
             messages.append({"role": "user", "content": prompt})
 
             chat_prompt = self.tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+                enable_thinking=self._enable_thinking,
             )
             inputs = self.tokenizer(chat_prompt, return_tensors="pt").to(self.device)
 
@@ -150,7 +173,10 @@ class LLMClient:
         if self.tokenizer is not None:
             # Use local chat template for exact prompt formatting, then hit raw completions
             chat_prompt = self.tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+                enable_thinking=self._enable_thinking,
             )
 
             response = self.client.completions.create(
