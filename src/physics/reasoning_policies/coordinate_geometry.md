@@ -25,8 +25,8 @@ C = (a / sp.Float('2'), a * sp.sqrt(sp.Float('3')) / sp.Float('2'))
 
 ## 5. PERPENDICULAR BISECTOR
 - M = (ab / sp.Float('2'), h)
-- For calculations involving distances to a perpendicular bisector, explicitly evaluate the hypotenuse distance numerically: r = sp.Float(float(sp.sqrt((ab/2)**2 + h**2)))
-- Do not pass raw algebraic radical combinations downstream into matrix computations.
+- Maintain absolute symbolic precision throughout the calculation.
+- BANNED: internal float() conversions or round() calls mid-execution (e.g., `r = sp.Float(float(...))` is illegal). Scaling occurs in preprocessing or postprocessing.
 
 ## 6. COLLINEAR SPECIAL CASE (MANDATORY 2D MAPPING)
 If all points are collinear:

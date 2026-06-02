@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import csv
 import json
+import random
 from pathlib import Path
 from typing import Any, Dict, List
-
-import pandas as pd
 
 from src.physics.types import PhysicsTask
 
@@ -23,11 +23,15 @@ def _normalize_correct(record: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _load_tasks_from_csv(path: Path) -> List[PhysicsTask]:
-    df = pd.read_csv(path)
     tasks: List[PhysicsTask] = []
-    for _, row in df.iterrows():
-        correct = {"ans": row["answer"], "unit": row["unit"]}
-        tasks.append(PhysicsTask(question=row["question"], correct=correct))
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            question = row.get("question")
+            if question is None:
+                raise ValueError(f"Missing question field in {path}")
+            correct = {"ans": row.get("answer"), "unit": row.get("unit")}
+            tasks.append(PhysicsTask(question=question, correct=correct))
     return tasks
 
 
@@ -62,9 +66,8 @@ def load_physics_tasks(input_path: str, *, num_samples: int = -1, seed: int = 42
         raise ValueError(f"Unsupported input format: {path.suffix}")
 
     if num_samples != -1:
-        df = pd.DataFrame([{ "question": task.question, "correct": task.correct } for task in tasks])
-        num_samples = min(num_samples, len(df))
-        df = df.sample(n=num_samples, random_state=seed)
-        tasks = [PhysicsTask(question=row["question"], correct=row["correct"]) for _, row in df.iterrows()]
+        num_samples = min(num_samples, len(tasks))
+        rng = random.Random(seed)
+        tasks = rng.sample(tasks, num_samples)
 
     return tasks

@@ -50,3 +50,7 @@
 - For an isosceles right triangle of leg length 'a' with identical charges 'q' at all three vertices, the net force on the right-angle vertex is generated EXCLUSIVELY by the two remaining leg charges. Since they act along mutually perpendicular axes relative to the origin, the exact execution line must resolve to:
   F1 = ke * sp.Abs(q * q) / a**2; F_mag = sp.sqrt(F1**2 + F1**2) -> sp.sqrt(sp.Float('2')) * F1
 - Never add ghost scaling terms or treat the target coordinate's charge as its own interaction source vector.
+
+## 8. FORCE CONVERSION & PRECISION RULES
+- BANNED: round(), precision limits inside evalf (e.g., .evalf(2)). Assign raw full-precision float via `ans = [float(F_mag.evalf())]`.
+- All coordinate scaling and unit transformations must occur in preprocessing or postprocessing. Do not code internal floating-point scaling calculations.

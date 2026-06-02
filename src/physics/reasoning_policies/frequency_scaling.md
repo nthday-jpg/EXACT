@@ -1,15 +1,18 @@
 # frequency_scaling.md
 
-## 1. SCALING RULES
-XL ∝ omega, XC ∝ 1/omega
+## 1. RELATIONSHIPS
+- XL = omega * L
+- XC = 1 / (omega * C)
+- R_new = R_0
 
 ## 2. STATE TRANSFORMATION
-If omega_new = k * omega_0, then:
-XL_new = k * XL_0
-XC_new = XC_0 / k
+- If omega_new = k * omega_0:
+  - XL_new = k * XL_0
+  - XC_new = XC_0 / sp.Float(k)
+- BANNED: Floating-point division on k in raw Python. Use SymPy fractions.
 
-## 3. SOLVING ORDER
-1. Apply scaling -> 2. Check resonance -> 3. Compute impedance -> 4. Compute requested quantity.
-
-## 4. INITIAL STATE
-Do not assume initial resonance unless explicitly stated.
+## 3. QUALITATIVE TREND ROUTING
+- If the question asks for a qualitative behavioral change, ans must hold a lowercase text string primitive list, not a float value.
+- Evaluate Ratio = State_new / State_0 and map via conditional loops.
+- Code Template: `ratio = I_new / I_0; ans = ['decreases by half'] if ratio == sp.Float('0.5') else ['changed']; unit = ['-']`
+- BANNED: round(), trailing semicolons.

@@ -1,7 +1,6 @@
 # Router Configuration
 
 ## Domain Options
-
 Physics domains:
 - electrostatic_force
 - electrostatic_field
@@ -11,6 +10,8 @@ Physics domains:
 - electromagnetism
 - oscillation_energy
 - circuit_power
+- capacitance_and_energy
+- experimental_physics
 
 Reasoning domains:
 - spatial_topology
@@ -18,133 +19,63 @@ Reasoning domains:
 - vector_semantics
 - qualitative_reasoning
 - symbolic_derivation
+- proportional_scaling
+- error_analysis
 
 ## Domain Selection Rules
 
+### experimental_physics
+Use when: Experimental measurements, trial data sets, absolute or relative uncertainties, instrument tolerances, or duplicate measurement values.
+
+### capacitance_and_energy
+Use when: Parallel-plate configurations, dielectric replacement/materials, charge storage (Q), electrostatic potential energy storage, plate area (S), and separation (d).
+
+### error_analysis
+Use when: Random error, percentage relative error, standard deviation, range-based uncertainty, or error propagation.
+
+### proportional_scaling
+Use when: Qualitative ratio problems, "how does X change if Y doubles", behavioral scaling trends without absolute numerical values, or before/after fractional adjustments.
+
 ### electrostatic_force
-Use when:
-- electric force
-- Coulomb force
-- attraction/repulsion
-- force on a charge
-- net force between charges
+Use when: Coulomb interactions, electric force, attractive/repulsive forces, or point charge mechanics.
 
 ### electrostatic_field
-Use when:
-- electric field
-- field intensity
-- field at a point
-- superposition of fields
+Use when: Electric field intensity (E), flux lines, field distribution, or co-located vertex field calculations.
 
 ### ac_impedance
-Use when:
-- impedance
-- phase angle
-- phasor voltage
-- RMS voltage/current
-- AC circuit analysis
-- RLC circuits
+Use when: RLC alternating current series circuits, phasor geometry, component voltages (VR, VL, VC), or phase angle calculations.
 
 ### resonance
-Use when:
-- resonance
-- resonant frequency
-- XL = XC
-- maximal current
-- resonance behavior
+Use when: Reactance cancellations (XL == XC), maximum AC current states, zero phase angles, or resonant frequency calculations.
 
 ### frequency_scaling
-Use when:
-- frequency changes
-- doubled/halved frequency
-- transformed reactance
-- scaling relations
-- before/after frequency states
+Use when: System frequency changes, omega transformations, or non-linear adjustments to capacitive/inductive reactance.
 
 ### electromagnetism
-Use when:
-- magnetic flux
-- inductance
-- induced emf
-- solenoid
-- magnetic energy
+Use when: Magnetic flux, flux linkage, inductive EMF, self-inductance (L), solenoids, or magnetic energy density.
 
 ### oscillation_energy
-Use when:
-- LC energy exchange
-- capacitor energy
-- inductor energy
-- oscillation energy conservation
+Use when: LC circuit energy conservation, continuous exchange between electric and magnetic energies, or fraction of maximum energy states.
 
 ### circuit_power
-Use when:
-- electric power
-- RMS power
-- Joule heating
-- power factor
-- energy consumption
+Use when: DC power, AC average power, power factors, Joule heating, or parallel multi-branch entity calculations.
 
 ### spatial_topology
-Use when:
-- midpoint
-- collinear points
-- perpendicular bisector
-- equal-distance constraints
-- topology inference
+Use when: 1D linear charge positions, zero-point field cancellation coordinates, segment boundaries, or collinear linearity arrays.
 
 ### coordinate_geometry
-Use when:
-- coordinates required
-- triangle reconstruction
-- geometric anchoring
-- distance reconstruction
+Use when: Right-angle, equilateral, or general triangles requiring explicit 2D spatial coordinate mapping loops.
 
 ### vector_semantics
-Use when:
-- vector decomposition
-- force/field components
-- cancellation analysis
-- directional reasoning
-- vector addition
-- AC circuits & phasor geometry (RMS voltage/current, impedance, RLC resonance combinations)
+Use when: 2D directional quantities, matrix norm calculations, vector component decompositions, or spatial aggregation.
 
 ### qualitative_reasoning
-Use when:
-- conceptual explanation
-- trend/behavior
-- increase/decrease
-- yes/no conceptual reasoning
-- qualitative relationships
-- "depends on which quantities/factors..."
-- yes/no conceptual reasoning
+Use when: Purely conceptual/descriptive answers, direction trends (increase/decrease), or binary Yes/No confirmations.
 
 ### symbolic_derivation
-Use when:
-- "Find the formula for..."
-- "Express X in terms of Y..."
-- "Derive the relationship equation..."
-- Answer format must be a raw symbolic equation string instead of a numerical value.
-
-## Multi-Domain Rules
-
-Questions can and should require multiple domains where applicable.
-
-Examples of complete responses:
-
-### Example 1: Electrostatic triangle force
-{"domains": ["electrostatic_force", "coordinate_geometry", "vector_semantics"], "question_type": "Numerical", "multi_state": false}
-
-### Example 2: Electric field at midpoint
-{"domains": ["electrostatic_field", "spatial_topology", "vector_semantics"], "question_type": "Numerical", "multi_state": false}
-
-### Example 3: Resonance after frequency doubling
-{"domains": ["frequency_scaling", "resonance", "ac_impedance"], "question_type": "Numerical", "multi_state": true}
-
-### Example 4: AC power at resonance
-{"domains": ["circuit_power", "resonance", "ac_impedance"], "question_type": "Numerical", "multi_state": false}
+Use when: Requests algebraic formulas, expressions, equations, or string relationships instead of numerical answers.
 
 ## Question Types
-
 - Numerical
 - Formula
 - Qualitative
@@ -152,33 +83,19 @@ Examples of complete responses:
 ## Question Type Rules
 
 ### Numerical
-Use when:
-- asks for numerical value
-- asks for magnitude
-- requires units
+Use when: Problem explicitly asks for a final concrete numerical value, numeric magnitude calculation, or specific scalar quantity containing physical engineering units.
+- BANNED: Do not use for relative trend adjustments or qualitative fractional behavior statements.
 
 ### Formula
-Use when:
-- asks for equation
-- asks for symbolic relation
-- asks for derivation
+Use when: Problem asks for an equation, algebraic formula, symbolic relation, variable derivation, or expression string instead of a number.
 
 ### Qualitative
-Use when:
-- asks what happens
-- asks for explanation
-- asks increase/decrease
-- asks conceptual relationship
+Use when: Problem asks what happens conceptually, predicts trend shifts ("doubles", "halves", "quadruples"), requires directional responses ("increases", "decreases"), or asks for binary confirmation ("Yes", "No").
+- MANDATORY: All proportional scaling ratio questions that lack absolute starting values must be classified under this type.
 
 ## Additional Field
-
 ### multi_state
-Set true when problem contains:
-- before/after states
-- transformed systems
-- frequency changes
-- state transitions
-Otherwise set false.
+Set true when problem contains: before/after states, transformed systems, frequency changes, or state transitions. Otherwise set false.
 
 ## OUTPUT FORMAT
 {
@@ -186,13 +103,3 @@ Otherwise set false.
   "question_type": "Numerical",
   "multi_state": true
 }
-
-Rules:
-- Multiple domains are allowed.
-- Prefer specific domains over broad ones.
-- Include reasoning domains if required for solving.
-- Do not include irrelevant domains.
-- Output one valid JSON object only.
-- No markdown.
-- No explanations.
-- No chain-of-thought. 

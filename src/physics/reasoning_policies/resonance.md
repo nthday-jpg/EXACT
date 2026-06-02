@@ -1,28 +1,20 @@
 # resonance.md
 
-## 1. RESONANCE CONDITION
-XL = XC
+## 1. CONDITIONS
+- XL = XC
+- omega = 1 / sp.sqrt(L * C)
+- f = 1 / (sp.Float('2') * sp.pi * sp.sqrt(L * C))
+- omega = sp.Float('2') * sp.pi * f
 
-## 2. RESONANCE EFFECT
-At resonance: total impedance is purely resistive, current is maximal, and phase angle = 0.
+## 2. EFFECTS
+- Total impedance is purely resistive. Current is maximal. Phase angle = 0.
+- Only TOTAL reactance cancels. Segment reactances remain nonzero.
 
-## 3. TOTAL REACTANCE
-Only TOTAL reactance cancels. Segment reactances remain nonzero.
+## 3. ORDER OF OPERATIONS
+1. Apply resonance condition -> 2. Check transformed reactances -> 3. Evaluate target expression.
 
-## 4. FREQUENCY RELATIONS
-omega = 1 / sqrt(L * C)
-f = 1 / (2 * pi * sqrt(L * C))
-omega = 2 * pi * f
-
-## 5. SOLVING ORDER
-1. Apply resonance condition -> 2. Simplify physics qualitatively -> 3. Solve symbolically -> 4. Evaluate numerically.
-
-## 6. RESONANCE DETECTION
-Frequency scaling may create resonance implicitly. Check transformed reactances BEFORE solving.
-
-## 7. QUALITATIVE VERIFICATION OVERRIDE
-- If the question asks a binary verification question (e.g., "Will resonance occur at f=...?"), do NOT output the calculated numeric resonant frequency as your final answer string.
-- Evaluate the conditional check inside your thought process, but NEVER use a strict threshold like 1e-9. Real-world textbook values use rounded constants.
-- In your Python condition, evaluate resonance as True if the given frequency is within a 1% relative tolerance buffer of the calculated peak frequency:
-  is_resonant = abs(f_given - f_res) / f_res < 0.01
-  ans = ['Yes'] if is_resonant else ['No']; unit = ['-']
+## 4. BINARY VERIFICATION OVERRIDE
+- If the question asks a binary verification question ("Will resonance occur?"), ans must hold text, not a frequency float.
+- Evaluate resonance as True if the given frequency is within a 1% relative tolerance buffer of the peak frequency.
+- Code Template (No trailing semicolon):
+  `is_resonant = sp.Abs(f_given - f_res) / f_res < sp.Float('0.01'); ans = ['Yes'] if is_resonant else ['No']; unit = ['-']`

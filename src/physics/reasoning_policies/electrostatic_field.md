@@ -28,3 +28,12 @@
 - For an isosceles right triangle of leg length 'a' with identical charges 'q' at all three vertices, the field at the right-angle vertex is generated EXCLUSIVELY by the two leg charges. Since they act along mutually perpendicular axes relative to the origin, the exact execution line must resolve to:
   E1 = ke * q / a**2; E_net = sp.sqrt(E1**2 + E1**2) -> sp.sqrt(sp.Float('2')) * E1
 - Never add ghost scaling terms or include the target coordinate charge as an active source vector.
+- SIGN CONVENTION FOR BATTERY WORK:
+- If the plates are pulled APART (C_final < C_init), energy is returned to the battery. Delta_W is negative.
+- If the plates are drawn TOGETHER (C_final > C_init), the battery performs work to maintain potential. Delta_W is positive.
+- Ensure the Python code explicitly uses the order `(C_final - C_init)` to preserve directional sign integrity
+
+## 6. FIELD CONVERSION & PRECISION RULES
+- BANNED: round(), precision limits inside evalf (e.g., .evalf(5)). Assign raw floats directly to ans.
+- Delete battery work lines from this file.
+- All physical metric prefix scaling conversions must occur in preprocessing or postprocessing layers, not inside python_code.
