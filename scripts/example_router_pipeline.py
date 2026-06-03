@@ -31,9 +31,9 @@ def example_router():
     api_key = os.getenv("HF_API_KEY")
     if not api_key:
         print("[physics-router] HF_API_KEY not set; router calls may fail.", file=sys.stderr)
-    default_model = os.getenv("DEFAULT_MODEL", "meta-llama/Llama-3.1-8B-Instruct")
-    router_model_env = os.getenv("ROUTER_MODEL")
-    model_name = router_model_env or default_model
+    router_model_env = "Qwen/Qwen3-8B:featherless-ai"
+    model_name ="openai/gpt-oss-120b:groq"
+
     if not router_model_env:
         print(f"[physics-router] ROUTER_MODEL not set; using DEFAULT_MODEL={default_model}.", file=sys.stderr)
     
@@ -66,17 +66,8 @@ async def example_full_pipeline() -> None:
     """Example 3: Full pipeline with routed execution."""
     load_dotenv()
     api_key = os.getenv("HF_API_KEY")
-    if not api_key:
-        print("[physics-router] HF_API_KEY not set; model calls may fail.", file=sys.stderr)
-    default_model = os.getenv("DEFAULT_MODEL", "meta-llama/Llama-3.1-8B-Instruct")
-    physics_model_env = os.getenv("PHYSICS_MODEL")
-    model_name = physics_model_env or default_model
-    if not physics_model_env:
-        print(f"[physics-router] PHYSICS_MODEL not set; using DEFAULT_MODEL={default_model}.", file=sys.stderr)
-    router_model_env = os.getenv("ROUTER_MODEL")
-    router_model = router_model_env or default_model
-    if not router_model_env:
-        print(f"[physics-router] ROUTER_MODEL not set; using DEFAULT_MODEL={default_model}.", file=sys.stderr)
+    router_model = "Qwen/Qwen3-8B:featherless-ai"
+    model_name ="openai/gpt-oss-120b:groq"
     task = PhysicsTask(
         question="Two point charges, q1 = 4e-6 C and q2 = -6.4e-6 C, are placed at points A and B, separated by 0.2 m in air. Determine the magnitude of the electric force acting on q3 = -5e-8 C placed at point C, given that AC = 0.12 m and BC = 0.16 m.",
         correct={"ans": [0.1642], "unit": ["N"]},  # Example correct answer
@@ -89,6 +80,7 @@ async def example_full_pipeline() -> None:
         api_key=api_key,
         router_model_name=router_model,
         output_path="runs/results.json",
+        enable_thinking=True,
     )
     
     print("=== Full Pipeline Results ===")
@@ -97,6 +89,7 @@ async def example_full_pipeline() -> None:
     print(f"Model Answer: {result.result.model_answer}")
     print(f"Is Correct: {result.is_correct}")
     print(f"Reason: {result.reason}")
+    print(f"Raw Output: {result.result.raw_response[:500]}...")  # First 500 chars
     print()
 
 

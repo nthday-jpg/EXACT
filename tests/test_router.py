@@ -12,7 +12,7 @@ load_dotenv()
 
 
 HF_API_KEY = os.getenv("HF_API_KEY")
-HF_ROUTER_MODEL = os.getenv("HF_ROUTER_MODEL", "Qwen/Qwen3-8B:featherless-ai")
+HF_ROUTER_MODEL = "openai/gpt-oss-120b:groq"
 
 
 def main() -> int:
