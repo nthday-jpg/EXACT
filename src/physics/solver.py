@@ -36,7 +36,7 @@ class PhysicsSolver:
         start = time.time()
         prompt = preprocess(task.question)
         if self._solver_prompt:
-            prompt = f"{self._solver_prompt}\n\n{prompt}"
+            prompt = f"{self._solver_prompt}\n\n<question>\n{prompt}\n</question>"
 
         client = LLMClient(
             model_name=self._model_name,
