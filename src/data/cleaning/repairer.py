@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 from src.llm import LLMClient
-from src.data.validator import validate_sample_fol
-from src.data.prompts import (
+from src.data.cleaning.validator import validate_sample_fol
+from src.data.cleaning.prompts import (
     STANDARD_REPAIR_SYSTEM_PROMPT,
     STANDARD_REPAIR_USER_TEMPLATE,
     FEEDBACK_REPAIR_TEMPLATE,
@@ -97,7 +97,17 @@ class LogicalDatasetRepairer:
                 if "*" in f: forbidden.append(f"Contains multiplication '*': {f}")
                 if "[" in f or "]" in f: forbidden.append(f"Contains brackets []: {f}")
 
-            if forbidden:
+            # Check length matching
+            nl_len = len(repaired_sample.get("premises-NL", []))
+            fol_len = len(cleaned_formulas)
+
+            if nl_len != fol_len:
+                current_error = (
+                    f"Mismatched premise counts: premises-NL has {nl_len} elements, "
+                    f"but premises-FOL has {fol_len} elements. They must have the exact same number of elements."
+                )
+                is_valid = False
+            elif forbidden:
                 current_error = "Forbidden syntax check failed:\n" + "\n".join(forbidden)
                 is_valid = False
             else:
@@ -126,7 +136,18 @@ class LogicalDatasetRepairer:
                 cleaned_formulas.append(f_clean)
             repaired_sample["premises-FOL"] = cleaned_formulas
 
-            is_valid, current_error = validate_sample_fol(cleaned_formulas)
+            # Check length matching in Deep Repair
+            nl_len = len(repaired_sample.get("premises-NL", []))
+            fol_len = len(cleaned_formulas)
+            if nl_len != fol_len:
+                is_valid = False
+                current_error = (
+                    f"Mismatched premise counts: premises-NL has {nl_len} elements, "
+                    f"but premises-FOL has {fol_len} elements. They must have the exact same number of elements."
+                )
+            else:
+                is_valid, current_error = validate_sample_fol(cleaned_formulas)
+
             if is_valid:
                 print(f"      - [SUCCESS] Deep Repair succeeded in resolving type mismatches!")
                 repaired_sample.pop("validation_error", None)

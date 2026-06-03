@@ -4,8 +4,8 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 from src.llm import LLMClient
-from src.data.validator import validate_sample_fol, validate_dataset
-from src.data.repairer import LogicalDatasetRepairer
+from src.data.cleaning.validator import validate_sample_fol, validate_dataset
+from src.data.cleaning.repairer import LogicalDatasetRepairer
 
 
 class LogicalDatasetPipeline:
@@ -37,7 +37,7 @@ class LogicalDatasetPipeline:
     @staticmethod
     def standardize_fol_formula(f_str: str) -> str:
         """Wrap formatter's standardization helper for backwards compatibility."""
-        from src.data.formatter import standardize_fol_formula
+        from src.data.cleaning.formatter import standardize_fol_formula
         return standardize_fol_formula(f_str)
 
     def validate_sample_fol(self, formulas: list[str]) -> Tuple[bool, str]:

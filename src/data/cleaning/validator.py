@@ -1,7 +1,7 @@
 import z3
 from typing import Any, Dict, List, Tuple
 from src.logic.reasoning.parser import parse_formulas
-from src.data.formatter import standardize_fol_formula
+from src.data.cleaning.formatter import standardize_fol_formula
 
 
 def validate_sample_fol(formulas: List[str]) -> Tuple[bool, str]:
@@ -31,8 +31,20 @@ def validate_dataset(dataset: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]
     invalid_samples = []
 
     for sample in dataset:
-        formulas = sample.get("premises-FOL", [])
-        is_valid, error_msg = validate_sample_fol(formulas)
+        nl = sample.get("premises-NL", [])
+        fol = sample.get("premises-FOL", [])
+        
+        # Check that the number of natural language premises matches the number of FOL formulas
+        if len(nl) != len(fol):
+            bad_sample = sample.copy()
+            bad_sample["validation_error"] = (
+                f"Mismatched premise counts: premises-NL has {len(nl)} elements, "
+                f"but premises-FOL has {len(fol)} elements."
+            )
+            invalid_samples.append(bad_sample)
+            continue
+
+        is_valid, error_msg = validate_sample_fol(fol)
         if is_valid:
             clean_sample = sample.copy()
             clean_sample.pop("validation_error", None)
@@ -43,3 +55,4 @@ def validate_dataset(dataset: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]
             invalid_samples.append(bad_sample)
 
     return valid_samples, invalid_samples
+

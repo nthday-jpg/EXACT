@@ -40,11 +40,15 @@ Our logic parser runs a strict subset of First-Order Logic (FOL) in Python and v
    - Do not use IN operators with curly brackets like "Ranking(s) IN {Average, Weak, Poor}". Instead write: "(Ranking_Average(s) OR Ranking_Weak(s) OR Ranking_Poor(s))".
    - Convert non-numeric functions returning uninterpreted constants to binary relations (e.g., instead of Program(Vinh) = TrainingProgram, write Program(Vinh, TrainingProgram); instead of Status(Ha) = Junior, write Status(Ha, Junior)).
 
-6. PARENTHESES & ARITY:
+ 6. PARENTHESES & ARITY:
    - Ensure every open parenthesis '(' has a matching close parenthesis ')'.
    - Avoid spaces before argument lists: write P(x) NOT P (x).
    - Ensure a predicate or function always has the exact same name casing and number of arguments across all premises in the sample. E.g. do not mix P(x) and P(x, y).
    - Zero-arity predicates must be written with empty parentheses, e.g. depleted_fund() or lack_partnerships() instead of depleted_fund.
+
+7. PREMISE COUNT ALIGNMENT RULE:
+   - The number of formulas in 'premises-FOL' must be EXACTLY equal to the number of premises in 'premises-NL'.
+   - Each FOL formula must correspond directly, 1-to-1, to the same-indexed natural language premise in 'premises-NL'. Do not combine, split, omit, or add premises.
 
 Provide your corrected sample as a single valid JSON object matching our unified schema. Return JSON only, without any markdown formatting or extra text.
 """
@@ -70,6 +74,7 @@ FEEDBACK_REPAIR_TEMPLATE = """Your proposed FOL formulas failed validation. Plea
 4. Do not use single quotes around constant names. E.g. Grade(aplus) instead of Grade('a+').
 5. Convert function equality returning uninterpreted constants (like Program(Vinh) = TrainingProgram) to binary predicates (like Program(Vinh, TrainingProgram)).
 6. Write empty parentheses '()' for zero-arity predicates (like depleted_fund()).
+7. Ensure that the number of formulas in 'premises-FOL' matches the number of premises in 'premises-NL' exactly. Each formula must correspond 1-to-1 with its natural language counterpart.
 
 Please correct the formulas and return the complete, cleaned JSON object only."""
 
@@ -97,6 +102,7 @@ To succeed, you MUST strictly apply these two advanced Z3 parser rules:
    - Quantifiers must be nested: ForAll(x, ForAll(y, P(x, y))). No list brackets!
    - Connectives must be strictly UPPERCASE: AND, OR, NOT, ->, <->.
    - Absolutely no arithmetic operators '*' or '/' inside formulas.
+   - The number of formulas in 'premises-FOL' must be EXACTLY equal to the number of premises in 'premises-NL' (1-to-1 correspondence).
 
 Analyze the invalid sample and return the complete corrected JSON object only. Return JSON only, without any markdown formatting or extra text.
 """
