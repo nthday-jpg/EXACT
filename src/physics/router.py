@@ -12,8 +12,7 @@ def _load_router_config() -> str:
     config_path = Path(__file__).parent / "instructions" / "router.md"
     if config_path.exists():
         return config_path.read_text(encoding="utf-8")
-    return ""
-
+    raise FileNotFoundError(f"Router configuration not found at {config_path}")
 
 def _extract_json_object(content: str) -> str | None:
     content = (content or "").strip()
@@ -100,5 +99,5 @@ def classify_question(
         
         return QuestionClassification(domains, question_type)
     except json.JSONDecodeError:
-        print(f"[router] classify fallback due to JSON parsing error. Response content: {content}")
+        print(f"[router] classify fallback due to JSON parsing error")
         return QuestionClassification([], "Numerical")
