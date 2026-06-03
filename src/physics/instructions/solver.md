@@ -15,7 +15,7 @@ If present:
 <OPERATING_CONSTRAINTS>
 
 OUTPUT FORMAT:
-Return ONLY a single valid JSON object. Do not wrap in markdown. Do not include any text before or after the JSON.
+Return ONLY a single valid JSON object. Do not wrap in markdown. Do not include any text before or after the JSON. 
 
 {
   "thought": "...",
