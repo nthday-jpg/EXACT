@@ -23,13 +23,14 @@ The fine-tuning pipeline leverages a unified, high-quality preprocessed corpus `
 
 To guarantee that the training corpus contains only syntactically sound target labels, the data preprocessing pipeline enforces **Syntactic Validation**:
 *   Every candidate `premises-FOL` list is parsed using the Z3 SMT library (`try_parse_fol`).
-*   Any sample containing even a single malformed FOL formula (e.g., missing variables, invalid quantifiers, or space-separated predicate signatures) is either repaired using an LLM-in-the-loop repair pipeline or strictly filtered out.
+*   Any sample containing even a single malformed FOL formula (e.g., missing variables, invalid quantifiers, or space-separated predicate signatures) is filtered out.
 *   The resulting `merged_valid.json` represents a clean, high-quality, 100% parseable translation dataset.
 
-### 2.2. Dual-Mode Loading with Graceful Fallbacks
-To ensure maximum portability and robustness across local development servers and Kaggle runtime environments, the notebook incorporates a **Dual-Mode Dataset Loader**:
-1.  **Direct Mode (Preprocessed)**: Searches for the consolidated `merged_valid.json` file inside active directories (such as `/kaggle/input/...` or local project folders). If found, it loads the clean dataset directly, guaranteeing 100% parser-safe target formulas.
-2.  **Fallback Mode (Raw Dual Loading)**: If `merged_valid.json` is missing, the loader searches recursively for separate `logic_based.json` and `folio-train.json` datasets, performs deduplication on-the-fly based on serialized premise structures, aligns premise-FOL indexes, and creates a consolidated training split dynamically.
+### 2.2. Dual-Dataset Comparative Study Loader (Study-Isolated Mode)
+In `folc.ipynb`, we implement a **Comparative Study Loader** to evaluate the concrete impact of data augmentation:
+1.  **Augmented Cohort**: Loads the primary preprocessed dataset (`merged_valid.json`) via `merged_path`.
+2.  **Control Cohort (No-Augmentation)**: Loads the non-augmented dataset (`merged_valid_no_augmentation.json`) via `no_aug_path`.
+3.  **Graceful Fallbacks**: The paths are initially configured as blank variables (`""`) for user customization. If left empty, the respective training block skips automatically with a descriptive warning instead of crashing.
 
 ---
 
@@ -44,7 +45,7 @@ graph TD
     C --> D[Completion-Only Loss Masking]
     C --> E[NEFTune Random Noise Embedding]
     C --> F[LoRA Adapter Rank 32 / Alpha 64]
-    D & E & F --> G[ReduceLROnPlateau Custom Callback]
+    D & E & F --> G[Cosine Scheduler with Warmup + ReduceLROnPlateau]
     G --> H[Parser-Safe JSON List - Exactly N Formulas]
 ```
 
@@ -80,11 +81,10 @@ Return a JSON list of exactly {num_premises} strings containing the formulas, in
 *   **Impact**: Enforcing `{num_premises}` inside both system instructions and user queries trains the self-attention heads to map input sentence indices to output list slots. This eliminates length-mismatch warnings completely and guarantees that the resulting JSON list size aligns perfectly with the input list.
 
 ### 3.2. Completion-Only Causal Language Modeling (Loss Masking)
-*   **Mechanism**: Standard Supervised Fine-Tuning (SFT) computes cross-entropy loss over the entire token sequence, penalizing the model for failing to generate the instructions/prompts. In our pipeline, we integrate `DataCollatorForCompletionOnlyLM` from the `trl` library.
-*   **Implementation**: We define the Qwen-compatible chat assistant marker as the target prefix:
+*   **Mechanism**: Standard Supervised Fine-Tuning (SFT) computes cross-entropy loss over the entire token sequence, penalizing the model for failing to generate the instructions/prompts. In our pipeline, we integrate a custom completion collator:
     ```python
     response_template = "<|im_start|>assistant\n"
-    collator = DataCollatorForCompletionOnlyLM(
+    collator = CustomDataCollator(
         response_template=response_template, 
         tokenizer=tokenizer
     )
@@ -94,11 +94,11 @@ Return a JSON list of exactly {num_premises} strings containing the formulas, in
 ### 3.3. High-Capacity Parameter-Efficient Fine-Tuning (LoRA)
 *   **Mechanism**: Causal translation of human natural language into formal mathematical expressions is a highly complex, syntactically sensitive transformation. We configure low-rank adaptation (LoRA) to target all linear projection modules.
 *   **Parameters**:
-    *   **Rank ($r$)**: Increased from `16` to `32`.
-    *   **Alpha ($\alpha$)**: Increased from `32` to `64`.
+    *   **Rank ($r$)**: Configured to **`32`**.
+    *   **Alpha ($\alpha$)**: Configured to **`64`**.
     *   **Target Modules**: `["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]` (All-linear LoRA).
     *   **Dropout**: `0.05`.
-*   **Impact**: N-dimensional linear target scaling allows the adapter to capture highly delicate syntactic logic patterns without suffering from catastrophic forgetting. The larger rank ($r=32$) provides the necessary capacity to represent nested quantifiers and custom predicates safely, while increasing VRAM usage by only a few megabytes.
+*   **Impact**: N-dimensional linear target scaling allows the adapter to capture highly delicate syntactic logic patterns without suffering from catastrophic forgetting. The larger rank ($r=32$) provides the necessary capacity to represent nested quantifiers and custom predicates safely.
 
 ### 3.4. NEFTune Regularization (Noisy Embedding Fine-Tuning)
 *   **Mechanism**: We inject uniform random noise directly into the model's token embedding layers during the training forward pass.
@@ -107,30 +107,32 @@ Return a JSON list of exactly {num_premises} strings containing the formulas, in
     Where $\alpha = 5.0$ (NEFTune noise alpha multiplier), $d$ is the embedding dimension, and $U(-1, 1)$ is a uniform random noise tensor.
 *   **Impact**: NEFTune acts as a strong regularizer that prevents the model from memorizing exact training tokens (overfitting). It forces the network to learn the abstract, structural relationship of translating natural language to logic structures. This improves instruction-following capabilities and structural generalization on unseen test premises by $2\%$ to $5\%$.
 
-### 3.5. ReduceLROnPlateau Optimizer Callback
-*   **Mechanism**: Training with a constant learning rate often causes loss oscillation near local minima. To achieve stable convergence, we engineered a custom `ReduceLROnPlateauCallback` inheriting from the Hugging Face `TrainerCallback`.
-*   **Logic**:
-    *   At the end of each training epoch, the callback captures the validation metric (`eval_loss`).
-    *   If the `eval_loss` does not decrease compared to the best historical loss, the callback accesses the active PyTorch optimizer and scales down the learning rate by a decay factor of `0.5`:
-        $$\text{lr}_{new} = \max(\text{lr}_{old} \times 0.5, \text{min\_lr})$$
-*   **Impact**: Guarantees optimal learning rate annealing, helping the optimizer (Paged AdamW 8bit) converge smoothly into the global minimum.
+### 3.5. Double-Protection Learning Rate Schedule (Cosine Decay + Warmup + Plateau)
+*   **Mechanism**: Training with a constant learning rate often causes loss oscillation near local minima. To achieve stable convergence, we combine two powerful scheduler mechanics:
+    1.  **Cosine Learning Rate Decay with Warmup**: Built directly into `SFTConfig` via `lr_scheduler_type="cosine"` and `warmup_steps=warmup_steps`. Rather than hardcoding warmup steps, the warmup steps are dynamically calculated at runtime based on the training dataset size (targeting exactly 3% of the total epoch steps). This ensures that the warmup phase adapts accurately to different dataset sizes across both notebooks (augmented, non-augmented, and joint physics/logic datasets). This is fully compliant with Hugging Face Transformers v5.2+.
+    2.  **ReduceLROnPlateau Callback**: A custom validation callback that scales down learning rates by `0.5` if evaluation loss fails to improve, serving as an additional protective net.
+*   **Impact**: Guarantees optimal learning rate annealing, helping the optimizer (Paged AdamW) converge smoothly into the global minimum.
 
 ---
 
-## 4. Hardware Configuration & VRAM Optimization
+## 4. Hardware Configuration Profiles & VRAM Optimization
 
-The notebook is optimized for **2x NVIDIA Turing T4 GPUs (16GB VRAM each)**, commonly available in Kaggle environments:
+The training pipeline supports two highly optimized hardware execution profiles, matching both premium local workstations and distributed cloud accelerators:
 
-1.  **PyTorch Native SDPA (Scaled Dot Product Attention)**:
-    *   Since Turing architecture GPUs do not support the hardware requirements of FlashAttention-2, we utilize **SDPA** (`attn_implementation="sdpa"`).
-    *   SDPA is native to PyTorch 2.x and utilizes fused GPU kernels (such as memory-efficient attention and FlashAttention-1 style kernels) to minimize memory footprints and accelerate the attention forward pass without compilation overhead.
-2.  **4-bit Quantization (QLoRA)**:
-    *   We load the base `Qwen3-8B` model using 4-bit NormalFloat (`nf4`) quantization with double quantization enabled.
-    *   **VRAM Footprint**: Compresses the base model down to approximately **$6.5\text{ GB}$ VRAM**, allowing it to fit comfortably within a single T4 GPU's memory limit.
-3.  **Distributed Model Parallelism**:
-    *   By passing `device_map="auto"`, the Hugging Face library automatically splits the model's layers across **both T4 GPUs**.
-    *   This ensures that the memory footprint is balanced, leaving plenty of headroom for activation memory during gradient checkpointing (`use_reentrant=False`), which prevents `Out-of-Memory (OOM)` errors during training.
-4.  **Effective Batch Size**:
-    *   `per_device_train_batch_size = 2`
+### Profile A: High-Performance Workstation (NVIDIA RTX Pro 6000 Ada - 48GB/96GB VRAM)
+*   **FlashAttention-2**: Native kernel fusion enabled (`attn_implementation="flash_attention_2"`), providing $3\times$ speedups and reducing attention memory quadratically.
+*   **Standard 16-bit LoRA (BF16/FP16)**: Full-precision BF16 compute enabled (`bf16=True`, `fp16=False`), utilizing tensor cores natively for Ampere/Ada/Hopper architectures.
+*   **Smooth Gradient Steps (Effective Batch Size = 32)**:
+    *   Physical Batch Size: `per_device_train_batch_size = 16`
+    *   Gradient Accumulation: `gradient_accumulation_steps = 2`
+    *   Effective Global Batch Size: $16 \times 2 = 32$. Reduces gradient variance for stable LoRA rank 32 adjustments.
+*   **Memory Isolation**: Clean memory utility (`clean_memory()`) integrating Python garbage collection (`gc.collect()`) and CUDA cache clearing (`torch.cuda.empty_cache()`) called between sequential runs to ensure absolute hardware stability.
+
+### Profile B: Kaggle Accelerator Run Profile (2x NVIDIA Turing T4 GPUs - 16GB VRAM each)
+*   **PyTorch Native SDPA**: Since Turing architecture does not support FlashAttention-2, we utilize Scaled Dot Product Attention (`attn_implementation="sdpa"`) for native fusion kernels.
+*   **4-bit Quantization (QLoRA)**: Base model compressed using 4-bit NormalFloat (`nf4`) double quantization, reducing the footprint to $\sim 6.5\text{ GB}$ VRAM.
+*   **Distributed Model Parallelism**: Using `device_map="auto"`, layers are split across both T4 GPUs to balance memory footprints.
+*   **Effective Batch Size = 16**:
+    *   `per_device_train_batch_size = 2` (per GPU)
     *   `gradient_accumulation_steps = 4`
-    *   **Effective Global Batch Size**: $2 \text{ (batch size)} \times 2 \text{ (devices)} \times 4 \text{ (accumulation steps)} = 16$. This setup provides smooth, stable gradients while maintaining low activation memory.
+    *   Effective Global Batch Size: $2 \text (batch size) \times 2 \text (devices) \times 4 \text (accumulation steps) = 16$.
