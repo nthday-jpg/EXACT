@@ -55,10 +55,12 @@ def test_validate_dataset() -> None:
     dataset = [
         {
             "example_id": "1",
+            "premises-NL": ["Ha is a student.", "All students are eligible."],
             "premises-FOL": ["Student(Ha)", "ForAll(x, Student(x) -> Eligible(x))"]
         },
         {
             "example_id": "2",
+            "premises-NL": ["Ha is here."],
             "premises-FOL": ["Ha"]
         }
     ]
@@ -78,6 +80,7 @@ def test_repair_sample_success() -> None:
     ```json
     {
       "example_id": "2",
+      "premises-NL": ["All students are eligible."],
       "premises-FOL": ["ForAll(x, Student(x) -> Eligible(x))"]
     }
     ```
@@ -87,6 +90,7 @@ def test_repair_sample_success() -> None:
     
     sample = {
         "example_id": "2",
+        "premises-NL": ["All students are eligible."],
         "premises-FOL": ["Ha"]
     }
     
@@ -105,6 +109,7 @@ def test_repair_sample_failure() -> None:
     
     sample = {
         "example_id": "3",
+        "premises-NL": ["All students are eligible."],
         "premises-FOL": ["Ha"]
     }
     
