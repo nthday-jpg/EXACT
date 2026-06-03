@@ -20,7 +20,8 @@ class LLMClient:
                  frequency_penalty: float = 0.0,
                  use_local: bool = False,
                  model_dir: str | None = None,
-                 device: str | None = None):
+                 device: str | None = None,
+                 extra_body: dict | None = None):
 
         self.model_name = model_name
         self.system_prompt = system_prompt
@@ -30,6 +31,7 @@ class LLMClient:
         self.model_dir = model_dir
         self.tokenizer = None
         self.model = None
+        self.extra_body = extra_body
 
         # Resolve default model directory
         from pathlib import Path
@@ -189,6 +191,7 @@ class LLMClient:
                 max_tokens=limit_tokens,
                 frequency_penalty=self.frequency_penalty,
                 stop=["<|im_end|>", "<|endoftext|>"],
+                extra_body=self.extra_body,
             )
 
             total_tokens = response.usage.total_tokens if response.usage else 0
@@ -206,6 +209,7 @@ class LLMClient:
                 max_tokens=limit_tokens,
                 frequency_penalty=self.frequency_penalty,
                 stop=["<|im_end|>", "<|endoftext|>"],
+                extra_body=self.extra_body,
             )
 
             total_tokens = response.usage.total_tokens if response.usage else 0
