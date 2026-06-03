@@ -81,7 +81,7 @@ class RPRegistry:
         # 3. Load few-shot examples
         if include_fewshot:
             fewshots = []
-            for domain in domains:
+            for domain in domains [:2]:  
                 fewshot = self.load_fewshot(domain)
                 if fewshot:
                     fewshots.append(f"## {domain.upper()}\n{fewshot}")
