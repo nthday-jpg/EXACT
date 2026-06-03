@@ -85,6 +85,15 @@ def unify_sample(sample: dict, dataset_name: str, parent_idx: int) -> list[dict]
     # Run validation
     is_valid, error_msg = validate_sample_fol(sample_formulas)
 
+    # Also check if premises-NL and premises-FOL count match (if both exist)
+    nl_premises = sample.get("premises-NL", [])
+    if isinstance(nl_premises, list) and is_valid:
+        fol_premises = sample.get("premises-FOL", [])
+        if isinstance(fol_premises, list) and len(nl_premises) != len(fol_premises):
+            is_valid = False
+            error_msg = f"Mismatched premise counts: premises-NL has {len(nl_premises)} elements, but premises-FOL has {len(fol_premises)} elements."
+
+
     if dataset_name == "folio-train":
         # folio-train contains a single question/conclusion per sample
         unified = {
@@ -179,8 +188,9 @@ def main():
     summary = {}
 
     for file_path in json_files:
-        # Skip output files from previous runs
-        if file_path.stem.endswith("_valid") or file_path.stem.endswith("_invalid") or file_path.stem.startswith("merged_"):
+        # Skip output files and augmented files from previous runs
+        stem = file_path.stem
+        if stem.endswith("_valid") or stem.endswith("_invalid") or stem.startswith("merged_") or stem.startswith("logic_merged_valid"):
             continue
 
         print(f"\nProcessing: {file_path.name}")
