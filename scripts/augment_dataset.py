@@ -74,10 +74,8 @@ def main():
     print(f"  - Successfully augmented: {success_count} samples")
     print(f"  - Skipped (no standard constants found): {failure_count} samples")
 
-    # Combine original, existing augmented, and new augmented samples
-    # We keep the exact original order, plus any existing augmented, plus new augmented
-    # But wait, keeping all original and existing augmented, and then adding new augmented is extremely safe!
-    combined_dataset = original_samples + [s for s in dataset if "augmented" in str(s.get("dataset_source", ""))] + augmented_samples
+    # Combine original and the newly generated deterministic augmented samples
+    combined_dataset = original_samples + augmented_samples
 
     print(f"\nSaving {len(combined_dataset)} total samples back to {merged_file.name}...")
     
