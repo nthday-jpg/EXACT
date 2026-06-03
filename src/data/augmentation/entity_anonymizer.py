@@ -7,6 +7,8 @@ def clean_str(s):
     Also strips temporal (yearXXXX) and numeric (numberXXXX) prefixes for matching original text digits.
     """
     s_cleaned = s.lower()
+    if s_cleaned.endswith("'s") or s_cleaned.endswith("’s"):
+        s_cleaned = s_cleaned[:-2]
     if s_cleaned.startswith("year") and s_cleaned[4:].isdigit():
         s_cleaned = s_cleaned[4:]
     elif s_cleaned.startswith("number") and s_cleaned[6:].isdigit():
@@ -59,8 +61,13 @@ def find_nl_matches(c, nl_sentences):
                 span = " ".join(words[i:j])
                 cleaned_span = clean_str(span)
                 if cleaned_span == clean_c:
-                    # Strip leading/trailing punctuation before recording
-                    stripped = span.strip(".,;:?!\"'")
+                    # Strip leading/trailing punctuation, parentheses, brackets, and quotes before recording
+                    stripped = span.strip(".,;:?!\"'()[]{}«»“”‘’")
+                    # Strip possessive 's or ’s (and plural possessive ') to get the clean base name
+                    if stripped.lower().endswith("'s") or stripped.lower().endswith("’s"):
+                        stripped = stripped[:-2]
+                    elif stripped.endswith("'") or stripped.endswith("’"):
+                        stripped = stripped[:-1]
                     matches.add(stripped)
     return list(matches)
 
@@ -80,9 +87,10 @@ class EntityAnonymizer:
             "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
         ]
 
-    def anonymize_sample(self, sample, strategy="mix"):
+    def anonymize_sample(self, sample, strategy="mix", variant_idx=0):
         """
         Anonymizes proper names and other constants in a single dataset sample.
+        Allows generating multiple variants (e.g. 2-5 variants) using the variant_idx parameter.
         Returns a new augmented sample dictionary or None if no constants are found/matched.
         """
         nl_premises = list(sample.get("premises-NL", []))
@@ -93,16 +101,25 @@ class EntityAnonymizer:
         if not constants:
             return None
             
+        # Seed local_random with a stable hash of premises combined with variant_idx
+        # to ensure consistent anonymization for the same variant across different questions
+        # belonging to the same story, while allowing different variants to have distinct entities.
+        import hashlib
+        prems_str = "".join(nl_premises) + "".join(fol_premises)
+        seed_str = f"{prems_str}_var_{variant_idx}"
+        seed_hash = int(hashlib.md5(seed_str.encode("utf-8")).hexdigest(), 16)
+        local_random = random.Random(seed_hash)
+
         # Determine strategy
         chosen_strategy = strategy
         if strategy == "mix":
-            chosen_strategy = random.choice(["letters", "names"])
+            chosen_strategy = local_random.choice(["letters", "names"])
             
         # Shuffle pools to get randomized assignments
         names = list(self.names_pool)
         letters = list(self.letters_pool)
-        random.shuffle(names)
-        random.shuffle(letters)
+        local_random.shuffle(names)
+        local_random.shuffle(letters)
         
         nl_replacements = []
         fol_replacements = []
@@ -122,11 +139,11 @@ class EntityAnonymizer:
                 
             # Special handling for temporal (year) and numeric constants to keep them realistic
             if c.startswith("year") and c[4:].isdigit():
-                rand_year = str(random.randint(1950, 2025))
+                rand_year = str(local_random.randint(1950, 2025))
                 new_nl_name = rand_year
                 new_fol_name = f"year{rand_year}"
             elif c.startswith("number") and c[6:].isdigit():
-                rand_num = str(random.randint(10000, 99999))
+                rand_num = str(local_random.randint(10000, 99999))
                 new_nl_name = rand_num
                 new_fol_name = f"number{rand_num}"
                 
@@ -168,9 +185,9 @@ class EntityAnonymizer:
         
         # Update source metadata to trace augmented source
         orig_source = sample.get("dataset_source", "unknown")
-        augmented_sample["dataset_source"] = f"{orig_source}-augmented-{chosen_strategy}"
+        augmented_sample["dataset_source"] = f"{orig_source}-augmented-{chosen_strategy}-var{variant_idx}"
         
         if "example_id" in sample:
-            augmented_sample["example_id"] = f"{sample['example_id']}_aug"
+            augmented_sample["example_id"] = f"{sample['example_id']}_aug_var{variant_idx}"
             
         return augmented_sample
