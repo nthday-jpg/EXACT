@@ -46,15 +46,13 @@ def example_router():
     
     print("=== Router Output ===")
     print(f"Domains: {classification.domains}")
-    print(f"Question Type: {classification.question_type}")
 
 
 def example_policies_assembly():
     """Example 2: Assemble policiess for selected domains."""
     domains = ["electrostatic_field", "coordinate_geometry"]
-    question_type = "Numerical"
     
-    classification = QuestionClassification(domains, question_type)
+    classification = QuestionClassification(domains)
     solver_prompt = get_solver_prompt(classification)
     
     print("=== Assembled Reasoning Polices Prompt ===")
