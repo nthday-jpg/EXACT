@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import csv
 import json
+import random
 from pathlib import Path
-from typing import Any, Dict, List
-
-import pandas as pd
+from typing import Any, Dict, List, Optional
 
 from src.physics.types import PhysicsTask
 
@@ -23,11 +23,16 @@ def _normalize_correct(record: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _load_tasks_from_csv(path: Path) -> List[PhysicsTask]:
-    df = pd.read_csv(path)
     tasks: List[PhysicsTask] = []
-    for _, row in df.iterrows():
-        correct = {"ans": row["answer"], "unit": row["unit"]}
-        tasks.append(PhysicsTask(question=row["question"], correct=correct))
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            question = row.get("question")
+            if question is None:
+                raise ValueError(f"Missing question field in {path}")
+            correct = {"ans": row.get("answer"), "unit": row.get("unit")}
+            # CSV thường không có domains phức tạp, nếu có có thể bổ sung row.get("domains")
+            tasks.append(PhysicsTask(question=question, correct=correct))
     return tasks
 
 
@@ -44,11 +49,32 @@ def _load_tasks_from_json(path: Path) -> List[PhysicsTask]:
     for record in records:
         if not isinstance(record, dict):
             raise ValueError(f"Expected each record in {path} to be an object")
+        
         question = record.get("question")
         if question is None:
             raise ValueError(f"Missing question field in {path}")
+        
         correct = _normalize_correct(record)
-        tasks.append(PhysicsTask(question=question, correct=correct))
+        
+        # Load domains vào metadata nếu tồn tại
+        metadata = record.get("metadata", {})
+        if not isinstance(metadata, dict):
+            metadata = {}
+        
+        if "domains" in record:
+            metadata["domains"] = record["domains"]
+
+        if "model_output" in record:
+            metadata["model_output"] = record["model_output"]
+
+        if "model_answer" in record:
+            metadata["model_answer"] = record["model_answer"]
+
+        tasks.append(PhysicsTask(
+            question=question, 
+            correct=correct, 
+            metadata=metadata if metadata else None
+        ))
     return tasks
 
 
@@ -62,9 +88,8 @@ def load_physics_tasks(input_path: str, *, num_samples: int = -1, seed: int = 42
         raise ValueError(f"Unsupported input format: {path.suffix}")
 
     if num_samples != -1:
-        df = pd.DataFrame([{ "question": task.question, "correct": task.correct } for task in tasks])
-        num_samples = min(num_samples, len(df))
-        df = df.sample(n=num_samples, random_state=seed)
-        tasks = [PhysicsTask(question=row["question"], correct=row["correct"]) for _, row in df.iterrows()]
+        num_samples = min(num_samples, len(tasks))
+        rng = random.Random(seed)
+        tasks = rng.sample(tasks, num_samples)
 
     return tasks

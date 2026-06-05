@@ -13,7 +13,8 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
 	sys.path.insert(0, str(ROOT_DIR))
 
-from src.physics.registry import RPRegistry
+from src.physics.registry import get_solver_prompt
+from src.physics.router import QuestionClassification
 
 
 def _parse_args() -> argparse.Namespace:
@@ -122,6 +123,11 @@ def _domain_list(record: Dict[str, Any]) -> List[str]:
 		return []
 	return [domain for domain in domains if isinstance(domain, str) and domain.strip()]
 
+def _extract_warnings(record: Dict[str, Any]) -> List[str]:
+	warnings = record.get("warnings")
+	if not isinstance(warnings, list):
+		return []
+	return [warning for warning in warnings if isinstance(warning, str) and warning.strip()]
 
 def _count_domains(records: List[Dict[str, Any]]) -> Counter[str]:
 	counts: Counter[str] = Counter()
@@ -131,9 +137,14 @@ def _count_domains(records: List[Dict[str, Any]]) -> Counter[str]:
 	return counts
 
 
-def _build_input_text(question: str, reasoning_policies: str) -> str:
-	prefix = reasoning_policies.strip() if reasoning_policies.strip() else "<reasoning_policies></reasoning_policies>"
-	return f"{prefix}\n\n<question>\n{question}\n</question>"
+def _build_input_text(
+	question: str,
+	solver_prompt: str,
+) -> str:
+	prefix = solver_prompt.strip() if solver_prompt.strip() else "<reasoning_policies></reasoning_policies>"
+	parts = [prefix]
+	parts.append(f"<question>\n{question}\n</question>")
+	return "\n\n".join(parts)
 
 
 def _build_summary_table(title: str, counts: Counter[str], total: int) -> str:
@@ -192,7 +203,6 @@ def main() -> None:
 	input_path = _resolve_path(args.input)
 	output_path = _resolve_path(args.output)
 	output_path.parent.mkdir(parents=True, exist_ok=True)
-	registry = RPRegistry()
 	rng = random.Random(args.seed)
 
 	input_paths = _candidate_input_paths(input_path)
@@ -219,9 +229,12 @@ def main() -> None:
 		sampled_indices = set()
 	for index, record in enumerate(processed):
 		domains = _domain_list(record)
-		reasoning_policies = registry.assemble_reasoning_policies(domains, include_fewshot=False) if index in sampled_indices else ""
+		warnings = _extract_warnings(record)
+		solver_prompt = get_solver_prompt(
+			QuestionClassification(domains=domains, warnings=warnings)
+		)
 		question = record.get("question", "")
-		record["input"] = _build_input_text(question, reasoning_policies)
+		record["input"] = _build_input_text(question, solver_prompt)
 	output_path.write_text(json.dumps(processed, indent=2, ensure_ascii=False), encoding="utf-8")
 	_write_summary_md(
 		output_path=output_path,

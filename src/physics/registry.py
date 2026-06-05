@@ -81,7 +81,7 @@ class RPRegistry:
         # 3. Load few-shot examples
         if include_fewshot:
             fewshots = []
-            for domain in domains:
+            for domain in domains [:2]:  
                 fewshot = self.load_fewshot(domain)
                 if fewshot:
                     fewshots.append(f"## {domain.upper()}\n{fewshot}")
@@ -100,10 +100,10 @@ class RPRegistry:
         """Build solver prompt from router classification.
         
         Returns hierarchical prompt:
-        REASONING_POLICIES -> FEWSHOTS
+        <warning> -> <reasoning_policies> -> <fewshots>
         """
         reasoning_policies = self.assemble_reasoning_policies(classification.domains, include_fewshot=True)
-        header = f"<question_type>\n{classification.question_type}\n</question_type>"
+        header = ""
         if classification.warnings:
             warning_text = "\n".join(classification.warnings)
             header = f"{header}\n\n<warning>\n{warning_text}\n</warning>"

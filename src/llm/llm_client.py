@@ -1,6 +1,11 @@
 import os
+from typing import Any
+from pathlib import Path
+
 import torch
 from openai import OpenAI
+from google import genai
+from google.genai import types
 
 # Load environment variables from .env file
 try:
@@ -18,6 +23,7 @@ class LLMClient:
                  system_prompt: str = "",
                  temperature: float = 0.0,
                  frequency_penalty: float = 0.0,
+                 enable_thinking: bool = False,
                  use_local: bool = False,
                  model_dir: str | None = None,
                  device: str | None = None,
@@ -27,6 +33,7 @@ class LLMClient:
         self.system_prompt = system_prompt
         self.temperature = temperature
         self.frequency_penalty = frequency_penalty
+        self._enable_thinking = enable_thinking
         self.use_local = use_local
         self.model_dir = model_dir
         self.tokenizer = None
@@ -34,7 +41,6 @@ class LLMClient:
         self.extra_body = extra_body
 
         # Resolve default model directory
-        from pathlib import Path
         if not self.model_dir:
             root_dir = Path(__file__).resolve().parents[2]
             self.model_dir = str(root_dir / "results")
@@ -42,7 +48,34 @@ class LLMClient:
         # Resolve device
         self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
 
+        # Define Gemini variants
+        self.gemini_models = [
+            "gemini-2.5-flash",
+            "gemini-3.5-flash",
+            "gemini-3.1-flash-lite",
+            "gemini-2.5-flash-lite",
+            "gemini-3-flash"
+        ]
+
+        # Route client initializations
         if not self.use_local:
+            if self.model_name in self.gemini_models:
+                # Setup Google GenAI Client
+                gemini_key = api_key or os.environ.get("GEMINI_API_KEY")
+                self.base_url = "https://generativelanguage.googleapis.com/v1/openai/"
+
+                if not gemini_key:
+                    raise RuntimeError("GEMINI_API_KEY is not set in environment or arguments.")
+                self.gemini_client = genai.Client(api_key=gemini_key)
+                self.client = None
+            else:
+                # Setup OpenAI compatible router
+                self.api_key = api_key or os.environ.get("HF_API_KEY") or ""
+                if not self.api_key:
+                    raise RuntimeError("HF_API_KEY is not set")
+                self.base_url = base_url
+                self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+                self.gemini_client = None
             try:
                 from dotenv import load_dotenv
                 load_dotenv()
@@ -89,6 +122,7 @@ class LLMClient:
         else:
             self.api_key = api_key or ""
             self.client = None
+            self.gemini_client = None
 
     def load_local_model(self) -> None:
         """Loads Hugging Face tokenizer and PEFT LoRA model locally with NF4 4-bit quantization."""
@@ -97,11 +131,6 @@ class LLMClient:
 
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
         from peft import PeftModel
-        from pathlib import Path
-
-        if not self.model_dir:
-            root_dir = Path(__file__).resolve().parents[2]
-            self.model_dir = str(root_dir / "results")
 
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
@@ -148,7 +177,9 @@ class LLMClient:
             messages.append({"role": "user", "content": prompt})
 
             chat_prompt = self.tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
             )
             inputs = self.tokenizer(chat_prompt, return_tensors="pt").to(self.device)
 
@@ -170,13 +201,32 @@ class LLMClient:
                 "output_tokens": 0,
             }
 
-        # ── Remote inference ─────────────────────────────────────────────────
-        assert self.client is not None, "OpenAI client not initialised"
+        # ── Remote inference: Gemini ─────────────────────────────────────────
+        if self.model_name in self.gemini_models:
+            return self._generate_gemini(prompt, limit_tokens, sys_prompt)
 
+
+        # ── Remote inference: OpenAI / HF Router ─────────────────────────────
+        assert self.client is not None, "OpenAI client not initialised"
         messages = []
         if sys_prompt:
             messages.append({"role": "system", "content": sys_prompt})
         messages.append({"role": "user", "content": prompt})
+        create_kwargs: dict[str, Any] = {
+            "model": self.model_name,
+            "messages": messages,
+            "temperature": self.temperature,
+            "max_tokens": limit_tokens,
+            "stop": ["<|im_end|>"],
+        }
+        try:
+            response = self.client.chat.completions.create(**create_kwargs)
+        except Exception as e:
+            print(f"Error occurred while generating response: {e}")
+            raise RuntimeError(f"Generation failed: {e}")
+        total_tokens = response.usage.total_tokens if response.usage else 0
+        input_tokens = response.usage.prompt_tokens if response.usage else 0
+        output_tokens = response.usage.completion_tokens if response.usage else 0
 
         if self.tokenizer is not None:
             # Use local chat template for exact prompt formatting, then hit raw completions
@@ -216,9 +266,9 @@ class LLMClient:
             input_tokens = response.usage.prompt_tokens if response.usage else 0
             output_tokens = response.usage.completion_tokens if response.usage else 0
 
-            msg = response.choices[0].message
-            content = msg.content if msg and msg.content else ""
-            finish_reason = response.choices[0].finish_reason
+        msg = response.choices[0].message
+        content = msg.content if msg and msg.content else ""
+        finish_reason = response.choices[0].finish_reason
 
         if finish_reason == "length" and content:
             print("Warning: Response was truncated by max_tokens.")
@@ -237,3 +287,33 @@ class LLMClient:
         """Helper to generate text directly as a string."""
         res = self.generate(prompt, max_tokens=max_new_tokens, system_prompt=system_prompt)
         return res["content"]
+
+    def _generate_gemini(self, prompt: str, max_tokens: int, sys_prompt: str) -> dict:
+        """Correct implementation for the modern google-genai SDK without thought processes."""
+        assert self.gemini_client is not None, "Gemini client not initialized"
+
+        config = types.GenerateContentConfig(
+            system_instruction=sys_prompt,
+            temperature=self.temperature,
+            thinking_config=types.ThinkingConfig(thinking_level="high"),
+        )
+
+        # Call the corrected modern endpoint
+        response = self.gemini_client.models.generate_content(
+            model=self.model_name,
+            contents=prompt,
+            config=config,
+        )
+
+        full_content = ""
+        if response.candidates and response.candidates[0].content.parts:
+            for part in response.candidates[0].content.parts:
+                if not getattr(part, "thought", False):
+                    full_content += part.text if part.text else ""
+
+        return {
+            "content": full_content.strip(),
+            "total_tokens": response.usage_metadata.total_token_count if response.usage_metadata else 0,
+            "input_tokens": response.usage_metadata.prompt_token_count if response.usage_metadata else 0,
+            "output_tokens": response.usage_metadata.candidates_token_count if response.usage_metadata else 0,
+        }

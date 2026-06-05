@@ -15,13 +15,14 @@ dependencies = [
     "pint>=0.25.3",
     "python-dotenv>=1.2.2",
     "streamlit>=1.57.0",
-    "sympy>=1.14.0",
+    "sympy==1.13.1",
     "transformers>=5.8.1",
     "trl>=1.4.0",
     "z3-solver>=4.16.0.0",
     "torch>=2.6.0",
     "torchvision>=0.21.0",
     "torchaudio>=2.6.0",
+    "google-genai>=2.7.0",
 ]
 
 [build-system]

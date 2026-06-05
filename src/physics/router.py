@@ -12,16 +12,30 @@ def _load_router_config() -> str:
     config_path = Path(__file__).parent / "instructions" / "router.md"
     if config_path.exists():
         return config_path.read_text(encoding="utf-8")
-    return ""
+    raise FileNotFoundError(f"Router configuration not found at {config_path}")
+
+def _extract_json_object(content: str) -> str | None:
+    content = (content or "").strip()
+    if not content:
+        return None
+    if content.startswith("{") and content.endswith("}"):
+        return content
+    start = content.find("{")
+    end = content.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return None
+    candidate = content[start : end + 1].strip()
+    if candidate.startswith("{") and candidate.endswith("}"):
+        return candidate
+    return None
 
 
 class QuestionClassification:
     """Output from router classification."""
     
-    def __init__(self, domains: List[str], question_type: str, warnings: List[str] = None):
+    def __init__(self, domains: List[str], warnings: List[str] = []):
         self.domains = domains  # e.g., ["electrostatics", "geometry"]
-        self.question_type = question_type  # "Numerical", "Formula", or "Qualitative"
-        self.warnings = warnings or []  # Optional warnings about classification issues
+        self.warnings = warnings 
 
 def classify_question(
     question: str,
@@ -55,31 +69,31 @@ def classify_question(
     )
     classification_prompt = "<QUESTION>\n" + question.strip() + "\n</QUESTION>"
     try:
-        response = client.generate(classification_prompt, max_tokens=128)
+        response = client.generate(classification_prompt, max_tokens=1024)
         content = response.get("content", "")
     except Exception as e: 
         print(f"[router] classify fallback due to API error: {e}")
-        return QuestionClassification(["electrostatics", "geometry"], "Numerical")
+        return QuestionClassification([])
 
     try:
-        classification_json = json.loads(content.strip())
+        json_text = _extract_json_object(content)
+        if not json_text:
+            raise json.JSONDecodeError("No JSON object found", content, 0)
+        classification_json = json.loads(json_text)
         domains = classification_json.get("domains", [])
-        question_type = classification_json.get("question_type", "Numerical")
         multi_state = classification_json.get("multi_state", False)
         
         if not isinstance(domains, list):
             domains = [domains]
-        if question_type not in ("Numerical", "Formula", "Qualitative"):
-            question_type = "Numerical"
         if not isinstance(multi_state, bool):
             multi_state = False
         
         if multi_state:
             # Add warning about multi-state questions
             warning = "Keep variables from distinct physical states separate. Do not solve incompatible state equations simultaneously."
-            return QuestionClassification(domains, question_type, warnings=[warning])
+            return QuestionClassification(domains, warnings=[warning])
         
-        return QuestionClassification(domains, question_type)
+        return QuestionClassification(domains)
     except json.JSONDecodeError:
-        # Fallback: return generic classification
-        return QuestionClassification(["electrostatics", "geometry"], "Numerical")
+        print(f"[router] classify fallback due to JSON parsing error")
+        return QuestionClassification([])
