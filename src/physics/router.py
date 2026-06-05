@@ -33,10 +33,9 @@ def _extract_json_object(content: str) -> str | None:
 class QuestionClassification:
     """Output from router classification."""
     
-    def __init__(self, domains: List[str], question_type: str, warnings: List[str] = None):
+    def __init__(self, domains: List[str], warnings: List[str] = []):
         self.domains = domains  # e.g., ["electrostatics", "geometry"]
-        self.question_type = question_type  # "Numerical", "Formula", or "Qualitative"
-        self.warnings = warnings or []  # Optional warnings about classification issues
+        self.warnings = warnings 
 
 def classify_question(
     question: str,
@@ -74,7 +73,7 @@ def classify_question(
         content = response.get("content", "")
     except Exception as e: 
         print(f"[router] classify fallback due to API error: {e}")
-        return QuestionClassification([], "Numerical")
+        return QuestionClassification([])
 
     try:
         json_text = _extract_json_object(content)
@@ -82,22 +81,19 @@ def classify_question(
             raise json.JSONDecodeError("No JSON object found", content, 0)
         classification_json = json.loads(json_text)
         domains = classification_json.get("domains", [])
-        question_type = classification_json.get("question_type", "Numerical")
         multi_state = classification_json.get("multi_state", False)
         
         if not isinstance(domains, list):
             domains = [domains]
-        if question_type not in ("Numerical", "Formula", "Qualitative"):
-            question_type = "Numerical"
         if not isinstance(multi_state, bool):
             multi_state = False
         
         if multi_state:
             # Add warning about multi-state questions
             warning = "Keep variables from distinct physical states separate. Do not solve incompatible state equations simultaneously."
-            return QuestionClassification(domains, question_type, warnings=[warning])
+            return QuestionClassification(domains, warnings=[warning])
         
-        return QuestionClassification(domains, question_type)
+        return QuestionClassification(domains)
     except json.JSONDecodeError:
         print(f"[router] classify fallback due to JSON parsing error")
-        return QuestionClassification([], "Numerical")
+        return QuestionClassification([])
