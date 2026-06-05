@@ -60,6 +60,8 @@ class LLMClient:
             if self.model_name in self.gemini_models:
                 # Setup Google GenAI Client
                 gemini_key = api_key or os.environ.get("GEMINI_API_KEY")
+                self.base_url = "https://generativelanguage.googleapis.com/v1/openai/"
+
                 if not gemini_key:
                     raise RuntimeError("GEMINI_API_KEY is not set in environment or arguments.")
                 self.gemini_client = genai.Client(api_key=gemini_key)
@@ -158,22 +160,25 @@ class LLMClient:
         if self.model_name in self.gemini_models:
             return self._generate_gemini(prompt, limit_tokens, sys_prompt)
 
+
         # ── Remote inference: OpenAI / HF Router ─────────────────────────────
         assert self.client is not None, "OpenAI client not initialised"
-
         messages = []
         if sys_prompt:
             messages.append({"role": "system", "content": sys_prompt})
         messages.append({"role": "user", "content": prompt})
-        
         create_kwargs: dict[str, Any] = {
             "model": self.model_name,
             "messages": messages,
             "temperature": self.temperature,
             "max_tokens": limit_tokens,
-            "stop": ["<|im_end|>", ""],
+            "stop": ["<|im_end|>"],
         }
-        response = self.client.chat.completions.create(**create_kwargs)
+        try:
+            response = self.client.chat.completions.create(**create_kwargs)
+        except Exception as e:
+            print(f"Error occurred while generating response: {e}")
+            raise RuntimeError(f"Generation failed: {e}")
         total_tokens = response.usage.total_tokens if response.usage else 0
         input_tokens = response.usage.prompt_tokens if response.usage else 0
         output_tokens = response.usage.completion_tokens if response.usage else 0
@@ -204,26 +209,19 @@ class LLMClient:
         """Correct implementation for the modern google-genai SDK without thought processes."""
         assert self.gemini_client is not None, "Gemini client not initialized"
 
-        # Build configurations correctly using the new Types schema
-        config_args = {
-            "max_output_tokens": max_tokens,
-            "temperature": self.temperature,
-        }
-        
-        if sys_prompt:
-            config_args["system_instruction"] = sys_prompt
-
-        # Thinking is completely disabled/omitted here
-        config = types.GenerateContentConfig(**config_args)
+        config = types.GenerateContentConfig(
+            system_instruction=sys_prompt,
+            temperature=self.temperature,
+            thinking_config=types.ThinkingConfig(thinking_level="high"),
+        )
 
         # Call the corrected modern endpoint
         response = self.gemini_client.models.generate_content(
             model=self.model_name,
             contents=prompt,
-            config=config
+            config=config,
         )
 
-        # Parse text content directly, ignoring any thought blocks
         full_content = ""
         if response.candidates and response.candidates[0].content.parts:
             for part in response.candidates[0].content.parts:
