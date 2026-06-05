@@ -23,9 +23,7 @@ def main():
         model_name=model,
         api_key=api_key,
         system_prompt=instructions,
-        extra_body={
-        "chat_template_kwargs": {"enable_thinking": False},
-        }
+        enable_thinking=False,
     )
 
     results = []

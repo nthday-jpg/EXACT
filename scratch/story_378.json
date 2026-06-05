@@ -1,0 +1,41 @@
+{
+  "dataset_source": "logic_based",
+  "story_id": "378",
+  "example_id": "378_0",
+  "premises-NL": [
+    "Full-time students must take at least 14 credits per semester, but in special cases (e.g., weak academic performance or health issues), they can take a minimum of 11 credits for up to 2 semesters.",
+    "Part-time (work-study) students must take at least 11 credits per semester, but in special cases (e.g., weak academic performance, health issues, or work reasons), they can take a minimum of 9 credits for up to 3 semesters.",
+    "Linh is a full-time student with health issues, taking 12 credits this semester.",
+    "This is Linhs first semester using the special case exception.",
+    "Part-time students must submit a work schedule to the registrar each semester.",
+    "Full-time students taking fewer than 14 credits must meet with an advisor annually.",
+    "Linh is enrolled in a 4-credit lab course and two 4-credit lecture courses.",
+    "Another student, Minh, is a part-time student taking 10 credits due to work reasons.",
+    "Courses worth more than 3 credits require attendance at 80% of classes.",
+    "The university offers a tuition discount for students taking exactly 12 credits.",
+    "Linh has not exceeded the 2-semester limit for special cases.",
+    "Minhs employer requires him to work Duration20Hours per week.",
+    "Full-time students must declare a major by their third semester, and Linh is in her second."
+  ],
+  "premises-FOL": [
+    "ForAll(s, (FullTimeStudent(s) -> (Credits(s) >= 14 OR (SpecialCase(s) AND Credits(s) >= 11))))",
+    "ForAll(s, (PartTimeStudent(s) -> (Credits(s) >= 11 OR (SpecialCase(s) AND Credits(s) >= 9))))",
+    "FullTimeStudent(Linh) AND SpecialCase(Linh) AND Credits(Linh) = 12",
+    "SemesterCountSpecialCase(Linh) = 1",
+    "ForAll(s, (PartTimeStudent(s) -> MustSubmitWorkSchedule(s)))",
+    "ForAll(s, (FullTimeStudent(s) AND Credits(s) < 14 -> MustMeetAdvisor(s)))",
+    "Enrolled(Linh, LabCourse) AND Credits(LabCourse) = 4",
+    "Enrolled(Linh, LectureCourse1) AND Credits(LectureCourse1) = 4",
+    "Enrolled(Linh, LectureCourse2) AND Credits(LectureCourse2) = 4",
+    "PartTimeStudent(Minh) AND SpecialCase(Minh) AND Credits(Minh) = 10",
+    "ForAll(c, (Credits(c) > 3 -> AttendanceRequired(c, Percent_80)))",
+    "ForAll(s, (Credits(s) = 12 -> EligibleForDiscount(s)))",
+    "SemesterCountSpecialCase(Linh) <= 2",
+    "WorkHours(Minh) = 20",
+    "ForAll(s, (FullTimeStudent(s) AND Semester(s) >= 3 -> MustDeclareMajor(s)))",
+    "Semester(Linh) = 2"
+  ],
+  "question": "Based on the above premises, which statement can be inferred if we know that Linh is a full-time student with health issues?\nA. Linh is not meeting the credit requirements for full-time students.\nB. Linh is meeting the credit requirements for full-time students.\nC. Linh needs to take more than 12 credits to meet the credit requirements.\nD. Linh is a part-time student.",
+  "answer": "A",
+  "explanation": "From premise 3 (Linh is a full-time student with health issues, taking 12 credits this semester), we know FullTimeStudent(Linh) ∧ SpecialCase(Linh) ∧ Credits(Linh) = 12. From premise 1, full-time students must take at least 14 credits per semester, but in special cases they can take a minimum of 11 credits for up to 2 semesters (∀s (FullTimeStudent(s) → (Credits(s) ≥ 14 ∨ (SpecialCase(s) ∧ Credits(s) ≥ 11)))). From premise 13, Linh has not exceeded the 2-semester limit for special cases (SemesterCountSpecialCase(Linh) ≤ 2). Since premise 3 states that Linh is a full-time student with a special case and taking 12 credits, and premise 13 states she has not exceeded the limit, premise 1's conditions are met. Therefore, Linh is meeting the credit requirements for full-time students (option B)."
+}

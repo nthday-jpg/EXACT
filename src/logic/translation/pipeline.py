@@ -108,7 +108,10 @@ class NLToFOLPipeline:
         if is_finetuned:
             # Direct translation using the fine-tuned model's exact training prompt (No Glossary, 1 LLM call)
             system_prompt = TRANSLATE_SYSTEM_PROMPT_FALLBACK
-            user_prompt = TRANSLATE_USER_PROMPT_TEMPLATE.format(nl_content=nl_content.strip())
+            user_prompt = TRANSLATE_USER_PROMPT_TEMPLATE.format(
+                nl_content=nl_content.strip(),
+                num_premises=len(nl_list)
+            )
             # Use larger token budget on remote calls to prevent truncation by thinking blocks
             _max_tokens = max_new_tokens if max_new_tokens is not None else (4096 if not self.use_local else 1024)
             try:
@@ -150,7 +153,10 @@ class NLToFOLPipeline:
             print(f"Warning: Combined glossary and translation failed ({str(e)}). Falling back to two-stage translation.")
 
         # --- Fallback to original two-stage flow ---
-        user_prompt = TRANSLATE_USER_PROMPT_TEMPLATE.format(nl_content=nl_content.strip())
+        user_prompt = TRANSLATE_USER_PROMPT_TEMPLATE.format(
+            nl_content=nl_content.strip(),
+            num_premises=len(nl_list)
+        )
         
         # 1. Try to generate a unified glossary to enforce predicate/entity alignment
         glossary = self.generate_glossary(nl_list)

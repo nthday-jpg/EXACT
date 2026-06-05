@@ -1,173 +1,192 @@
-# 🎓 EXACT: Neurosymbolic QA System for STEM & Logic Challenges
+# EXACT: Explainable AI for STEM Education
 
-EXACT is a high-performance, lightweight, and explainable QA workspace designed for educational and STEM-based reasoning datasets. It combines the cognitive power of **Open-Source Large Language Models (8B or smaller)** with the rigorous correctness of the **Z3 SMT Solver** to deliver correct answers backed by mathematically sound, hallucination-free explanations.
+EXACT is a premium, neurosymbolic QA system designed to tackle logical reasoning and text-based physics problems in educational domains. By combining open-source Large Language Models (LLMs) under 8B parameters with formal symbolic engines—namely the **Z3 SMT Solver** and dynamic Python-based execution solvers—EXACT guarantees mathematical correctness while delivering transparent, verifiable, and human-readable explanations.
+
+> [!IMPORTANT]
+> **Challenge Directives Compliance:**
+> - **Open-Source Only:** Powered exclusively by open-source LLMs under 8 billion parameters (e.g., `Qwen/Qwen3-8B`).
+> - **Strictly Explainable:** Every output answer is formally verified and backed by structured proofs, Chain-of-Thought (CoT) steps, and logical explanations.
+> - **Zero Closed-Source Dependency:** Entirely isolated from closed-source APIs (such as GPT, Claude, or Gemini) to satisfy regulatory and safety benchmarks.
 
 ---
 
-## 📐 Unified System Architecture
+## 📐 End-to-End System Architecture
 
-Our architecture bridges neural models with symbolic solvers, dividing the reasoning workloads into two modular pipelines for Logic and Physics problems:
+The EXACT system isolates logical queries and physics computations into two highly optimized pipelines, unified under a standard orchestration layer:
 
 ```mermaid
 graph TD
-    %% Dataset Type 1: Logic
-    subgraph Logic Pipeline (Neurosymbolic Reasoning)
-        A1["Natural Language Premises & Question"] --> B1["Stage 1: Glossary Generation (LLM)"]
-        B1 -->|"Unified Predicates & Entities"| C1["Stage 2: Constrained FOL Translation (LLM)"]
-        C1 --> D1["Immediate Normalization (normalize_logic_fol_entry)"]
-        D1 --> E1["Syntactic Validation (try_parse_fol)"]
-        E1 -->|Mismatches / Errors| F1["Syntax & Semantic Repair Loop (LLM)"]
-        E1 -->|Valid FOL| G1["Z3 SMT Solver Verification"]
-        F1 --> D1
-        G1 -->|"UNSAT (Entailed) + Proof Tree"| H1["Proof-Tree Guided CoT Explainer (LLM)"]
-        G1 -->|"SAT (Consistent) + Counterexample"| I1["Counterexample-Guided Explainer (LLM)"]
-        G1 -->|"No Entailment found"| J1["MCQ Process of Elimination Heuristic"]
-        J1 -->|"Filter Consistent Options"| H1
+    Input[Educational Query] --> Classify{Query Type?}
+    
+    %% Logic Branch
+    Classify -- Logic-Based Query --> LogicPipeline[Logical Reasoning Pipeline]
+    subgraph Logic Module
+        LogicPipeline --> Stage1[Two-Stage FOL Compiler]
+        Stage1 --> Stage1_A[1. Generate Unified Glossary]
+        Stage1_A --> Stage1_B[2. Constrained Translation]
+        Stage1_B --> FOLNormalizer[Logic Normalizer & FOL Repair Loop]
+        FOLNormalizer --> PremiseFilter[Premise Relevance Filter]
+        PremiseFilter --> Z3[Z3 SMT Solver]
+        Z3 --> ProofTree[Post-Order Proof Tree Traversal]
+        ProofTree --> ProofSkeleton[Neurosymbolic Proof-Guided CoT]
+        ProofSkeleton --> LogicOutput[Format Final Explanation & Confidence]
     end
 
-    %% Dataset Type 2: Physics
-    subgraph Physics Pipeline (Code-Execution Reasoning)
-        A2["Physics Numerical Question"] --> B2["Prompt Builder & Context Retrieval"]
-        B2 --> C2["LLM Solver (Generates Executable Python)"]
-        C2 --> D2["Safe Python Sandbox Execution"]
-        D2 -->|"Output: ans, unit"| E2["Physics Evaluator"]
-        D2 -->|Execution Fail / Exception| F2["Physics Self-Correction LLM Loop"]
-        F2 --> D2
+    %% Physics Branch
+    Classify -- Physics Problem --> PhysPipeline[Physics Pipeline]
+    subgraph Physics Module
+        PhysPipeline --> PhysSolver[LLM Code-Gen Solver]
+        PhysSolver --> CodeExec[Safe Python Sandbox Execution]
+        CodeExec --> PhysEval[Evaluator & Unit Validator]
+        PhysEval --> SelfCorrect{Correct / Retries Left?}
+        SelfCorrect -- No --> PhysSolver
+        SelfCorrect -- Yes --> PhysOutput[Format Final Answer & CoT]
     end
-
-    H1 --> K["API Response: answer, explanation, cot, fol, confidence"]
-    I1 --> K
-    E2 --> L["API Response: answer, explanation, cot, unit"]
+    
+    %% Output Merge
+    LogicOutput --> APIResponse[Structured API Endpoint Output]
+    PhysOutput --> APIResponse
 ```
 
 ---
 
-## 📂 Repository Structure
+## 📂 Repository Layout & File Directory
 
-```
-EXACT/
-├── data/
-│   ├── logic_based.json        # Logic dataset (Type 1): NL premises, questions, answers
-│   └── physic.csv             # Physics dataset (Type 2): circuits & electromagnetism
-├── src/
-│   ├── logic/                 # Neurosymbolic logic framework
-│   │   ├── translation/       # Compiles NL premises/conclusions into FOL
-│   │   ├── reasoning/         # Feeds FOL to Z3 solver, extracts proofs, generates CoT
-│   │   ├── pipeline.py        # End-to-end LogicalReasoningPipeline orchestrator
-│   │   └── logic.md           # Technical documentation of the logical system
-│   ├── physics/               # Safe sandbox code-execution solver for numeric STEM
-│   │   ├── solver.py          # Solves physics questions via LLM-sandbox code flow
-│   │   ├── runner.py          # Sync/async/batch runners with self-correction
-│   │   └── README.md          # Technical documentation of the physics pipeline
-│   ├── llm/                   # Centralized model clients and prompts
-│   │   ├── llm_client.py      # Nf4 quantized local model / API client wrapper
-│   │   └── prompts.py         # Consolidated LLM prompt configuration file
-│   └── utils/                 # Data cleansing & text normalization
-│       ├── normalization.py   # Normalizes logic tokens, unicode, times, and physics terms
-│       └── normalization.md   # Logic/Physics normalization technical details
-├── tests/                     # Comprehensive testing suite
-│   ├── test_z3_parser.py      # Validates FOL lexer/parser and entailment
-│   ├── normalization.py       # Tests logic premise, FOL, and physics normalizers
-│   ├── test_arithmetic_temporal.py # Validates SMT arithmetic, scheduling, & proof extraction
-│   └── test_actual_pipeline.py# Integration test running the actual logic pipeline end-to-end
-├── pyproject.toml             # Python dependencies and tooling configuration
-└── context.md                 # Original EXACT challenge objectives & constraints
-```
+Click direct links to inspect specific components:
+
+- [pyproject.toml](pyproject.toml) — Manages Python dependencies (e.g., `z3-solver`, `sympy`, `transformers`, `torch`) via `uv`.
+- [.env](.env) — Local environment configuration (model definitions, Hugging Face and Weights & Biases API keys).
+- [src/logic/pipeline.py](src/logic/pipeline.py) — End-to-end logical orchestrator `LogicalReasoningPipeline`.
+- [src/logic/translation](src/logic/translation) — Compiles natural language statements into logical representations using glossary-constrained translation.
+- [src/logic/reasoning](src/logic/reasoning) — Hosts premise filtering, Z3 verification, and proof tree traversal.
+- [src/physics/api.py](src/physics/api.py) — Entry point to invoke sync, async, and batch physics solving.
+- [src/physics/solver.py](src/physics/solver.py) — Generates Python formulas from physics problems and executes them.
+- [src/physics/runner.py](src/physics/runner.py) — Handles the physics execution flow, pipeline retries, and optional self-correction protocols.
+- [src/llm/llm_client.py](src/llm/llm_client.py) — Model client to load base models (e.g., `Qwen/Qwen3-8B`) and attach local LoRA adapters.
+- [src/llm/prompts.py](file:///d:/mduy/source/repos/EXACT/src/llm/prompts.py) — Centralized configuration file isolating system instructions from operational logic.
+- [scripts/run_local_eval.py](file:///d:/mduy/source/repos/EXACT/scripts/run_local_eval.py) — Evaluation launcher script that runs sequential testing to prevent VRAM overflow.
 
 ---
 
-## 🌟 Key Features & Logic Upgrades
+## 🧠 Core Framework Features
 
-### 1. Glossary-Constrained Translation (Two-Stage)
-Prevents naming mismatches across premises (e.g., `well_structured(c)` in Premise 1 vs `practical_exercises(c)` in Premise 2).
-*   **Stage 1**: Extracts a unified JSON Glossary of predicates and constants from all input premises.
-*   **Stage 2**: Translates statements to FOL under strict constraints of the Glossary.
+### 1. Logical Reasoning System
+The EXACT Logic Module translates natural language (NL) to First-Order Logic (FOL) and verifies entailment via the Z3 SMT Solver:
+* **Two-Stage Glossary-Constrained Translation:** Combats naming mismatches (e.g., `well_structured` vs `wellStructured`) by first compiling a unified JSON Glossary of predicates/constants before translating statements.
+* **FOL Normalization & Repair Loop:** Automatically fixes syntax and casing mismatches. If parsing errors persist, an LLM repair agent retries up to 2 times.
+* **Arithmetic & Temporal Logic Support:** Pre-scans and maps temporal markers (e.g. `Time830AM` to `IntVal(510)`) and durations to numerical sorts, upgrading standard sort assertions to `IntSort()` in Z3.
+* **Neurosymbolic Proof-Guided CoT:** If Z3 finds a valid proof (`unsat`), it performs post-order traversal on the formal proof tree (`solver.proof()`). The asserted premises and resolution steps are extracted to form a mathematical skeleton, which guides the LLM to generate a hallucination-free explanation.
+* **MCQ Process of Elimination:** Eliminates direct contradictions (where Z3 returns `unsat` when adding the target option itself) and performs fallback consistency checks.
 
-### 2. Automatic FOL Normalization & Repair Loop
-*   **Zero-Overhead Normalization**: Extracted FOL strings are automatically normalized (e.g., `forall` $\rightarrow$ `ForAll`, Unicode logic operators $\rightarrow$ ASCII equivalents) to repair syntax issues instantly.
-*   **LLM Repair Loop**: Formulas failing syntax checks are sent back to the LLM with the exact Z3 parser error for automated repair (up to 2 retries).
-
-### 3. MCQ Process of Elimination (Heuristic)
-If Z3 cannot find a direct proof (`unsat` core) for any option:
-*   Instead of defaulting to Option A, it performs a **Process of Elimination** by checking consistency (`negate_conclusion=False` returns `sat`).
-*   Direct contradictions are eliminated, and consistent options are ranked, improving accuracy under incomplete premises.
-
-### 4. Arithmetic & Temporal Reasoning
-*   **Pre-scanning & Sort-Upgrading**: Identifies constants/functions involved in numeric comparisons (`=`, `<`, `>=`, etc.) and upgrades their Z3 Sort from the default universe `U` to `IntSort()`, eliminating Z3 sort mismatches.
-*   **Temporal Constants**: Maps time strings (e.g., `Time830AM` $\rightarrow$ `IntVal(510)`) and durations (e.g., `Duration4Hours` $\rightarrow$ `IntVal(240)`) into integer minutes since midnight, allowing native SMT inequality and scheduling reasoning.
-
-### 5. Neurosymbolic Proof-Guided Chain-of-Thought (CoT)
-*   **Tree-Traversal**: Post-order traverses Z3's proof tree recursively, extracting asserted leaf premises and intermediate logical resolutions (e.g., `mp`, `unit-resolution`).
-*   **Hallucination-Free Explanations**: Passes the derived mathematical skeleton to the LLM to guide its natural language reasoning, ensuring explanations are 100% grounded in symbolic proofs.
-
-### 6. Resource-Constrained Thinking Model Optimization
-*   Sets local thinking-model limits automatically (allocating a `max_tokens=4096` budget when `enable_thinking=True` is active) to prevent reasoning blocks (`<think>`) from truncating JSON outputs.
+### 2. Physics Solving System
+The Physics Module compiles numerical problems into executable Python calculations:
+* **Code-Generation & Execution:** The LLM receives the question and writes Python code setting the `ans` and `unit` values.
+* **Sandboxed Runtime Solver:** The generated code is safely executed in an isolated local namespace, allowing sympy/pint calculation of complex circuits and capacitances.
+* **Multi-Step Self-Correction:** Incorporates real-time run-time debugging. If code execution crashes or returns an invalid unit/magnitude, the traceback is fed back to the LLM to re-evaluate and correct the code block.
 
 ---
 
-## 🚀 Installation & Quick Start
+## 📊 Dataset Reference & Specifications
 
-### 1. Clone the repository and navigate to the project directory:
+The EXACT framework is validated against two major dataset categories outlined in [context.md](file:///d:/mduy/source/repos/EXACT/context.md):
+
+### Dataset Type 1: Logic-Based Educational Queries
+Contains **464 records** with **913 questions** designed to evaluate logical reasoning under university academic, grading, and scholarship regulations.
+* **Format:** Receives natural language premises (`premises-NL`) and a question.
+* **Question Types:** Multiple-Choice (MCQ), Yes/No/Uncertain, and Open-Ended reasoning.
+
+### Dataset Type 2: Physics Problems
+Contains **5,520 text-based physics problems** focusing on electric circuits, electrostatics, resistance, voltage, power, and capacitance.
+* **Format:** Receives the question only.
+* **Output:** Precise numerical answers with standard metric unit tracking.
+
+---
+
+## 🛠️ Installation & Configuration
+
+### Prerequisites
+Make sure `uv` is installed on your local path for lightning-fast virtual environment initialization.
+
+### Step 1: Environment Setup
+Initialize the project structure and sync virtual dependencies:
 ```bash
-git clone <repository_url> EXACT
-cd EXACT
-```
-
-### 2. Install dependencies (Requires Python >= 3.12, `< 3.13`):
-Using the standard package manager `uv` (recommended):
-```bash
+# Initialize venv and sync packages defined in pyproject.toml
+uv venv
 uv sync
 ```
-Using standard `pip`:
-```bash
-pip install -e .
-```
 
-### 3. Configure API Credentials:
-Create a `.env` file in the root directory:
+### Step 2: Configure Keys
+Create a local `.env` file in the root directory (based on the system variables in [.env](file:///d:/mduy/source/repos/EXACT/.env)):
 ```env
-OPENAI_API_KEY=your_remote_llm_api_key
-OPENAI_BASE_URL=https://api.yourprovider.com/v1
+HF_API_KEY=your_hugging_face_token
+LOGIC_COMPILER_MODEL=Qwen/Qwen3-8B:featherless-ai
+ONTOLOGY_BUILDER_MODEL=Qwen/Qwen3-8B:featherless-ai
+GEMINI_API_KEY=your_optional_gemini_key
+FOLC_AT=your_folc_access_token
+WANDB_API_KEY=your_wandb_token
 ```
 
 ---
 
-## 🧪 Running Verification and Test Suites
+## 🚀 Execution & Evaluation
 
-Verify all features are working and that there are no regressions by running the test suite:
-
-### 1. Run Z3 Core Parser & Entailment Tests
-Checks custom FOL-to-SMT compilation and basic proof resolution:
+### Running Offline GPU Evaluation
+To execute sequential benchmark runs on local datasets (e.g. 200 samples) without triggering VRAM memory overflow, launch:
 ```bash
-.venv\Scripts\python.exe tests/test_z3_parser.py
+uv run scripts/run_local_eval.py
 ```
 
-### 2. Run Punctuation & Normalization Tests
-Validates logic, temporal parsing, and physics string normalization:
-```bash
-.venv\Scripts\python.exe tests/normalization.py
-```
+### Synchronous Logic Pipeline Execution Example
+```python
+from src.logic.pipeline import LogicalReasoningPipeline
+from src.llm.llm_client import LLMClient
 
-### 3. Run SMT Arithmetic, Scheduling, & Proof-Traversal Tests
-Validates numeric pre-scanning, temporal math, and Z3 post-order proof extraction:
-```bash
-.venv\Scripts\python.exe tests/test_arithmetic_temporal.py
-```
+# 1. Initialize LLM client and end-to-end logic pipeline
+llm_client = LLMClient()
+pipeline = LogicalReasoningPipeline(use_local=True, llm_client=llm_client)
 
-### 4. Run End-to-End Integration Pipeline Test
-Executes the full pipeline (Glossary $\rightarrow$ Translation $\rightarrow$ Normalization $\rightarrow$ Z3 Proof $\rightarrow$ Proof-Guided CoT) on a sample logic query:
-```bash
-.venv\Scripts\python.exe tests/test_actual_pipeline.py
+# 2. Define educational rules and target conclusion
+premises = [
+    "If a curriculum has practical exercises and is well-structured, it enhances student engagement.",
+    "The faculty prioritizes curriculum development, so the curriculum is well-structured.",
+    "The curriculum has practical exercises."
+]
+conclusion = "The curriculum enhances student engagement."
+
+# 3. Compile, verify, and explain
+result = pipeline.run_pipeline(premises, conclusion)
+
+print("Answer:", result["answer"])          # Output: "Yes"
+print("Confidence:", result["confidence"])  # Output: 1.0 (Guaranteed via Z3 solver)
+print("CoT explanation:", result["cot"])    # Human-readable step-by-step reasoning
 ```
 
 ---
 
-## 📝 Submission & Evaluation Compliance
+## 📬 API Submission Schema
 
-Our system satisfies all challenge constraints:
-*   **Model Restrictions**: Fully compatible with open-source models with $\le 8\text{B}$ parameters (e.g., `Qwen/Qwen3-8B` fine-tuned variants).
-*   **Explainability (P2, P3)**: Returns full mathematical proofs, structured CoT, used premises, and natural language explanations.
-*   **Format Compliance**: Output dictionary perfectly aligns with the required API JSON schema.
+For the challenge evaluation, the endpoint accepts queries and returns the following JSON schema:
 
-> [!TIP]
-> For detailed developer guidelines and deep architectural details, see [src/logic/logic.md](file:///d:/mduy/source/repos/EXACT/src/logic/logic.md).
+```json
+{
+  "answer": "B",
+  "explanation": "Premise 3 confirms the curriculum is well-structured. Together with exercises in premise 5, premise 1 is satisfied, leading to enhanced engagement...",
+  "fol": "ForAll(c, (well_structured(c) ∧ has_exercises(c)) → enhances_engagement(c))",
+  "cot": [
+    "Step 1: Identify circuit topology or premises.",
+    "Step 2: Apply the compiled Z3 logic solver.",
+    "Step 3: Traversed proof tree results in a guaranteed entailment."
+  ],
+  "premises": [
+    "If a curriculum is well-structured and has exercises, it enhances student engagement."
+  ],
+  "confidence": 1.00
+}
+```
+
+### Evaluation Weighting Matrix
+| Criterion | Focus | Objective |
+| :--- | :--- | :--- |
+| **P1: Correctness** | Answer Accuracy | Generates high-fidelity exact solutions to logical & computational problems. |
+| **P2: Quality** | Explanation Clarity | Produces structured, non-verbatim natural language proofs that justify each answer. |
+| **P3: Depth** | Reasoning Rigor | Backs answers with formal FOL translations, physical equations, and Z3 SAT/UNSAT proofs. |

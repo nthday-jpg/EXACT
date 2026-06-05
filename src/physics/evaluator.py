@@ -19,7 +19,14 @@ class PhysicsEvaluator:
         if reason:
             return PhysicsEval(result=result, is_correct=False, reason=reason)
 
-        is_correct = evaluate_physics_answer(result.model_answer, result.task.correct)
+        try:
+            is_correct = evaluate_physics_answer(
+                result.task.question, result.model_answer, model_raw_output=result.raw_response, correct_answer=result.task.correct
+            )
+        except Exception as exc:
+            result.error = str(exc)
+            return PhysicsEval(result=result, is_correct=False, reason="eval_error")
+
         reason = "match" if is_correct else "mismatch"
         return PhysicsEval(result=result, is_correct=is_correct, reason=reason)
 

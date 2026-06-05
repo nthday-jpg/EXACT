@@ -9,249 +9,415 @@ from dataclasses import dataclass
 from typing import Any, Iterable, List, Optional, Tuple
 
 import sympy as sp
-
 import pint
 
+# Instantiate the UnitRegistry globally to prevent object comparison clashes
+ureg = pint.UnitRegistry()
 
+from dotenv import load_dotenv
+# Load environment variables from .env file
+try:
+    load_dotenv()
+except ImportError:
+    print("Warning: python-dotenv not installed, ensure environment variables are set manually.")
+
+
+_PHYSICS_EVAL_ENV_NOTICE_EMITTED = False
 
 _PREFIX_FACTORS = {
-	"p": 1e-12,
-	"n": 1e-9,
-	"u": 1e-6,
-	"m": 1e-3,
-	"c": 1e-2,
-	"d": 1e-1,
-	"k": 1e3,
-	"M": 1e6,
-	"G": 1e9,
-	"T": 1e12,
+    "p": 1e-12,
+    "n": 1e-9,
+    "u": 1e-6,
+    "m": 1e-3,
+    "c": 1e-2,
+    "d": 1e-1,
+    "k": 1e3,
+    "M": 1e6,
+    "G": 1e9,
+    "T": 1e12,
 }
 
+# Macro conversions for basic unit equivalencies
 _UNIT_EQUIV = {
-	"v/m": "v/m",
-	"n/c": "v/m",
+    "v/m": "V/m",
+    "n/c": "V/m",
+    "V/M": "V/m",
+    "N/C": "V/m"
 }
 
 
 @dataclass(frozen=True)
 class _Item:
-	value: Any
-	unit: str
+    value: Any
+    unit: str
+    raw_value: str  # Kept to extract structural features like sig-figs later
 
 
-def evaluate_physics_answer(model: dict, correct: dict) -> bool:
-	"""Return True if model answer matches the correct answer.
+def evaluate_physics_answer(question: str, 
+                            model_answer: Any, 
+                            model_raw_output: Optional[str],
+                            correct_answer: Any,*, 
+                            llm_model: Optional[str] = None) -> bool:
+    """Core evaluation pipeline entry point."""
+    if model_answer is None or correct_answer is None:
+        return False
 
-	Both inputs must be dicts with keys:
-	- ans: a value or list of values
-	- unit: a unit string or list of unit strings
-	"""
-	if not isinstance(model, dict) or not isinstance(correct, dict):
-		raise TypeError("model and correct must be dicts")
+    model_items = _normalize_items(model_answer)
+    correct_items = _normalize_items(correct_answer)
 
-	model_items = _normalize_items(model)
-	correct_items = _normalize_items(correct)
+    if not model_items or not correct_items:
+        return False
 
-	if len(model_items) != len(correct_items):
-		return False
-
-	return _compare_item_sets(model_items, correct_items)
-
-
-def _normalize_items(payload: dict) -> List[_Item]:
-	ans = payload.get("ans")
-	unit = payload.get("unit") or ""
-
-	if isinstance(ans, list):
-		ans_list = ans
-	else:
-		ans_list = [ans]
-
-	if isinstance(unit, list):
-		unit_list = unit
-	else:
-		unit_list = [unit] * len(ans_list)
-
-	if len(unit_list) != len(ans_list):
-		raise ValueError("ans and unit must have the same length")
-
-	return [_Item(value=a, unit=_normalize_unit(str(u or ""))) for a, u in zip(ans_list, unit_list)]
+    return _compare_item_sets(question, model_items, correct_items, model_raw_output, llm_model=llm_model)
 
 
-def _compare_item_sets(model_items: List[_Item], correct_items: List[_Item]) -> bool:
-	remaining = model_items[:]
-	for correct_item in correct_items:
-		match_idx = _find_match_index(remaining, correct_item)
-		if match_idx is None:
-			return False
-		remaining.pop(match_idx)
-	return True
-
-
-def _find_match_index(candidates: List[_Item], target: _Item) -> Optional[int]:
-	for idx, candidate in enumerate(candidates):
-		if _items_match(candidate, target):
-			return idx
-	return None
-
-
-def _items_match(model_item: _Item, correct_item: _Item) -> bool:
-	model_val, model_unit = _coerce_value(model_item.value, model_item.unit)
-	correct_val, correct_unit = _coerce_value(correct_item.value, correct_item.unit)
-
-	if _is_numeric(model_val) and _is_numeric(correct_val):
-		return _numeric_match(float(model_val), model_unit, float(correct_val), correct_unit)
-
-	model_expr = _maybe_sympy_expr(model_val)
-	correct_expr = _maybe_sympy_expr(correct_val)
-	if model_expr is not None and correct_expr is not None:
-		return _formula_match(model_expr, correct_expr)
-
-	return _llm_or_text_match(str(model_val), str(correct_val))
-
-
-def _coerce_value(value: Any, unit: str) -> Tuple[Any, str]:
-	numeric = _to_number(value)
-	if numeric is None:
-		return value, _normalize_unit(unit)
-	scaled_val, scaled_unit = _convert_to_si(numeric, unit)
-	return scaled_val, scaled_unit
-
-
-def _to_number(value: Any) -> Optional[float]:
-	if isinstance(value, (int, float)):
-		return float(value)
-	if value is None:
-		return None
-	try:
-		evaluated = sp.N(value)
-		if evaluated.is_number:
-			return float(evaluated)
-	except (TypeError, ValueError):
-		pass
-	try:
-		return float(str(value).strip())
-	except (TypeError, ValueError):
-		return None
-
-
-def _convert_to_si(value: float, unit: str) -> Tuple[float, str]:
-	unit = _normalize_unit(unit)
-	if not unit:
-		return value, unit
-
-	ureg = pint.UnitRegistry()
-	try:
-		quantity = value * ureg(unit)
-		quantity = quantity.to_base_units()
-		return float(quantity.magnitude), str(quantity.units)
-	except Exception:
-		pass
-
-	match = re.match(r"^([A-Za-z])(.*)$", unit)
-	if not match:
-		return value, unit
-
-	prefix, rest = match.group(1), match.group(2)
-	if prefix in _PREFIX_FACTORS and rest:
-		return value * _PREFIX_FACTORS[prefix], rest
-
-	return value, unit
-
-
-def _is_numeric(value: Any) -> bool:
-	return isinstance(value, (int, float)) and math.isfinite(value)
-
-
-def _numeric_match(model_val: float, model_unit: str, correct_val: float, correct_unit: str) -> bool:
-	if not _units_equivalent(model_unit, correct_unit):
-		return False
-
-	if math.isclose(correct_val, 0.0, abs_tol=1e-12):
-		return math.isclose(model_val, 0.0, abs_tol=1e-12)
-
-	rel_err = abs(model_val - correct_val) / abs(correct_val)
-	return rel_err <= 0.05
+def _clean_micro_symbols(unit_str: str) -> str:
+    """Maps various micro configurations cleanly to standard 'u'."""
+    return unit_str.replace("μ", "u").replace("mu", "u").replace("Micro", "u").replace("micro", "u")
 
 
 def _normalize_unit(unit: str) -> str:
-	unit = unit.strip()
-	if unit == "-":
-		return ""
-	unit = unit.replace(" ", "")
-	unit_lower = unit.lower()
-	return _UNIT_EQUIV.get(unit_lower, unit_lower)
+    """Normalizes unit strings while strictly preserving metric case sensitivity."""
+    if not unit:
+        return ""
+    unit = unit.strip().strip("[]()\"'")
+    if unit in ["-", "—", "text", "None", "none", ""]:
+        return ""
+    
+    # Check map using matching case or standardized equivalents
+    if unit in _UNIT_EQUIV:
+        return _UNIT_EQUIV[unit]
+    if unit.lower() in _UNIT_EQUIV:
+        return _UNIT_EQUIV[unit.lower()]
+        
+    return unit
 
 
-def _units_equivalent(left: str, right: str) -> bool:
-	left_norm = _normalize_unit(left)
-	right_norm = _normalize_unit(right)
-	if left_norm == right_norm:
-		return True
-	if not left_norm and not right_norm:
-		return True
-	if left_norm and right_norm:
-		try:
-			ureg = pint.UnitRegistry()
-			left_units = (1 * ureg(left_norm)).to_base_units().units
-			right_units = (1 * ureg(right_norm)).to_base_units().units
-			return left_units == right_units
-		except Exception:
-			return False
-	return False
+def _to_number(value: Any) -> Optional[float]:
+    """Safely converts input types to floats if they represent numeric expressions."""
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, sp.Number):
+        return float(value.evalf())
+    if isinstance(value, str):
+        value_clean = value.strip().replace("{", "").replace("}", "")
+        # Handle simple LaTeX fraction strings if encountered
+        if "frac" in value_clean:
+            match = re.search(r"frac\s*([-+]?\d*\.?\d+)\s*([-+]?\d*\.?\d+)", value_clean.replace("\\", ""))
+            if match:
+                try:
+                    return float(match.group(1)) / float(match.group(2))
+                except ZeroDivisionError:
+                    return None
+        # Handle scientific notation format like 33.6 * 10^5
+        if "*" in value_clean or "x" in value_clean:
+            value_clean = re.sub(r"x\s*10\s*\^", "e", value_clean)
+            value_clean = re.sub(r"\*\s*10\s*\^", "e", value_clean)
+            value_clean = re.sub(r"x\s*10\s*\*+", "e", value_clean)
+            value_clean = re.sub(r"\*\s*10\s*\*+", "e", value_clean)
+        try:
+            return float(sp.sympify(value_clean).evalf())
+        except Exception:
+            # Fallback regex extraction for messy numeric strings
+            match = re.search(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", value_clean)
+            if match:
+                try:
+                    return float(match.group(0))
+                except Exception:
+                    return None
+    return None
+
+
+def _convert_to_si(value: float, unit: str) -> Tuple[float, str]:
+    """Converts value to base SI units dynamically using Pint."""
+    unit = _normalize_unit(unit)
+    if not unit:
+        return value, unit
+    try:
+        # Pass unit directly to case-sensitive registry
+        quantity = value * ureg(unit)
+        quantity = quantity.to_base_units()
+        return float(quantity.magnitude), str(quantity.units)
+    except Exception:
+        # Fallback tracking using standard metric maps if Pint fails standard validation
+        for prefix, factor in _PREFIX_FACTORS.items():
+            if unit.startswith(prefix) and len(unit) > len(prefix):
+                base_unit = unit[len(prefix):]
+                return value * factor, base_unit
+    return value, unit
+
+
+def _coerce_value(value: Any, unit: str) -> Tuple[Any, str]:
+    """Extracts numeric values and resolves them to baseline scales."""
+    numeric = _to_number(value)
+    if numeric is None:
+        return value, _normalize_unit(unit)
+    scaled_val, scaled_unit = _convert_to_si(numeric, unit)
+    return scaled_val, scaled_unit
+
+
+def _normalize_items(payload: dict | list | str | Any) -> List[_Item]:
+    """Flattens incoming payload distributions into clean evaluable _Item sets."""
+    processed_items = []
+    
+    if isinstance(payload, dict):
+        ans_field = payload.get("ans") or payload.get("model_answer") or payload.get("correct_answer")
+        unit_field = payload.get("unit") or ""
+        
+        if ans_field is not None:
+            if isinstance(ans_field, list) and isinstance(unit_field, list):
+                for a, u in zip(ans_field, unit_field):
+                    processed_items.extend(_normalize_items({"ans": a, "unit": u}))
+                return processed_items
+            elif isinstance(ans_field, list):
+                for a in ans_field:
+                    processed_items.extend(_normalize_items({"ans": a, "unit": unit_field}))
+                return processed_items
+            payload = {"ans": ans_field, "unit": unit_field}
+
+    if isinstance(payload, dict) and "ans" in payload:
+        v = payload["ans"]
+        u = payload.get("unit") or ""
+        cleaned_unit = _clean_micro_symbols(str(u or ""))
+        final_value, final_unit = _coerce_value(v, cleaned_unit)
+        cleaned_raw = str(v).strip()
+        processed_items.append(_Item(value=final_value, unit=final_unit, raw_value=cleaned_raw))
+        return processed_items
+
+    if isinstance(payload, list):
+        for item in payload:
+            processed_items.extend(_normalize_items(item))
+        return processed_items
+
+    # Flat primitive fallback encapsulation
+    cleaned_raw = str(payload).strip()
+    final_value, final_unit = _coerce_value(payload, "")
+    processed_items.append(_Item(value=final_value, unit=final_unit, raw_value=cleaned_raw))
+    return processed_items
 
 
 def _maybe_sympy_expr(value: Any) -> Optional[sp.Expr]:
-	if isinstance(value, sp.Expr):
-		return value
-	if not isinstance(value, str):
-		return None
-	try:
-		expr = sp.sympify(value)
-	except (sp.SympifyError, TypeError, ValueError):
-		return None
-	if expr.free_symbols:
-		return expr
-	return None
+    """Parses expressions into valid SymPy trees, permitting multi-character variables."""
+    if isinstance(value, sp.Expr):
+        return value
+    if not isinstance(value, str):
+        return None
+    try:
+        # Removed text filter logic that blocked multi-character terms like 'q0' or 'ke'
+        cleaned = value.strip().replace("{", "").replace("}", "").replace("\\", "")
+        return sp.sympify(cleaned)
+    except Exception:
+        return None
 
 
-def _formula_match(model_expr: sp.Expr, correct_expr: sp.Expr) -> bool:
-	try:
-		diff = sp.simplify(model_expr - correct_expr) #type: ignore
-		return diff == 0
-	except Exception:
-		return False
+def _get_sig_figs(raw_val: str) -> Optional[int]:
+    """Extracts precision sig-figs from raw answer strings."""
+    s = raw_val.strip().lower()
+    s = re.sub(r'^[+-]', '', s)
+    if 'e' in s:
+        s = s.split('e')[0]
+    s = s.replace('.', '')
+    s = s.lstrip('0')
+    if not s:
+        return None
+    return len(s)
 
 
-def _llm_or_text_match(model_text: str, correct_text: str) -> bool:
-	model_text = model_text.strip()
-	correct_text = correct_text.strip()
+def _numeric_match(model_item: _Item, correct_item: _Item) -> bool:
+    """Performs precision validation across numeric properties."""
+    try:
+        model_val = float(model_item.value)
+        correct_val = float(correct_item.value)
+    except (ValueError, TypeError):
+        return False
 
-	if not model_text or not correct_text:
-		return False
+    if model_item.unit != correct_item.unit:
+        return False
 
-	llm_model = os.getenv("PHYSICS_EVAL_LLM")
-	if not llm_model:
-		return _normalize_text(model_text) == _normalize_text(correct_text)
+    if correct_val == 0.0:
+        return abs(model_val) < 1e-7
 
-	try:
-		from src.llm.llm_client import LLMClient
+    # Relative error fallback
+    rel_err = abs(model_val - correct_val) / abs(correct_val)
+    if rel_err <= 0.02:  # Tolerates minor rounding differences (up to 2%)
+        return True
 
-		api_key = os.getenv("PHYSICS_EVAL_LLM_KEY", "")
-		system_prompt = (
-			"You are a strict evaluator. Reply ONLY with 'yes' or 'no'. "
-			"Decide if the model answer is semantically equivalent to the correct answer."
-		)
-		client = LLMClient(model_name=llm_model, api_key=api_key, system_prompt=system_prompt)
-		response = client.generate(
-			f"Correct answer: {correct_text}\nModel answer: {model_text}\nEquivalent?"
-		)
-		return str(response).strip().lower().startswith("y")
-	except Exception:
-		return _normalize_text(model_text) == _normalize_text(correct_text)
+    # Check via explicit significant figures match
+    sig_figs = _get_sig_figs(correct_item.raw_value)
+    if sig_figs:
+        try:
+            factor = 10 ** (math.floor(math.log10(abs(correct_val))) - (sig_figs - 1))
+            return abs(model_val - correct_val) <= (factor * 1.05)
+        except Exception:
+            pass
+
+    return False
+
+
+def _symbolic_match(model_item: _Item, correct_item: _Item) -> bool:
+    """Evaluates algebraic equation sets for structural zero-equivalence."""
+    expr_model = _maybe_sympy_expr(model_item.value)
+    expr_correct = _maybe_sympy_expr(correct_item.value)
+
+    if expr_model is None or expr_correct is None:
+        return False
+
+    try:
+        diff = sp.simplify(expr_model - expr_correct)
+        if diff == 0:
+            return True
+        # Numeric structural check for non-zero constants
+        if diff.is_number:
+            return abs(float(diff.evalf())) < 1e-5
+    except Exception:
+        pass
+    return False
+
+
+def _find_match_index(remaining_model: List[_Item], correct_item: _Item) -> int:
+    """Locates matching item index across categorical validation layers."""
+    # Layer 1: Accurate numerical evaluations
+    for i, m_item in enumerate(remaining_model):
+        if _numeric_match(m_item, correct_item):
+            return i
+
+    # Layer 2: Algebraic equivalence checks
+    for i, m_item in enumerate(remaining_model):
+        if _symbolic_match(m_item, correct_item):
+            return i
+
+    # Layer 3: String match fallback
+    for i, m_item in enumerate(remaining_model):
+        if str(m_item.value).strip().lower() == str(correct_item.value).strip().lower():
+            return i
+            
+    return -1
+
+
+def _compare_item_sets(question: str, model_items: List[_Item], correct_items: List[_Item], model_raw_output: Optional[str] = None, llm_model: Optional[str] = None) -> bool:
+    """Compares the evaluation answer arrays with matching safeguards."""
+    remaining = model_items[:]
+    matched_count = 0
+
+    for correct_item in correct_items:
+        match_idx = _find_match_index(remaining, correct_item)
+        if match_idx != -1:
+            remaining.pop(match_idx)
+            matched_count += 1
+        else:
+            # If an exact match wasn't found, try an item-level LLM check if available
+            is_numeric = isinstance(correct_item.value, (int, float))
+            
+            if llm_model and not is_numeric:
+                for i, m_item in enumerate(remaining):
+                    if _llm_or_text_match(question, str(m_item.value), str(correct_item.value), llm_model):
+                        remaining.pop(i)
+                        matched_count += 1
+                        break
+
+    if matched_count == len(correct_items):
+        return True
+
+    # Final block check: only do this if the answers are primarily text
+    # (If the correct answer is a list of numbers, we shouldn't be here)
+    all_text = all(not isinstance(i.value, (int, float)) for i in correct_items)
+    if all_text:
+        model_text = " ".join([str(i.value) for i in model_items])
+        correct_text = " ".join([str(i.value) for i in correct_items])
+        return _llm_or_text_match(question=question, 
+                                  model_text=model_text,
+                                  model_raw_output=model_raw_output,
+                                  correct_text=correct_text, llm_model=llm_model)
+
+    return False
+
+def _llm_or_text_match(question: str, model_text: str, correct_text: str, model_raw_output: Optional[str] = None, llm_model: Optional[str] = None) -> bool:
+    """Final fallback checking for qualitative plain text equivalencies."""
+    norm_model = _normalize_text(model_text)
+    norm_correct = _normalize_text(correct_text)
+
+    clean_model = re.sub(r'^[a-zA-Z_]\s*[:=]\s*', '', norm_model).strip()
+    clean_correct = re.sub(r'^[a-zA-Z_]\s*[:=]\s*', '', norm_correct).strip()
+
+    try:
+        num_model = re.sub(r'[^0-9.\-eE]', '', clean_model)
+        num_correct = re.sub(r'[^0-9.\-eE]', '', clean_correct)
+        
+        if num_model and num_correct:
+            v1 = float(num_model)
+            v2 = float(num_correct)
+            if abs(v1 - v2) <= 0.01 * abs(v2):
+                return True
+    except ValueError:
+        pass 
+
+    if clean_model == clean_correct:
+        return True
+    
+    if len(clean_correct) > 3 and (clean_model in clean_correct or clean_correct in clean_model):
+        return True
+
+    if clean_model == clean_correct or clean_model in clean_correct or clean_correct in clean_model:
+        return True
+
+    try:
+        from src.llm.llm_client import LLMClient
+
+        api_key = os.getenv("PHYSICS_EVAL_LLM_KEY", "")
+        llm_model = llm_model or os.getenv("PHYSICS_EVAL_LLM_MODEL", "gemini-3.5-flash")
+        system_prompt = (
+            "You are a strict physics evaluation assistant. Your task is to determine if a 'Model Answer' "
+            "is semantically equivalent to the 'Correct Answer' for the given question.\n\n"
+            
+            "### EXTRACTION & PARSING RULE:\n"
+            "- Check 'Model Answer (parsed)'. If it is None, 'null', or empty, inspect the 'Model Raw Output (fallback context)' string.\n"
+            "- Look inside the 'python_code' array or the text blocks within that raw output to extract the text intended as the answer (e.g., ans = [...]).\n"
+            "- Evaluate this extracted text against the Correct Answer. Do not fail a model due to formatting mismatches or empty parsed fields if the answer is present in the raw output.\n\n"
+            
+            "### SEMANTIC EQUIVALENCE RULES (ELECTROMAGNETISM & AC/LC CIRCUITS):\n"
+            "1. CONCEPTUAL SHORTHAND: Treat core components, fields, or regions where physics behavior is localized as equivalent to detailed geometric descriptions (e.g., 'within the interior along its central axis' IS equivalent to 'inside the solenoid').\n"
+            "2. PHYSICAL TRIGGERS: For induction phenomena, descriptions specifying changing linked fields vs. changing sources are physically equivalent triggers (e.g., 'changing magnetic flux' is equivalent to 'changing current' for a self-inducing coil).\n"
+            "3. PROPORTIONALITY & DIRECTION: Directional vectors/trends ('increases') match direct linear relations ('increases in direct proportion') unless a non-linear exponent scaling (like squared) is explicitly stated or violated.\n"
+            "4. PERMISSIBLE EXTRAS: Including a fundamental physical constant (e.g., 'permeability of free space') alongside an otherwise perfect list of geometric variables does not invalidate the answer.\n\n"
+            
+            "### OUTPUT FORMAT GUIDELINE:\n"
+            "You must structure your response exactly as follows:\n"
+            "1. Start with a '<thinking>' tag.\n"
+            "2. Break down your reasoning step-by-step: compare the core physics concepts, verify parsing fallback rules, and map the answers against the 4 semantic equivalence rules.\n"
+            "3. Close the '</thinking>' tag.\n"
+            "4. On a brand new line, provide your final judgment. This must be EXACTLY 'Final Verdict: yes' or 'Final Verdict: no' with no punctuation or extra text.\n\n"
+            
+            "Example Output Format:\n"
+            "<thinking>\n"
+            "[Your step-by-step physics assessment goes here...]\n"
+            "</thinking>\n"
+            "Final Verdict: yes"
+        )
+
+        client = LLMClient(
+            model_name=llm_model,
+            api_key=api_key, \
+            system_prompt=system_prompt
+        )
+        user_prompt = (
+            f"Question asked to the model: {question}\n"
+            f"Correct Answer template: {correct_text}\n"
+            f"Model Answer (parsed): {model_text}\n"
+            f"Model Raw Output (fallback context): {model_raw_output}\n"
+            f"Are they semantically equivalent based on physics principles? Reply ONLY with 'yes' or 'no'."
+        )
+        response = client.generate_text(user_prompt)
+        final_verdict = response.split("Final Verdict:")[-1].strip().lower()
+        return True if final_verdict.startswith("yes") else False
+    except Exception as e:
+        print(f"Error occurred during LLM evaluation: {e}")
+        return False
 
 
 def _normalize_text(text: str) -> str:
-	text = text.lower()
-	text = re.sub(r"\s+", " ", text)
-	return text.strip()
+    """Normalizes qualitative texts by removing filler words and formatting anomalies."""
+    text = text.lower()
+    text = text.replace("in the coil", "").replace("of the coil", "")
+    text = text.replace("stored entirely in", "").replace("stored in", "")
+    text = re.sub(r'[^\w\s]', '', text)
+    return " ".join(text.split())

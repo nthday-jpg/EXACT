@@ -1,0 +1,460 @@
+[
+  {
+    "story_id": 180,
+    "example_id": 521,
+    "conclusion": "The project Sam is doing is written in C++.",
+    "premises-NL": [
+      "Sam is doing a project.",
+      "A project is written either in C++ or in Python.",
+      "If Sam does a project written in Python, he will not use a Mac.",
+      "Sam is using a Mac.",
+      "If Sam uses a Mac, he will play a song.",
+      "If a song is not \"Perfect\", Sam will never play it."
+    ],
+    "premises-FOL": [
+      "Exists(x, (Project(x) AND Do(sam, x)))",
+      "ForAll(x, (Project(x) -> (WrittenIn(x, python) OR WrittenIn(x, c++))))",
+      "ForAll(x, (Project(x) AND WrittenIn(x, python) AND Do(sam, x) -> NOT Use(sam, mac)))",
+      "Use(sam, mac)",
+      "Use(sam, mac) -> Exists(x, (Song(x) AND Play(sam, x)))",
+      "ForAll(x, (NOT Be(x, perfect) -> NOT Play(sam, x)))"
+    ],
+    "label": "True",
+    "source": "wiki",
+    "validation_error": "sort mismatch"
+  },
+  {
+    "story_id": 180,
+    "example_id": 522,
+    "conclusion": "The song Sam is playing is \"Perfect\".",
+    "premises-NL": [
+      "Sam is doing a project.",
+      "A project is written either in C++ or in Python.",
+      "If Sam does a project written in Python, he will not use a Mac.",
+      "Sam is using a Mac.",
+      "If Sam uses a Mac, he will play a song.",
+      "If a song is not \"Perfect\", Sam will never play it."
+    ],
+    "premises-FOL": [
+      "Exists(x, (Project(x) AND Do(sam, x)))",
+      "ForAll(x, (Project(x) -> (WrittenIn(x, python) OR WrittenIn(x, c++))))",
+      "ForAll(x, (Project(x) AND WrittenIn(x, python) AND Do(sam, x) -> NOT Use(sam, mac)))",
+      "Use(sam, mac)",
+      "Use(sam, mac) -> Exists(x, (Song(x) AND Play(sam, x)))",
+      "ForAll(x, (NOT Be(x, perfect) -> NOT Play(sam, x)))"
+    ],
+    "label": "True",
+    "source": "wiki",
+    "validation_error": "sort mismatch"
+  },
+  {
+    "story_id": 180,
+    "example_id": 523,
+    "conclusion": "If a song is \"Perfect\", Sam will play it.",
+    "premises-NL": [
+      "Sam is doing a project.",
+      "A project is written either in C++ or in Python.",
+      "If Sam does a project written in Python, he will not use a Mac.",
+      "Sam is using a Mac.",
+      "If Sam uses a Mac, he will play a song.",
+      "If a song is not \"Perfect\", Sam will never play it."
+    ],
+    "premises-FOL": [
+      "Exists(x, (Project(x) AND Do(sam, x)))",
+      "ForAll(x, (Project(x) -> (WrittenIn(x, python) OR WrittenIn(x, c++))))",
+      "ForAll(x, (Project(x) AND WrittenIn(x, python) AND Do(sam, x) -> NOT Use(sam, mac)))",
+      "Use(sam, mac)",
+      "Use(sam, mac) -> Exists(x, (Song(x) AND Play(sam, x)))",
+      "ForAll(x, (NOT Be(x, perfect) -> NOT Play(sam, x)))"
+    ],
+    "label": "Unknown",
+    "source": "wiki",
+    "validation_error": "sort mismatch"
+  },
+  {
+    "story_id": 161,
+    "example_id": 464,
+    "conclusion": "Zhang's English score is lower than 95.",
+    "premises-NL": [
+      "There are five grades including A+, A, B+, B, and C in English.",
+      "If a student gets A+ in English, then his score is greater than 95.",
+      "If a student gets A in English, then his score is in the range of 90-95.",
+      "Zhang got an A in English.",
+      "Wangs English score is better than Zhangs.",
+      "Wus English score is lower than 90."
+    ],
+    "premises-FOL": [
+      "Grade(a+) OR Grade(a) OR Grade(b+) OR Grade(b) OR Grade(c)",
+      "ForAll(x, (GetGrade(x, a+) -> GreaterThan95(x)))",
+      "ForAll(x, (GetGrade(x, a) -> Range90to95(x)))",
+      "GetGrade(zhang, a)",
+      "Better(wang, zhang)",
+      "LowerThan90(wu)"
+    ],
+    "label": "True",
+    "source": "wiki",
+    "validation_error": "sort mismatch"
+  },
+  {
+    "story_id": 161,
+    "example_id": 465,
+    "conclusion": "Wang got an A+ in English.",
+    "premises-NL": [
+      "There are five grades including A+, A, B+, B, and C in English.",
+      "If a student gets A+ in English, then his score is greater than 95.",
+      "If a student gets A in English, then his score is in the range of 90-95.",
+      "Zhang got an A in English.",
+      "Wangs English score is better than Zhangs.",
+      "Wus English score is lower than 90."
+    ],
+    "premises-FOL": [
+      "Grade(a+) OR Grade(a) OR Grade(b+) OR Grade(b) OR Grade(c)",
+      "ForAll(x, (GetGrade(x, a+) -> GreaterThan95(x)))",
+      "ForAll(x, (GetGrade(x, a) -> Range90to95(x)))",
+      "GetGrade(zhang, a)",
+      "Better(wang, zhang)",
+      "LowerThan90(wu)"
+    ],
+    "label": "Unknown",
+    "source": "wiki",
+    "validation_error": "sort mismatch"
+  },
+  {
+    "story_id": 161,
+    "example_id": 466,
+    "conclusion": "Wu does not get an A or A+ in English.",
+    "premises-NL": [
+      "There are five grades including A+, A, B+, B, and C in English.",
+      "If a student gets A+ in English, then his score is greater than 95.",
+      "If a student gets A in English, then his score is in the range of 90-95.",
+      "Zhang got an A in English.",
+      "Wangs English score is better than Zhangs.",
+      "Wus English score is lower than 90."
+    ],
+    "premises-FOL": [
+      "Grade(a+) OR Grade(a) OR Grade(b+) OR Grade(b) OR Grade(c)",
+      "ForAll(x, (GetGrade(x, a+) -> GreaterThan95(x)))",
+      "ForAll(x, (GetGrade(x, a) -> Range90to95(x)))",
+      "GetGrade(zhang, a)",
+      "Better(wang, zhang)",
+      "LowerThan90(wu)"
+    ],
+    "label": "True",
+    "source": "wiki",
+    "validation_error": "sort mismatch"
+  },
+  {
+    "story_id": 389,
+    "example_id": 1046,
+    "conclusion": "Adenocarcinoma is a breast cancer.",
+    "premises-NL": [
+      "Either in women or in men.",
+      "No men have breast cancer.",
+      "Either breast cancer or non-breast cancer.",
+      "No type of cancer is without a tumor.",
+      "All non-breast cancers are a type of cancer.",
+      "If adenocarcinoma is a type of cancer or without a tumor, then adenocarcinoma is in women or without a tumor."
+    ],
+    "premises-FOL": [
+      "ForAll(x, (Women(x) OR Men(x)))",
+      "ForAll(x, (Men(x) -> NOT BreastCancer(x)))",
+      "ForAll(x, (BreastCancer(x) OR Non-BreastCancer(x)))",
+      "ForAll(x, (ATypeOfCancer(x) -> NOT WithoutTumor(x)))",
+      "ForAll(x, (Non-BreastCancer(x) -> ATypeOfCancer(x)))",
+      "ATypeOfCancer(adenocarcinoma) OR WithoutTumor(adenocarcinoma) -> women(adenocarcinoma) OR WithoutTumor(adenocarcinoma)"
+    ],
+    "label": "Unknown",
+    "source": "hyb",
+    "validation_error": "Predicate expected, got term"
+  },
+  {
+    "story_id": 389,
+    "example_id": 1047,
+    "conclusion": "Adenocarcinoma is in women.",
+    "premises-NL": [
+      "Either in women or in men.",
+      "No men have breast cancer.",
+      "Either breast cancer or non-breast cancer.",
+      "No type of cancer is without a tumor.",
+      "All non-breast cancers are a type of cancer.",
+      "If adenocarcinoma is a type of cancer or without a tumor, then adenocarcinoma is in women or without a tumor."
+    ],
+    "premises-FOL": [
+      "ForAll(x, (Women(x) OR Men(x)))",
+      "ForAll(x, (Men(x) -> NOT BreastCancer(x)))",
+      "ForAll(x, (BreastCancer(x) OR Non-BreastCancer(x)))",
+      "ForAll(x, (ATypeOfCancer(x) -> NOT WithoutTumor(x)))",
+      "ForAll(x, (Non-BreastCancer(x) -> ATypeOfCancer(x)))",
+      "ATypeOfCancer(adenocarcinoma) OR WithoutTumor(adenocarcinoma) -> women(adenocarcinoma) OR WithoutTumor(adenocarcinoma)"
+    ],
+    "label": "True",
+    "source": "hyb",
+    "validation_error": "Predicate expected, got term"
+  },
+  {
+    "story_id": 389,
+    "example_id": 1048,
+    "conclusion": "If adenocarcinoma is in women or without a tumor, then adenocarcinoma is without a tumor and a non-breast cancer.",
+    "premises-NL": [
+      "Either in women or in men.",
+      "No men have breast cancer.",
+      "Either breast cancer or non-breast cancer.",
+      "No type of cancer is without a tumor.",
+      "All non-breast cancers are a type of cancer.",
+      "If adenocarcinoma is a type of cancer or without a tumor, then adenocarcinoma is in women or without a tumor."
+    ],
+    "premises-FOL": [
+      "ForAll(x, (Women(x) OR Men(x)))",
+      "ForAll(x, (Men(x) -> NOT BreastCancer(x)))",
+      "ForAll(x, (BreastCancer(x) OR Non-BreastCancer(x)))",
+      "ForAll(x, (ATypeOfCancer(x) -> NOT WithoutTumor(x)))",
+      "ForAll(x, (Non-BreastCancer(x) -> ATypeOfCancer(x)))",
+      "ATypeOfCancer(adenocarcinoma) OR WithoutTumor(adenocarcinoma) -> women(adenocarcinoma) OR WithoutTumor(adenocarcinoma)"
+    ],
+    "label": "False",
+    "source": "hyb",
+    "validation_error": "Predicate expected, got term"
+  },
+  {
+    "story_id": 103,
+    "example_id": 314,
+    "conclusion": "John Evans Popularized the term paalstab.",
+    "premises-NL": [
+      "Palstaves are a type of early bronze axe.",
+      "Commonly found in northern, western and south-western Europe, palstaves are cast in moulds.",
+      "John Evans is an archeologist who popularized the term \"palstave\".",
+      "A paalstab is not an axe, but rather a digging shovel."
+    ],
+    "premises-FOL": [
+      "ForAll(x, (Palstave(x) -> From(x, earlybronzeage) AND Axe(x)))",
+      "ForAll(x, ForAll(y, (Palstave(x) AND Mould(y) -> FoundIn(x, northerneurope) AND FoundIn(x, westerneurope) AND FoundIn(x, south-westerneurope) AND CastIn(x, y))))",
+      "Archeologist(johnevans) AND Popularized(johnevans, termpalstave)",
+      "ForAll(x, (Paalstab(x) -> NOT Axe(x) AND DiggingShovel(x)))"
+    ],
+    "label": "Unknown",
+    "source": "wiki",
+    "validation_error": "Sort mismatch"
+  },
+  {
+    "story_id": 103,
+    "example_id": 315,
+    "conclusion": "There is an axe that is commonly found in Western Europe.",
+    "premises-NL": [
+      "Palstaves are a type of early bronze axe.",
+      "Commonly found in northern, western and south-western Europe, palstaves are cast in moulds.",
+      "John Evans is an archeologist who popularized the term \"palstave\".",
+      "A paalstab is not an axe, but rather a digging shovel."
+    ],
+    "premises-FOL": [
+      "ForAll(x, (Palstave(x) -> From(x, earlybronzeage) AND Axe(x)))",
+      "ForAll(x, ForAll(y, (Palstave(x) AND Mould(y) -> FoundIn(x, northerneurope) AND FoundIn(x, westerneurope) AND FoundIn(x, south-westerneurope) AND CastIn(x, y))))",
+      "Archeologist(johnevans) AND Popularized(johnevans, termpalstave)",
+      "ForAll(x, (Paalstab(x) -> NOT Axe(x) AND DiggingShovel(x)))"
+    ],
+    "label": "Unknown",
+    "source": "wiki",
+    "validation_error": "Sort mismatch"
+  },
+  {
+    "story_id": 103,
+    "example_id": 316,
+    "conclusion": "Archeologists haven't popularized anything.",
+    "premises-NL": [
+      "Palstaves are a type of early bronze axe.",
+      "Commonly found in northern, western and south-western Europe, palstaves are cast in moulds.",
+      "John Evans is an archeologist who popularized the term \"palstave\".",
+      "A paalstab is not an axe, but rather a digging shovel."
+    ],
+    "premises-FOL": [
+      "ForAll(x, (Palstave(x) -> From(x, earlybronzeage) AND Axe(x)))",
+      "ForAll(x, ForAll(y, (Palstave(x) AND Mould(y) -> FoundIn(x, northerneurope) AND FoundIn(x, westerneurope) AND FoundIn(x, south-westerneurope) AND CastIn(x, y))))",
+      "Archeologist(johnevans) AND Popularized(johnevans, termpalstave)",
+      "ForAll(x, (Paalstab(x) -> NOT Axe(x) AND DiggingShovel(x)))"
+    ],
+    "label": "False",
+    "source": "wiki",
+    "validation_error": "Sort mismatch"
+  },
+  {
+    "story_id": 10,
+    "example_id": 25,
+    "conclusion": "Megan Whalen Turner worked with Greenwillow Books.",
+    "premises-NL": [
+      "Thick as Thieves is a young adult fantasy novel, written by Megan Whalen Turner.",
+      "Thick as Thieves was published by Greenwillow Books.",
+      "If a book was published by a company, than the author of that book worked with the company that published the book.",
+      "The fictional Mede Empire is where Thick as Thieves is set.",
+      "The Mede Empire plots to swallow up some nearby countries.",
+      "Attolia and Sounis are countries near the Mede Empire.",
+      "Thick as Thieves was sold both as a hardcover and an e-book."
+    ],
+    "premises-FOL": [
+      "YoungAdultFantasyNovel(thickastheives) AND WrittenBy(thickastheives, megan)",
+      "PublishedBy(thickastheives, greenwillowbooks)",
+      "ForAll(x, ForAll(y, ForAll(z, (WrittenBy(x, y) AND PublishedBy(x, z) -> WorkedWith(y, z)))))",
+      "Fictional(medeempire) AND SetIn(thickastheives, medeempire)",
+      "Exists(x, (Country(x) Nearby(medeempire, x) AND PlotsToSwallowUp(medeempire, x)))",
+      "Country(attolia) AND Nearby(medeempire, attolia) AND Country(sounis) AND Nearby(medeempire, sounis)",
+      "SoldAs(thickastheives, hardcover) AND SoldAs(thickastheives, softcover)"
+    ],
+    "label": "True",
+    "source": "wiki",
+    "validation_error": "Expected ')', got 'Nearby'"
+  },
+  {
+    "story_id": 10,
+    "example_id": 26,
+    "conclusion": "The Mede Empire plans to swallow up Attolia.",
+    "premises-NL": [
+      "Thick as Thieves is a young adult fantasy novel, written by Megan Whalen Turner.",
+      "Thick as Thieves was published by Greenwillow Books.",
+      "If a book was published by a company, than the author of that book worked with the company that published the book.",
+      "The fictional Mede Empire is where Thick as Thieves is set.",
+      "The Mede Empire plots to swallow up some nearby countries.",
+      "Attolia and Sounis are countries near the Mede Empire.",
+      "Thick as Thieves was sold both as a hardcover and an e-book."
+    ],
+    "premises-FOL": [
+      "YoungAdultFantasyNovel(thickastheives) AND WrittenBy(thickastheives, megan)",
+      "PublishedBy(thickastheives, greenwillowbooks)",
+      "ForAll(x, ForAll(y, ForAll(z, (WrittenBy(x, y) AND PublishedBy(x, z) -> WorkedWith(y, z)))))",
+      "Fictional(medeempire) AND SetIn(thickastheives, medeempire)",
+      "Exists(x, (Country(x) Nearby(medeempire, x) AND PlotsToSwallowUp(medeempire, x)))",
+      "Country(attolia) AND Nearby(medeempire, attolia) AND Country(sounis) AND Nearby(medeempire, sounis)",
+      "SoldAs(thickastheives, hardcover) AND SoldAs(thickastheives, softcover)"
+    ],
+    "label": "Unknown",
+    "source": "wiki",
+    "validation_error": "Expected ')', got 'Nearby'"
+  },
+  {
+    "story_id": 10,
+    "example_id": 27,
+    "conclusion": "Thick as Thieves is not set in the mede empire.",
+    "premises-NL": [
+      "Thick as Thieves is a young adult fantasy novel, written by Megan Whalen Turner.",
+      "Thick as Thieves was published by Greenwillow Books.",
+      "If a book was published by a company, than the author of that book worked with the company that published the book.",
+      "The fictional Mede Empire is where Thick as Thieves is set.",
+      "The Mede Empire plots to swallow up some nearby countries.",
+      "Attolia and Sounis are countries near the Mede Empire.",
+      "Thick as Thieves was sold both as a hardcover and an e-book."
+    ],
+    "premises-FOL": [
+      "YoungAdultFantasyNovel(thickastheives) AND WrittenBy(thickastheives, megan)",
+      "PublishedBy(thickastheives, greenwillowbooks)",
+      "ForAll(x, ForAll(y, ForAll(z, (WrittenBy(x, y) AND PublishedBy(x, z) -> WorkedWith(y, z)))))",
+      "Fictional(medeempire) AND SetIn(thickastheives, medeempire)",
+      "Exists(x, (Country(x) Nearby(medeempire, x) AND PlotsToSwallowUp(medeempire, x)))",
+      "Country(attolia) AND Nearby(medeempire, attolia) AND Country(sounis) AND Nearby(medeempire, sounis)",
+      "SoldAs(thickastheives, hardcover) AND SoldAs(thickastheives, softcover)"
+    ],
+    "label": "False",
+    "source": "wiki",
+    "validation_error": "Expected ')', got 'Nearby'"
+  },
+  {
+    "story_id": 10,
+    "example_id": 28,
+    "conclusion": "Megan Whalen Turner did not work with Greenwillow Books.",
+    "premises-NL": [
+      "Thick as Thieves is a young adult fantasy novel, written by Megan Whalen Turner.",
+      "Thick as Thieves was published by Greenwillow Books.",
+      "If a book was published by a company, than the author of that book worked with the company that published the book.",
+      "The fictional Mede Empire is where Thick as Thieves is set.",
+      "The Mede Empire plots to swallow up some nearby countries.",
+      "Attolia and Sounis are countries near the Mede Empire.",
+      "Thick as Thieves was sold both as a hardcover and an e-book."
+    ],
+    "premises-FOL": [
+      "YoungAdultFantasyNovel(thickastheives) AND WrittenBy(thickastheives, megan)",
+      "PublishedBy(thickastheives, greenwillowbooks)",
+      "ForAll(x, ForAll(y, ForAll(z, (WrittenBy(x, y) AND PublishedBy(x, z) -> WorkedWith(y, z)))))",
+      "Fictional(medeempire) AND SetIn(thickastheives, medeempire)",
+      "Exists(x, (Country(x) Nearby(medeempire, x) AND PlotsToSwallowUp(medeempire, x)))",
+      "Country(attolia) AND Nearby(medeempire, attolia) AND Country(sounis) AND Nearby(medeempire, sounis)",
+      "SoldAs(thickastheives, hardcover) AND SoldAs(thickastheives, softcover)"
+    ],
+    "label": "False",
+    "source": "wiki",
+    "validation_error": "Expected ')', got 'Nearby'"
+  },
+  {
+    "story_id": 163,
+    "example_id": 470,
+    "conclusion": "Vladivostok is the administrative center of the federal district with the largest area.",
+    "premises-NL": [
+      "There are eight federal districts of Russia: Central, Northwestern, Southern, North Caucasian, Volga, Ural, Siberian and Far Eastern.",
+      "The Central federal district has the largest population among all federal districts in Russia.",
+      "Moscow is the administrative center of the Central federal district.",
+      "Yekaterinburg is the administrative center of the Ural federal district.",
+      "Vladivostok is the administrative center of the Far Eastern federal district.",
+      "The Far Eastern federal district has the largest area among all federal districts in Russia.",
+      "Some federal districts of Russia were established in 2000."
+    ],
+    "premises-FOL": [
+      "FederalDistrictOfRussia(central) OR FederalDistrictOfRussia(northwestern) OR FederalDistrictOfRussia(southern) OR FederalDistrictOfRussia(northcaucasian) OR FederalDistrictOfRussia(volga) OR FederalDistrictOfRussia(ural) OR FederalDistrictOfRussia(siberian) OR FederalDistrictOfRussia(fareastern)",
+      "FederalDistrictOfRussia(central) AND LargestPopulationIn(central)",
+      "AdministrativeCenterOf(moscow, central)",
+      "AdministrativeCenterOf(yekaterinburg, ural)",
+      "AdministrativeCenterOf(vladivostok, fareastern)",
+      "FederalDistrictOfRussia(fareastern) AND LargestAreaIn(fareastern)",
+      "Exists(x, (FederalDistrictOfRussia(x) -> EstablishedIn(x, 2000)))"
+    ],
+    "label": "True",
+    "source": "wiki",
+    "validation_error": "Sort mismatch"
+  },
+  {
+    "story_id": 163,
+    "example_id": 471,
+    "conclusion": "Moscow is the administrative center of the federal district with the largest population.",
+    "premises-NL": [
+      "There are eight federal districts of Russia: Central, Northwestern, Southern, North Caucasian, Volga, Ural, Siberian and Far Eastern.",
+      "The Central federal district has the largest population among all federal districts in Russia.",
+      "Moscow is the administrative center of the Central federal district.",
+      "Yekaterinburg is the administrative center of the Ural federal district.",
+      "Vladivostok is the administrative center of the Far Eastern federal district.",
+      "The Far Eastern federal district has the largest area among all federal districts in Russia.",
+      "Some federal districts of Russia were established in 2000."
+    ],
+    "premises-FOL": [
+      "FederalDistrictOfRussia(central) OR FederalDistrictOfRussia(northwestern) OR FederalDistrictOfRussia(southern) OR FederalDistrictOfRussia(northcaucasian) OR FederalDistrictOfRussia(volga) OR FederalDistrictOfRussia(ural) OR FederalDistrictOfRussia(siberian) OR FederalDistrictOfRussia(fareastern)",
+      "FederalDistrictOfRussia(central) AND LargestPopulationIn(central)",
+      "AdministrativeCenterOf(moscow, central)",
+      "AdministrativeCenterOf(yekaterinburg, ural)",
+      "AdministrativeCenterOf(vladivostok, fareastern)",
+      "FederalDistrictOfRussia(fareastern) AND LargestAreaIn(fareastern)",
+      "Exists(x, (FederalDistrictOfRussia(x) -> EstablishedIn(x, 2000)))"
+    ],
+    "label": "True",
+    "source": "wiki",
+    "validation_error": "Sort mismatch"
+  },
+  {
+    "story_id": 163,
+    "example_id": 472,
+    "conclusion": "The Northwestern federal district was established in 2000.",
+    "premises-NL": [
+      "There are eight federal districts of Russia: Central, Northwestern, Southern, North Caucasian, Volga, Ural, Siberian and Far Eastern.",
+      "The Central federal district has the largest population among all federal districts in Russia.",
+      "Moscow is the administrative center of the Central federal district.",
+      "Yekaterinburg is the administrative center of the Ural federal district.",
+      "Vladivostok is the administrative center of the Far Eastern federal district.",
+      "The Far Eastern federal district has the largest area among all federal districts in Russia.",
+      "Some federal districts of Russia were established in 2000."
+    ],
+    "premises-FOL": [
+      "FederalDistrictOfRussia(central) OR FederalDistrictOfRussia(northwestern) OR FederalDistrictOfRussia(southern) OR FederalDistrictOfRussia(northcaucasian) OR FederalDistrictOfRussia(volga) OR FederalDistrictOfRussia(ural) OR FederalDistrictOfRussia(siberian) OR FederalDistrictOfRussia(fareastern)",
+      "FederalDistrictOfRussia(central) AND LargestPopulationIn(central)",
+      "AdministrativeCenterOf(moscow, central)",
+      "AdministrativeCenterOf(yekaterinburg, ural)",
+      "AdministrativeCenterOf(vladivostok, fareastern)",
+      "FederalDistrictOfRussia(fareastern) AND LargestAreaIn(fareastern)",
+      "Exists(x, (FederalDistrictOfRussia(x) -> EstablishedIn(x, 2000)))"
+    ],
+    "label": "Unknown",
+    "source": "wiki",
+    "validation_error": "Sort mismatch"
+  }
+]

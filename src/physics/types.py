@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 
 @dataclass
@@ -19,6 +19,7 @@ class PhysicsResult:
     error: Optional[str]
     tokens: Optional[Dict[str, Any]]
     elapsed_s: float
+    domains: Optional[List[str]] = None
 
 
 @dataclass

@@ -116,7 +116,7 @@ Assistant:
     "q1=4e-6 C at A(0,0)",
     "q2=-6.4e-6 C at B(0.2,0)",
     "q3=-5e-8 C at C(xc,yc)",
-    "ke=8.988e9",
+    "ke=9e9",
     "Target unit: N"
   ],
   "algebraic_reasoning": [
@@ -125,7 +125,7 @@ Assistant:
     "Sum Fx and Fy",
     "Compute force magnitude"
   ],
-  "python_code": "import sympy as sp; ke = sp.Float('8.988e9'); ab = sp.Float('0.2'); ac = sp.Float('0.12'); bc = sp.Float('0.16'); xc = (ac**2 + ab**2 - bc**2) / (2 * ab); yc = sp.sqrt(sp.Max(0, ac**2 - xc**2)); q1, q2, q3 = sp.Float('4e-6'), sp.Float('-6.4e-6'), sp.Float('-5e-8'); dx1 = xc - sp.Float('0'); dy1 = yc - sp.Float('0'); r1 = sp.sqrt(dx1**2 + dy1**2); Fx1 = (ke * q3 * q1 * dx1) / r1**3; Fy1 = (ke * q3 * q1 * dy1) / r1**3; dx2 = xc - ab; dy2 = yc - sp.Float('0'); r2 = sp.sqrt(dx2**2 + dy2**2); Fx2 = (ke * q3 * q2 * dx2) / r2**3; Fy2 = (ke * q3 * q2 * dy2) / r2**3; Fx_total = Fx1 + Fx2; Fy_total = Fy1 + Fy2; F_mag = sp.sqrt(Fx_total**2 + Fy_total**2); ans = [float(F_mag.evalf())]; unit = ['N']",
+  "python_code": "import sympy as sp; ke = sp.Float('9e9'); ab = sp.Float('0.2'); ac = sp.Float('0.12'); bc = sp.Float('0.16'); xc = (ac**2 + ab**2 - bc**2) / (2 * ab); yc = sp.sqrt(sp.Max(0, ac**2 - xc**2)); q1, q2, q3 = sp.Float('4e-6'), sp.Float('-6.4e-6'), sp.Float('-5e-8'); dx1 = xc - sp.Float('0'); dy1 = yc - sp.Float('0'); r1 = sp.sqrt(dx1**2 + dy1**2); Fx1 = (ke * q3 * q1 * dx1) / r1**3; Fy1 = (ke * q3 * q1 * dy1) / r1**3; dx2 = xc - ab; dy2 = yc - sp.Float('0'); r2 = sp.sqrt(dx2**2 + dy2**2); Fx2 = (ke * q3 * q2 * dx2) / r2**3; Fy2 = (ke * q3 * q2 * dy2) / r2**3; Fx_total = Fx1 + Fx2; Fy_total = Fy1 + Fy2; F_mag = sp.sqrt(Fx_total**2 + Fy_total**2); ans = [float(F_mag.evalf())]; unit = ['N']",
   "json_terminated": true
 }
 
