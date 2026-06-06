@@ -14,6 +14,7 @@ if str(ROOT_DIR) not in sys.path:
 	sys.path.insert(0, str(ROOT_DIR))
 
 from src.physics.registry import get_solver_prompt
+from src.physics.preprocessing import preprocess
 from src.physics.router import QuestionClassification
 
 
@@ -208,34 +209,51 @@ def main() -> None:
 	input_paths = _candidate_input_paths(input_path)
 	if not input_paths:
 		raise FileNotFoundError(str(input_path))
+
 	source_stats: List[Dict[str, Any]] = []
 	records: List[Dict[str, Any]] = []
 	for candidate_path in input_paths:
 		candidate_records = _read_json_list(candidate_path)
 		records.extend(candidate_records)
-		source_stats.append(
-			{
-				"title": candidate_path.name,
-				"counts": _count_domains(candidate_records),
-				"total": len(candidate_records),
-			}
-		)
+		source_stats.append({
+			"title": candidate_path.name,
+			"counts": _count_domains(candidate_records),
+			"total": len(candidate_records),
+		})
+
 	processed = process_dataset(records)
+
+	# 1. Determine which records get reasoning based on the ratio
 	if processed:
 		reasoning_count = min(len(processed), max(0, round(len(processed) * args.reasoning_ratio)))
 		sampled_indices = set(rng.sample(range(len(processed)), reasoning_count))
 	else:
 		reasoning_count = 0
 		sampled_indices = set()
+
+	# 2. Loop through and apply logic based on the sampling
 	for index, record in enumerate(processed):
-		domains = _domain_list(record)
-		warnings = _extract_warnings(record)
-		solver_prompt = get_solver_prompt(
-			QuestionClassification(domains=domains, warnings=warnings)
-		)
 		question = record.get("question", "")
-		record["input"] = _build_input_text(question, solver_prompt)
+		question = preprocess(question) 
+		# New field to indicate if reasoning was included
+		is_reasoning_included = index in sampled_indices
+		record["has_reasoning"] = is_reasoning_included 
+
+		if is_reasoning_included:
+			# Build input WITH reasoning policies
+			domains = _domain_list(record)
+			warnings = _extract_warnings(record)
+			solver_prompt = get_solver_prompt(
+				QuestionClassification(domains=domains, warnings=warnings)
+			)
+			record["input"] = _build_input_text(question, solver_prompt)
+		else:
+			# Build input WITHOUT reasoning policies (empty tags)
+			record["input"] = _build_input_text(question, "<reasoning_policies></reasoning_policies>")
+
+	# Save output
 	output_path.write_text(json.dumps(processed, indent=2, ensure_ascii=False), encoding="utf-8")
+
 	_write_summary_md(
 		output_path=output_path,
 		source_stats=source_stats,
@@ -244,10 +262,7 @@ def main() -> None:
 		reasoning_ratio=args.reasoning_ratio,
 	)
 
-	print(f"Loaded {len(records)} records from {', '.join(str(path) for path in input_paths)}")
-	print(f"Kept {len(processed)} correct unique records")
-	print(f"Wrote processed dataset to {output_path}")
-
-
+	print(f"Loaded {len(records)} records. Kept {len(processed)} correct unique records.")
+	print(f"Reasoning applied to {reasoning_count} records ({args.reasoning_ratio*100}%).")
 if __name__ == "__main__":
 	main()

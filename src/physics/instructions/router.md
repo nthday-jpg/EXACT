@@ -92,9 +92,11 @@ Set true when problem contains: before/after states, transformed systems, freque
 - Do not include chain-of-thought processing or reasoning text in the output.
   
 ## Structural Pairing Rules
-- For any problem describing explicit coordinates, non-collinear structures, geometric configurations, or multiple distinct position points (e.g., A, B, C), the "domains" array MUST contain exactly two elements: [the primary physics domain, "spatial_vector_geometry"].
+- For any problem describing explicit coordinates... the "domains" array 
+  MUST contain the primary physics domain and "spatial_vector_geometry". 
+  A third domain may be added when applicable (e.g., "symbolic_derivation").
 - CONCEPTUAL PAIRING GUARD: If a problem completely lacks relative physical distances, layout structures, or spatial coordinates (e.g., purely descriptive circuit loops or trend predictions), you are strictly BANNED from outputting "spatial_vector_geometry". Instead, you must pair the physics domain with its corresponding conceptual reasoning framework:
   - If it features text trend movements or binary attributes: ["physics_domain", "qualitative_reasoning"]
   - If it features multiplier/fractional factors ("doubles", "halves"): ["physics_domain", "proportional_scaling"]
-- BANNED: Never drop a required reasoning domain for multi-variable or structural configurations. Never output a single-element array for spatial layout problems. Never output three or more domain elements under any circumstances.
+- BANNED: Never drop a required reasoning domain for multi-variable or structural configurations. Never output a single-element array for spatial layout problems. Never output more than three domain elements under any circumstances.
 - BANNED: Do not use the instruction "Prefer specific domains over broad ones."
