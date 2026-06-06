@@ -1,0 +1,24 @@
+{
+  "predicates": {
+    "hasCertification(x, cert)": "x has the certification cert",
+    "registered(x)": "x registered for the seminar",
+    "allowedToSubmit(x)": "x is allowed to submit the report",
+    "completedRequirements(x)": "x has completed all requirements to register",
+    "eligible(x)": "x is eligible to attend the seminar",
+    "submitted(x)": "x submitted the required report"
+  },
+  "constants": {
+    "MOSWord": "a certification",
+    "MOSExcel": "another certification",
+    "Seminar": "the seminar's name",
+    "Report": "the required report"
+  },
+  "formulas": [
+    "Exists(x, hasCertification(x, MOSWord) && hasCertification(x, MOSExcel))",
+    "ForAll(x, Not(registered(x)) -> Not(allowedToSubmit(x)))",
+    "ForAll(x, registered(x) -> completedRequirements(x))",
+    "ForAll(x, Not(submitted(x)) -> Not(allowedToSubmit(x)))",
+    "ForAll(x, eligible(x) -> hasCertification(x, MOSWord) && hasCertification(x, MOSExcel))",
+    "ForAll(x, registered(x) && Not(completedRequirements(x)))"
+  ]
+}
