@@ -4,7 +4,9 @@ import sys
 import json
 import random
 import time
+import re
 from pathlib import Path
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Add project root directory to sys.path to enable top-level imports from 'src'
@@ -19,9 +21,31 @@ from src.data.augmentation import (
 )
 from src.data.augmentation.hard_negative_augmenter import validate_fol_formulas
 
+def normalize_fol(formula):
+    # Standardize spaces and keep logic keywords
+    keywords = {"ForAll", "Exists", "AND", "OR", "NOT", "In", "->", "<->", "=", "!=", ">=", "<=", ">", "<"}
+    # Extract all word-like identifiers
+    words = re.findall(r"\b[A-Za-z_][A-Za-z0-9_-]*\b", formula)
+    word_map = {}
+    counter = 0
+    normalized = formula
+    for w in words:
+        if w in keywords or w.isdigit() or w.startswith("VAR_"):
+            continue
+        if w not in word_map:
+            word_map[w] = f"VAR_{counter}"
+            counter += 1
+        normalized = re.sub(r"\b" + re.escape(w) + r"\b", word_map[w], normalized)
+    return normalized
+
+def get_structure_key(sample):
+    fol_list = sample.get("premises-FOL", [])
+    normalized_list = [normalize_fol(f) for f in fol_list]
+    return "||".join(normalized_list)
+
 def main():
     print("=" * 80)
-    print("RUNNING FULL DATA AUGMENTATION PIPELINE (WITH QUANTITY CONTROL)")
+    print("RUNNING SPLIT-FIRST DATA AUGMENTATION PIPELINE (ZERO LEAKAGE, FIXED BUDGET)")
     print("=" * 80)
 
     # Set random seeds for reproducibility
@@ -39,60 +63,124 @@ def main():
     with open(input_file, "r", encoding="utf-8") as f:
         original_data = json.load(f)
 
-    print(f"Loaded {len(original_data)} original samples.")
+    # De-duplicate original samples first using user-provided logic
+    unique_originals = []
+    seen_premises = set()
+    for item in original_data:
+        nl_list = item.get("premises-NL", [])
+        fol_list = item.get("premises-FOL", [])
+        if not nl_list or not fol_list or len(nl_list) != len(fol_list):
+            continue
+        nl_serialized = "\n".join(nl_list)
+        if nl_serialized in seen_premises:
+            continue
+        seen_premises.add(nl_serialized)
+        
+        # Build the unique sample preserving all fields (for compatibility with augmenters)
+        unique_sample = item.copy()
+        unique_originals.append(unique_sample)
 
-    # 1. Quantifier Variable Canonicalization (100% of original dataset)
-    print("\n[1/4] Applying Quantifier Variable Canonicalization to original samples...")
+    print(f"Loaded {len(unique_originals)} unique translation samples from {input_file.name}")
+
+    # 1. Apply Quantifier Variable Canonicalization to the unique original samples
+    print("\n[1/5] Applying Quantifier Variable Canonicalization...")
     canonicalizer = QuantifiedVariableCanonicalizer()
     canonicalized_originals = []
-    for s in original_data:
+    for s in unique_originals:
         canonicalized_originals.append(canonicalizer.canonicalize_sample(s))
-    print(f"  -> Canonicalized {len(canonicalized_originals)} original samples.")
+    print(f"  -> Canonicalized {len(canonicalized_originals)} unique original samples.")
 
-    final_dataset = list(canonicalized_originals)
+    # 2. Perform Grouped Train/Val Split (No-Leakage) using structure keys
+    print("\n[2/5] Performing Grouped Story-level Split...")
+    groups = defaultdict(list)
+    for sample in canonicalized_originals:
+        key = get_structure_key(sample)
+        groups[key].append(sample)
 
-    # 2. Entity Anonymization (3 variants per story)
-    print("\n[2/4] Applying Entity Anonymization (3 variants per story)...")
+    unique_keys = sorted(list(groups.keys()))
+    # Deterministic shuffle
+    rng = random.Random(42)
+    rng.shuffle(unique_keys)
+
+    # 90/10 split
+    split_idx = int(len(unique_keys) * 0.9)
+    train_keys = set(unique_keys[:split_idx])
+    val_keys = set(unique_keys[split_idx:])
+
+    train_originals = []
+    val_originals = []
+    for key in unique_keys:
+        samples = groups[key]
+        if key in val_keys:
+            for s in samples:
+                s_copy = s.copy()
+                s_copy["split"] = "val"
+                val_originals.append(s_copy)
+        else:
+            for s in samples:
+                s_copy = s.copy()
+                s_copy["split"] = "train"
+                train_originals.append(s_copy)
+
+    print(f"  -> Train original samples: {len(train_originals)}")
+    print(f"  -> Val original samples:   {len(val_originals)}")
+
+    final_dataset = []
+    # Add validation samples as-is (they are already canonicalized and tagged)
+    final_dataset.extend(val_originals)
+    # Add training original samples
+    final_dataset.extend(train_originals)
+
+    # 3. Entity Anonymization (~50% of train samples, exactly 1 variant)
+    print("\n[3/5] Applying Entity Anonymization (Target: 50% of train originals, 1 variant)...")
     anonymizer = EntityAnonymizer()
     anonymized_count = 0
-    for s in canonicalized_originals:
-        for i in range(3):
-            try:
-                aug = anonymizer.anonymize_sample(s, strategy="mix", variant_idx=i)
-                if aug:
-                    # Canonicalize the augmented output
-                    aug_canon = canonicalizer.canonicalize_sample(aug)
-                    final_dataset.append(aug_canon)
-                    anonymized_count += 1
-            except Exception as e:
-                pass
+    
+    # Shuffle training originals to try anonymization in random order
+    train_pool = list(train_originals)
+    rng.shuffle(train_pool)
+    target_anon = len(train_originals) // 2
+    
+    for s in train_pool:
+        if anonymized_count >= target_anon:
+            break
+        try:
+            # Generate exactly 1 variant (variant_idx=0) using mix strategy
+            aug = anonymizer.anonymize_sample(s, strategy="mix", variant_idx=0)
+            if aug:
+                aug_canon = canonicalizer.canonicalize_sample(aug)
+                aug_canon["split"] = "train"
+                final_dataset.append(aug_canon)
+                anonymized_count += 1
+        except Exception as e:
+            pass
     print(f"  -> Generated {anonymized_count} Entity Anonymization samples.")
 
-    # 3. Multi-Premise Permutation (2 variants per story, only stories with >= 4 premises)
-    print("\n[3/4] Applying Multi-Premise Permutation (2 variants per story, >= 4 premises)...")
+    # 4. Multi-Premise Permutation (1 variant, only stories with >= 4 premises in train)
+    print("\n[4/5] Applying Multi-Premise Permutation (1 variant, >= 4 premises)...")
     permuter = MultiPremisePermuter()
     permutation_count = 0
-    for s in canonicalized_originals:
+    for s in train_originals:
         if len(s.get("premises-NL", [])) >= 4:
-            for i in range(2):
-                try:
-                    aug = permuter.permute_sample(s, variant_idx=i)
-                    if aug:
-                        # Canonicalize the augmented output
-                        aug_canon = canonicalizer.canonicalize_sample(aug)
-                        final_dataset.append(aug_canon)
-                        permutation_count += 1
-                except Exception as e:
-                    pass
+            try:
+                # Generate exactly 1 permutation variant (variant_idx=0)
+                aug = permuter.permute_sample(s, variant_idx=0)
+                if aug:
+                    aug_canon = canonicalizer.canonicalize_sample(aug)
+                    aug_canon["split"] = "train"
+                    final_dataset.append(aug_canon)
+                    permutation_count += 1
+            except Exception as e:
+                pass
     print(f"  -> Generated {permutation_count} Multi-Premise Permutation samples.")
 
-    # 4. Hard Negative Augmentation (10% of original dataset size = 181 samples)
-    target_negatives = int(len(original_data) * 0.10)
-    print(f"\n[4/4] Applying Hard Negative Augmentation (Target: {target_negatives} samples)...")
+    # 5. Hard Negative Augmentation (20% of train size, 1 variant)
+    target_negatives = int(len(train_originals) * 0.20)
+    print(f"\n[5/5] Applying Hard Negative Augmentation (Target: {target_negatives} samples)...")
 
-    # Shuffle original samples to select target subset randomly
-    shuffled_pool = list(canonicalized_originals)
-    random.shuffle(shuffled_pool)
+    # Shuffle training originals to select target subset randomly
+    shuffled_pool = list(train_originals)
+    rng.shuffle(shuffled_pool)
 
     augmenter = HardNegativeAugmenter()
     hard_negatives = []
@@ -105,8 +193,8 @@ def main():
         sample, idx = sample_info
         res = augmenter.augment_sample(sample, variant_idx=0, validate_z3=False)
         if res:
-            # Canonicalize it to ensure correctness (regex-based, no Z3)
             res_canon = canonicalizer.canonicalize_sample(res)
+            res_canon["split"] = "train"
             return res_canon
         return None
 
@@ -136,11 +224,9 @@ def main():
                     if is_valid:
                         hard_negatives.append(res)
                         if len(hard_negatives) >= target_negatives:
-                            # Cancel pending or wait, but break out of the loop
                             break
                     else:
                         print(f"    [Z3 Skip] Generated FOL failed validation: {err}")
-
 
     final_dataset.extend(hard_negatives)
     print(f"  -> Generated {len(hard_negatives)} valid Hard Negative samples (Tried {tried_count} candidates).")
@@ -154,12 +240,14 @@ def main():
     print("DATASET AUGMENTATION COMPLETED SUCCESSFULLY!")
     print("=" * 80)
     print(f"Original samples:               {len(original_data)}")
-    print(f"Canonicalized original samples: {len(canonicalized_originals)}")
-    print(f"Entity Anonymization:           {anonymized_count}")
-    print(f"Multi-Premise Permutation:      {permutation_count}")
-    print(f"Hard Negative Augmentation:     {len(hard_negatives)}")
+    print(f"Train originals (canonicalized):{len(train_originals)}")
+    print(f"Val originals (canonicalized):  {len(val_originals)}")
+    print(f"Entity Anonymization (Train):   {anonymized_count}")
+    print(f"Multi-Premise Permutation(Train):{permutation_count}")
+    print(f"Hard Negative (Train):          {len(hard_negatives)}")
     print("-" * 80)
     print(f"Total Combined Output Size:     {len(final_dataset)}")
+    print(f"Target Expansion Factor:        {len(final_dataset)/len(original_data):.2f}x")
     print("=" * 80)
 
 if __name__ == "__main__":
