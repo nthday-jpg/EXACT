@@ -276,12 +276,18 @@ class LLMClient:
         if not content:
             raise RuntimeError(f"Empty content. finish_reason={finish_reason}")
 
+        # Strip thinking blocks from the content if present
+        if "<think>" in content:
+            import re
+            content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+
         return {
             "content": content.strip(),
             "total_tokens": total_tokens,
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
         }
+
 
     def generate_text(self, prompt: str, system_prompt: str | None = None, max_new_tokens: int = 512) -> str:
         """Helper to generate text directly as a string."""
