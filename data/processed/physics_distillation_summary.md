@@ -2,26 +2,26 @@
 
 - Output file: physics_distillation.json
 - Reasoning ratio: 0.60
-- Records with reasoning policies: 704 / 1173
+- Records with reasoning policies: 796 / 1327
 
 ## Processed Output
 
 | Domain | Count |
 | --- | ---: |
-| ac_impedance | 164 |
-| capacitance_and_energy | 268 |
-| circuit_power | 168 |
-| electromagnetism | 178 |
+| ac_impedance | 177 |
+| capacitance_and_energy | 298 |
+| circuit_power | 181 |
+| electromagnetism | 191 |
 | electrostatic_energy | 1 |
-| electrostatic_field | 258 |
-| electrostatic_force | 274 |
-| error_analysis | 38 |
-| experimental_physics | 13 |
-| frequency_scaling | 171 |
-| oscillation_energy | 74 |
+| electrostatic_field | 267 |
+| electrostatic_force | 284 |
+| error_analysis | 65 |
+| experimental_physics | 39 |
+| frequency_scaling | 178 |
+| oscillation_energy | 84 |
 | proportional_scaling | 18 |
-| qualitative_reasoning | 5 |
-| resonance | 165 |
-| spatial_vector_geometry | 542 |
-| symbolic_derivation | 10 |
-| **Total records** | **1173** |
+| qualitative_reasoning | 42 |
+| resonance | 176 |
+| spatial_vector_geometry | 547 |
+| symbolic_derivation | 20 |
+| **Total records** | **1327** |
