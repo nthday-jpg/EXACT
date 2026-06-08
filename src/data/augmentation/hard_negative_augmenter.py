@@ -4,21 +4,12 @@ import z3
 from src.llm import LLMClient
 from src.logic.reasoning.parser import parse_formulas
 
+from src.utils.normalization import normalize_logic_fol_entry
+
 def standardize_fol_formula(f_str: str) -> str:
     """Standardize logical operators and balance parentheses in an FOL formula string."""
-    f_clean = f_str.strip()
-    f_clean = (
-        f_clean.replace("¬", "NOT ")
-        .replace("∧", " AND ")
-        .replace("∨", " OR ")
-        .replace("→", " -> ")
-        .replace("↔", " <-> ")
-    )
-    open_count = f_clean.count("(")
-    close_count = f_clean.count(")")
-    if close_count < open_count:
-        f_clean = f_clean + ")" * (open_count - close_count)
-    return f_clean
+    return normalize_logic_fol_entry(f_str)
+
 
 import threading
 
