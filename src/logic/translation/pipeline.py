@@ -88,7 +88,40 @@ class NLToFOLPipeline:
             pass
         return None
 
-    def translate_list(self, nl_list: list[str], max_new_tokens: int = None) -> list[str]:
+    def extract_glossary_from_fol(self, formulas: list[str]) -> str:
+        """Extract predicates and constants from a list of FOL formulas to construct a glossary context string."""
+        predicates = set()
+        constants = set()
+        reserved = {"ForAll", "Exists", "AND", "OR", "NOT", "In", "implies", "BICOND", "IMPLIES"}
+        
+        for formula in formulas:
+            if not formula:
+                continue
+            # Find predicate/function calls like Name(...)
+            calls = re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(([^()]*)\)", formula)
+            for name, args_str in calls:
+                if name in reserved:
+                    continue
+                args = [a.strip() for a in args_str.split(",") if a.strip()]
+                arity = len(args)
+                predicates.add(f"{name}({', '.join(['x']*arity)})")
+                
+                for arg in args:
+                    if arg not in {"x", "y", "z", "w", "u", "v", "a", "b", "c"} and not arg.isdigit():
+                        constants.add(arg)
+                        
+            # Find constants in comparisons
+            comp_matches = re.findall(r"(=|!=|>=|<=|>|<)\s*([A-Za-z0-9_']+)", formula)
+            for op, val in comp_matches:
+                val = val.strip().strip("'")
+                if val and not val.isdigit() and val not in {"x", "y", "z", "w", "u", "v", "a", "b", "c"}:
+                    constants.add(val)
+                    
+        pred_str = ", ".join(sorted(list(predicates)))
+        const_str = ", ".join(sorted(list(constants)))
+        return f"Predicates: {pred_str}\nConstants: {const_str}"
+
+    def translate_list(self, nl_list: list[str], max_new_tokens: int = None, glossary_str: str = None) -> list[str]:
         """Translates a list of natural language sentences into FOL formulas.
         Uses a combined single LLM call for both glossary generation and translation
         (Prompt Batching) to reduce API roundtrips and improve alignment.
@@ -104,6 +137,40 @@ class NLToFOLPipeline:
             model_name_lower = self.llm_client.model_name.lower()
             if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower:
                 is_finetuned = True
+
+        # If a glossary is explicitly provided, we run the translation strictly under its constraints
+        if glossary_str:
+            if is_finetuned:
+                system_prompt = (
+                    "You convert natural-language premises into parser-safe first-order logic formulas.\n\n"
+                    "Output a STRICT valid JSON list of strings containing the first-order logic formulas in the exact order of the input premises.\n"
+                    "You must output EXACTLY the same number of formulas as the input premises. Do not skip any premises or merge them.\n\n"
+                    "ALLOWED OPERATORS:\n"
+                    "AND, OR, NOT, ->, <->, =, !=, >=, <=, >, <, ForAll, Exists\n\n"
+                    "QUANTIFIER RULES:\n"
+                    "Use nested quantifiers only. E.g., ForAll(x, ForAll(y, P(x,y)))\n\n"
+                    "GLOSSARY CONSTRAINTS:\n"
+                    "You MUST strictly align your translation with the predicates and constants used in the premises:\n"
+                    f"{glossary_str}\n\n"
+                    "Return JSON only."
+                )
+            else:
+                system_prompt = TRANSLATE_SYSTEM_PROMPT_GLOSSARY_TEMPLATE.format(glossary_str=glossary_str)
+                
+            user_prompt = TRANATE_USER_PROMPT_TEMPLATE = TRANSLATE_USER_PROMPT_TEMPLATE.format(
+                nl_content=nl_content.strip(),
+                num_premises=len(nl_list)
+            )
+            
+            _max_tokens = max_new_tokens if max_new_tokens is not None else (4096 if not self.use_local else 1024)
+            try:
+                response_content = self._generate_text(system_prompt, user_prompt, max_new_tokens=_max_tokens)
+                all_extracted_fol = extract_fol_formulas(response_content)
+                all_extracted_fol = [normalize_logic_fol_entry(fol) for fol in all_extracted_fol]
+                all_extracted_fol = self._validate_and_repair(all_extracted_fol)
+                return unify_fol_predicates(all_extracted_fol)
+            except Exception as e:
+                print(f"Warning: Glossary-constrained translation failed ({str(e)}). Falling back to standard pipeline.")
 
         if is_finetuned:
             # Direct translation using the fine-tuned model's exact training prompt (No Glossary, 1 LLM call)
@@ -122,6 +189,7 @@ class NLToFOLPipeline:
                 return unify_fol_predicates(all_extracted_fol)
             except Exception as e:
                 print(f"Warning: Direct translation failed ({str(e)}). Falling back to standard pipeline.")
+
 
         # Try unified combined glossary and translation in a single LLM call
         try:
@@ -259,18 +327,24 @@ class NLToFOLPipeline:
             premises_fol = all_extracted_fol[:len(premises_nl)]
             conclusion_fol = all_extracted_fol[len(premises_nl)]
         else:
-            # Sequential fallback: translate one-by-one (proven accurate in practice)
-            # Model degrades after ~6 sentences in a combined call — individual calls are more reliable.
-            print(f"Warning: Combined translation length mismatch ({len(all_extracted_fol)} vs {expected_count}). Falling back to sequential translation.")
+            # Sequential fallback: translate premises, extract glossary, and translate conclusion under constraints
+            print(f"Warning: Combined translation length mismatch ({len(all_extracted_fol)} vs {expected_count}). Falling back to sequential glossary-aligned translation.")
             premises_fol = []
             for p_nl in premises_nl:
                 res_list = self.translate_list([p_nl])
                 premises_fol.append(res_list[0] if res_list else "")
             
-            res_conclusion = self.translate_list([conclusion_for_translation])
+            glossary_str = self.extract_glossary_from_fol(premises_fol)
+            try:
+                res_conclusion = self.translate_list([conclusion_for_translation], glossary_str=glossary_str)
+            except TypeError:
+                res_conclusion = self.translate_list([conclusion_for_translation])
             conclusion_fol = res_conclusion[0] if res_conclusion else ""
             
         return premises_fol, conclusion_fol
+
+
+
 
 
 

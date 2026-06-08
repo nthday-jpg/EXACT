@@ -170,28 +170,28 @@ class LogicalReasoningPipeline:
             # MCQ Flow
             opt_keys = sorted(options.keys())
             
-            # 1. Unified MCQ Translation: Attempt to translate everything in a single combined list call (1 API request)
-            # This guarantees perfect alignment of predicates/entities and eliminates server flooding.
+            # 1. Attempt unified combined translation for all premises and options together
             combined_nl = premises_nl + [options[k] for k in opt_keys]
             all_fol = self.translation_pipeline.translate_list(combined_nl)
             
-            used_unified_translation = False
             if len(all_fol) == len(combined_nl):
                 premises_fol = all_fol[:len(premises_nl)]
                 options_fol = {k: all_fol[len(premises_nl) + idx] for idx, k in enumerate(opt_keys)}
-                used_unified_translation = True
             else:
-                # 2. Sequential Fallback: Translate one sentence at a time to prevent model degradation
-                # NOTE: Fine-tuned model quality degrades after ~6 sentences in a single call.
-                # One-by-one translation ensures each formula is accurate (proven in task-569).
-                print(f"Warning: Unified translation length mismatch ({len(all_fol)} vs {len(combined_nl)}). Falling back to sequential translation.")
+                # 2. Sequential Glossary-constrained Fallback: Translate premises, extract glossary, and translate options under constraints
+                print(f"Warning: Unified translation length mismatch ({len(all_fol)} vs {len(combined_nl)}). Falling back to sequential glossary-aligned translation.")
                 premises_fol = []
                 for p in premises_nl:
                     res = self.translation_pipeline.translate_list([p])
                     premises_fol.append(res[0] if res else "")
+                    
+                glossary_str = self.translation_pipeline.extract_glossary_from_fol(premises_fol)
                 options_fol = {}
                 for k in opt_keys:
-                    res = self.translation_pipeline.translate_list([options[k]])
+                    try:
+                        res = self.translation_pipeline.translate_list([options[k]], glossary_str=glossary_str)
+                    except TypeError:
+                        res = self.translation_pipeline.translate_list([options[k]])
                     options_fol[k] = res[0] if res else ""
             
             # 3. Final Lexical Predicate Unification over the entire set to ensure absolute consistency
@@ -204,6 +204,7 @@ class LogicalReasoningPipeline:
             for idx, k in enumerate(opt_keys):
                 offset = len(premises_fol) + idx
                 options_fol[k] = unified_fol_list[offset] if offset < len(unified_fol_list) else ""
+
 
             # Determine if we should bypass the premise filtering (e.g., if using the finetuned model)
             is_finetuned = False

@@ -252,9 +252,11 @@ class FolParser:
             return IntVal(minutes)
 
         if tok.replace(".", "", 1).isdigit():
-            if "." in tok:
-                return RealVal(tok)
-            return IntVal(tok)
+            if prefer_numeric:
+                if "." in tok:
+                    return RealVal(tok)
+                return IntVal(tok)
+            return self.symbols.get_const(tok)
         var = self._lookup_var(tok)
         if var is not None:
             return var

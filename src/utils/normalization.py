@@ -198,8 +198,18 @@ def normalize_logic_fol_entry(text: str) -> str:
     close_count = text.count(")")
     if close_count < open_count:
         text = text + ")" * (open_count - close_count)
+
+    # Automatically lowercase all entity constants and variables to resolve casing mismatches in Z3
+    reserved = {"ForAll", "Exists", "AND", "OR", "NOT", "In", "implies", "BICOND", "IMPLIES"}
+    def repl(match: re.Match) -> str:
+        word = match.group(1)
+        if word in reserved or word.isdigit():
+            return word
+        return word.lower()
+    text = re.sub(r"\b([A-Za-z_][A-Za-z0-9_]*)\b(?!\s*\()", repl, text)
         
     return text.strip()
+
 
 
 def normalize_physics_input(text: str) -> str:

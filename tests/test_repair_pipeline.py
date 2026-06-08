@@ -25,7 +25,8 @@ def test_standardize_fol_formula() -> None:
     
     # Check parenthesis balancing
     assert pipeline.standardize_fol_formula("ForAll(x, P(x)") == "ForAll(x, P(x))"
-    assert pipeline.standardize_fol_formula("ForAll(x, P(x)))") == "ForAll(x, P(x)))"
+    assert pipeline.standardize_fol_formula("ForAll(x, P(x)))") == "ForAll(x, P(x))"
+
 
 
 def test_validate_sample_fol() -> None:
