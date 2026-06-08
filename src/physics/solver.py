@@ -33,8 +33,11 @@ class PhysicsSolver:
         self._enable_thinking = enable_thinking
 
     def solve(self, task: PhysicsTask) -> PhysicsResult:
+        """
+            Solve a physics task. Assumes the question has already been preprocessed
+        """
         start = time.time()
-        prompt = preprocess(task.question)
+        prompt = task.question
         if self._solver_prompt:
             prompt = f"{self._solver_prompt}\n\n<question>\n{prompt}\n</question>"
 
