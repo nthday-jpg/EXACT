@@ -14,7 +14,7 @@ Identify questions asking for an algebraic formula, expression, equation, or rel
 - **Simplification Guard:** Always run `sp.simplify()`, `sp.expand()`, or `sp.trigsimp()` on the final expression to force the engine to merge like terms and reduce dimensions.
 
 ## 4. CONSTANT vs SYMBOL RULE
-Keep letter-named constants ($k$, $k_e$, $\epsilon_0$, $\mu_0$, $G$) as live SymPy symbols. Do not substitute numerical values unless the question explicitly asks for a numerical output.
+Keep letter-named constants (k, ke, epsilon_0, mu_0, G) as live SymPy symbols. Do not substitute numerical values unless the question explicitly asks for a numerical output.
 - **Bad:** `ans = ["1.8e10 * h * q / (a**2 + h**2)**1.5"]`
 - **Good:**
 ```python
