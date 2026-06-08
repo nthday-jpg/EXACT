@@ -54,65 +54,59 @@ class RPRegistry:
             return path.read_text(encoding="utf-8")
         return ""
     
-    def assemble_reasoning_policies(self, domains: List[str], include_fewshot: bool = True) -> str:
-        """
-        Assemble reasoning_policies following hierarchical structure:
-        <reasoning_policies>
-        ... domain-specific reasoning policies ...
-        </reasoning_policies>
-        
-        <fewshots>
-        ... few-shot examples for domains ...
-        </fewshots>
-        """
-        sections = []
-        
-        # 2. Load domain-specific reasoning policies
-        domain_policies = []
-        for domain in domains:
-            policy = self.load_reasoning_policy(domain)
-            if policy:
-                domain_policies.append(f"{policy}")
-        
-        if domain_policies:
-            combined_policies = "\n\n".join(domain_policies)
-            sections.append(f"<reasoning_policies>\n{combined_policies}\n</reasoning_policies>")
-        
-        # 3. Load few-shot examples
-        if include_fewshot:
-            fewshots = []
-            for domain in domains [:2]:  
-                fewshot = self.load_fewshot(domain)
-                if fewshot:
-                    fewshots.append(f"## {domain.upper()}\n{fewshot}")
+    def assemble_reasoning_policies(
+            self, domains: List[str], include_fewshot: bool = True, warnings: List[str] = []
+        ) -> str:
+            """
+            Assemble reasoning_policies following hierarchical structure:
+            <reasoning_policies>
+            <warning>... warnings ...</warning>
+            ... domain-specific reasoning policies ...
+            </reasoning_policies>
             
-            if fewshots:
-                combined_fewshots = "\n\n".join(fewshots)
-                sections.append(f"<fewshots>\n{combined_fewshots}\n</fewshots>")
-        
-        return "\n\n".join(sections).strip()
-    
+            <fewshots>
+            ... few-shot examples for domains ...
+            </fewshots>
+            """
+            sections = []
+            
+            # 2. Load domain-specific reasoning policies
+            domain_policies = []
+            for domain in domains:
+                policy = self.load_reasoning_policy(domain)
+                if policy:
+                    domain_policies.append(f"{policy}")
+            
+            # Build the reasoning policies block if there are domain policies or warnings
+            if domain_policies or warnings:
+                combined_policies = "\n\n".join(domain_policies)
+                
+                if warnings:
+                    warning_text = "\n".join(warnings)
+                    formatted_warning = f"<warning>\n{warning_text}\n</warning>"
+                    if combined_policies:
+                        combined_policies = f"{formatted_warning}\n\n{combined_policies}"
+                    else:
+                        combined_policies = formatted_warning
+                        
+                sections.append(f"<reasoning_policies>\n{combined_policies}\n</reasoning_policies>")
+            
+            # 3. Load few-shot examples
+            if include_fewshot:
+                fewshots = []
+                for domain in domains[:2]:  
+                    fewshot = self.load_fewshot(domain)
+                    if fewshot:
+                        fewshots.append(f"## {domain.upper()}\n{fewshot}")
+                
+                if fewshots:
+                    combined_fewshots = "\n\n".join(fewshots)
+                    sections.append(f"<fewshots>\n{combined_fewshots}\n</fewshots>")
+            
+            return "\n\n".join(sections).strip()
 
-    
-    def build_solver_prompt_from_classification(
-        self, classification: QuestionClassification
-    ) -> str:
-        """Build solver prompt from router classification.
-        
-        Returns hierarchical prompt:
-        <warning> -> <reasoning_policies> -> <fewshots>
-        """
-        reasoning_policies = self.assemble_reasoning_policies(classification.domains, include_fewshot=True)
-        header = ""
-        if classification.warnings:
-            warning_text = "\n".join(classification.warnings)
-            header = f"{header}\n\n<warning>\n{warning_text}\n</warning>"
-        if reasoning_policies:
-            return f"{header}\n\n{reasoning_policies}"
-        return header
 
-
-def get_solver_prompt(classification: QuestionClassification) -> str:
+def get_solver_prompt(classification: QuestionClassification, include_fewshot: bool = True) -> str:
     """Build solver prompt from router classification for solver.
     
     Integrates with router output to provide hierarchical reasoning policies:
@@ -124,4 +118,8 @@ def get_solver_prompt(classification: QuestionClassification) -> str:
         solver_result = run_solver(question, solver_prompt)
     """
     registry = RPRegistry()
-    return registry.build_solver_prompt_from_classification(classification)
+    return registry.assemble_reasoning_policies(
+        domains=classification.domains, 
+        include_fewshot=include_fewshot,
+        warnings=classification.warnings
+    )
