@@ -40,12 +40,24 @@ _FRACTIONS_DECIMAL = {
 
 _UNIT_NORMALIZATION = {
     "\u03a9": "ohm",
+    "ohms": "ohm",
+    "Ohm": "ohm",
+    "Ohms": "ohm",
     "meter": "m",
     "meters": "m",
     "second": "s",
     "seconds": "s",
+    "microfarads": "μF",
+    "microfarad": "μF",
+    "uF": "μF",
+    "muF": "μF",
+    "µF": "μF",          
+    "millicoulombs": "mC",
+    "millicoulomb": "mC",
+    "mC": "mC",
+    "kilohertz": "kHz",
+    "kHz": "kHz"
 }
-
 
 def normalize_logic_premise_text(text: str) -> str:
     """Normalize logic premises to avoid parser-hostile tokens."""
@@ -214,6 +226,7 @@ def normalize_physics_input(text: str) -> str:
     text = _normalize_multiply(text)
     text = _normalize_exponent_notation(text)
     text = _normalize_fractions_ascii(text)
+    text = _normalize_units(text) 
     text = _normalize_scientific_notation(text)
     text = _normalize_exponent_notation(text)
     return text
