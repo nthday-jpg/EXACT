@@ -147,13 +147,20 @@ class LLMClient:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
+        base_model_path = "Qwen/Qwen3-8B"
+        if self.model_dir:
+            local_cache_path = Path(self.model_dir).parent / "model_cache"
+            if local_cache_path.exists():
+                base_model_path = str(local_cache_path)
+
         base_model = AutoModelForCausalLM.from_pretrained(
-            "Qwen/Qwen3-8B",
+            base_model_path,
             quantization_config=bnb_config if torch.cuda.is_available() else None,
             device_map=self.device if torch.cuda.is_available() else None,
             trust_remote_code=True,
             attn_implementation="sdpa" if torch.cuda.is_available() else None,
         )
+
 
         self.model = PeftModel.from_pretrained(base_model, self.model_dir)
         self.model.eval()
@@ -301,7 +308,7 @@ class LLMClient:
         config = types.GenerateContentConfig(
             system_instruction=sys_prompt,
             temperature=self.temperature,
-            thinking_config=types.ThinkingConfig(thinking_level="high"),
+            thinking_config=types.ThinkingConfig(thinking_budget=1024),
         )
 
         # Call the corrected modern endpoint
