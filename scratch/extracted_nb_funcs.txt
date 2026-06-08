@@ -1,228 +1,5 @@
-import json
-import os
-
-def main():
-    notebook_path = r"d:\mduy\source\repos\EXACT\src\llm\tuning\train_folc_kaggle.ipynb"
-    
-    with open(notebook_path, 'r', encoding='utf-8') as f:
-        nb = json.load(f)
-        
-    print(f"Loaded notebook with {len(nb['cells'])} cells.")
-    
-    # Helper to convert multiline string to list of lines with trailing newlines
-    def to_cell_source(text):
-        lines = text.splitlines()
-        source = [line + "\n" for line in lines]
-        # Remove trailing newline from the very last line to match Jupyter style
-        if source and source[-1].endswith("\n"):
-            source[-1] = source[-1][:-1]
-        return source
-
-    # Cell 2: Hyperparameters
-    cell2_text = """# 2. TRAINING HYPERPARAMETERS (Optimized for RTX Pro 6000 Ada / 96GB VRAM)
-import os
-
-MODEL_ID = "/kaggle/input/datasets/mduy2911/model-cache"
-
-# --- RTX Pro 6000 Hardware Optimizations ---
-USE_QLORA = False
-GRADIENT_CHECKPOINTING = True
-
-# --- Training Hyperparameters ---
-MAX_LENGTH = 4096            # Maximum sequence length (optimized to cover Physics prompt and response)
-BATCH_SIZE = 8            # Physical batch size optimized for RTX 6000
-GRADIENT_ACCUMULATION = 4  # Gradient accumulation steps (Effective batch size = 32)
-
-# --- 2-Phase Hyperparameters ---
-LEARNING_RATE_P1 = 1e-4      # Phase 1 learning rate (FOL focus)
-LEARNING_RATE_P2 = 5e-5      # Phase 2 learning rate (Physics focus - slightly lower for fine adjustments)
-EPOCHS_P1 = 2                # Phase 1 epochs
-EPOCHS_P2 = 2                # Phase 2 epochs
-
-OUTPUT_DIR_P1 = "/kaggle/working/results_phase1"
-OUTPUT_DIR_P2 = "/kaggle/working/results_phase2"
-
-os.environ["WANDB_MODE"] = "disabled"
-USE_WANDB = False"""
-
-    # Cell 5: Dataset split and formatting
-    cell5_text = """# 5. Format Dataset (Chat Template) and split Train/Val
-import os
-import json
-import random
-from datasets import Dataset
-
-# Define prompt templates for flat JSON list output with strict count constraint
-system_prompt_template = (
-    "You convert natural-language premises into parser-safe first-order logic formulas.\\n\\n"
-    "Output a STRICT valid JSON list of strings containing the first-order logic formulas in the exact order of the input premises.\\n"
-    "You must output EXACTLY the same number of formulas as the input premises. Do not skip any premises or merge them.\\n\\n"
-    "ALLOWED OPERATORS:\\n"
-    "AND, OR, NOT, ->, <->, =, !=, >=, <=, >, <, ForAll, Exists\\n\\n"
-    "QUANTIFIER RULES:\\n"
-    "Use nested quantifiers only. E.g., ForAll(x, ForAll(y, P(x,y)))\\n\\n"
-    "Return JSON only."
-)
-
-user_prompt_template = (
-    "Convert the following {num_premises} premises into canonical first-order logic.\\n\\n"
-    "Premises:\\n"
-    "{premises}\\n\\n"
-    "Return a JSON list of exactly {num_premises} strings containing the formulas, in the exact same order."
-)
-
-# --- Split FOL dataset before augmentation to prevent data leakage ---
-has_presplit = all("split" in sample for sample in raw_samples)
-if has_presplit:
-    train_fol = [s for s in raw_samples if s.get("split") == "train"]
-    val_fol = [s for s in raw_samples if s.get("split") == "val"]
-    # Track statistics for print compatibility below
-    train_orig_fol = [s for s in train_fol if "augmented" not in str(s.get("dataset_source", ""))]
-    val_orig_fol = val_fol
-    train_augmented_fol = [s for s in train_fol if "augmented" in str(s.get("dataset_source", ""))]
-else:
-    original_fol = []
-    augmented_fol = []
-    for sample in raw_samples:
-        ds = str(sample.get("dataset_source", ""))
-        if "augmented" in ds:
-            augmented_fol.append(sample)
-        else:
-            original_fol.append(sample)
-
-    # Shuffle original FOL samples deterministically
-    random.Random(42).shuffle(original_fol)
-    split_idx_fol = int(len(original_fol) * 0.9)
-    train_orig_fol = original_fol[:split_idx_fol]
-    val_orig_fol = original_fol[split_idx_fol:]
-
-    # Map augmented samples back to train split
-    train_orig_ids = set(x["example_id"] for x in train_orig_fol)
-
-    def get_original_id(example_id):
-        for suffix in ["_aug_var", "_perm_var", "_neg_var"]:
-            if suffix in example_id:
-                return example_id.split(suffix)[0]
-        return example_id
-
-    train_augmented_fol = []
-    for sample in augmented_fol:
-        base_id = get_original_id(sample["example_id"])
-        if base_id in train_orig_ids:
-            train_augmented_fol.append(sample)
-
-    # Combine splits
-    train_fol = train_orig_fol + train_augmented_fol
-    val_fol = val_orig_fol
-
-# --- Split Physics dataset deterministically ---
-random.Random(42).shuffle(physics_samples)
-split_idx_phys = int(len(physics_samples) * 0.9)
-train_physics = physics_samples[:split_idx_phys]
-val_physics = physics_samples[split_idx_phys:]
-
-# --- Format training and validation samples ---
-def format_samples(fol_list, physics_list, balance_oversample=False):
-    formatted = []
-    
-    fol_samples = []
-    # Format FOL translation samples
-    for item in fol_list:
-        nl_list = item["premises-NL"]
-        fol_list_item = item["premises-FOL"]
-        
-        nl_content = ""
-        for i, nl in enumerate(nl_list, start=1):
-            nl_content += f"{i}. {nl}\\n"
-            
-        user_prompt = user_prompt_template.format(num_premises=len(nl_list), premises=nl_content.strip())
-        assistant_response = json.dumps(fol_list_item, indent=2)
-        
-        fol_samples.append({
-            "messages": [
-                {"role": "system", "content": system_prompt_template},
-                {"role": "user", "content": user_prompt.strip()},
-                {"role": "assistant", "content": assistant_response.strip()}
-            ]
-        })
-        
-    physics_samples_formatted = []
-    # Format Physics samples
-    for item in physics_list:
-        physics_input = item["input"]
-        physics_output = item["output"]
-        
-        physics_samples_formatted.append({
-            "messages": [
-                {"role": "system", "content": physics_system_prompt},
-                {"role": "user", "content": physics_input.strip()},
-                {"role": "assistant", "content": physics_output.strip()}
-            ]
-        })
-        
-    if balance_oversample:
-        target_len = max(len(fol_samples), len(physics_samples_formatted))
-        print(f"Balancing datasets via oversampling: target size = {target_len}")
-        
-        if len(fol_samples) < target_len:
-            extra_needed = target_len - len(fol_samples)
-            fol_samples += random.Random(42).choices(fol_samples, k=extra_needed)
-        if len(physics_samples_formatted) < target_len:
-            extra_needed = target_len - len(physics_samples_formatted)
-            physics_samples_formatted += random.Random(42).choices(physics_samples_formatted, k=extra_needed)
-            
-    formatted = fol_samples + physics_samples_formatted
-    return formatted
-
-def apply_template(batch):
-    texts = []
-    for messages in batch["messages"]:
-        text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
-        texts.append(text)
-    return {"text": texts}
-
-# --- PREPARE DATASETS FOR PHASE 1 ---
-# FOL: 100%, Physics: 20%
-# Select a deterministic 20% slice of train_physics
-num_phys_p1 = int(len(train_physics) * 0.20)
-train_physics_p1 = train_physics[:num_phys_p1]
-
-formatted_train_p1 = format_samples(train_fol, train_physics_p1, balance_oversample=False)
-formatted_val_p1 = format_samples(val_fol, val_physics, balance_oversample=False)
-
-train_dataset_p1 = Dataset.from_list(formatted_train_p1)
-val_dataset_p1 = Dataset.from_list(formatted_val_p1)
-
-train_dataset_p1 = train_dataset_p1.map(apply_template, batched=True, remove_columns=["messages"])
-val_dataset_p1 = val_dataset_p1.map(apply_template, batched=True, remove_columns=["messages"])
-train_dataset_p1 = train_dataset_p1.shuffle(seed=42)
-val_dataset_p1 = val_dataset_p1.shuffle(seed=42)
-
-# --- PREPARE DATASETS FOR PHASE 2 ---
-# Physics: 80%, FOL: 100%
-# Select a deterministic 80% slice of train_physics
-num_phys_p2 = int(len(train_physics) * 0.80)
-train_physics_p2 = train_physics[:num_phys_p2]
-
-formatted_train_p2 = format_samples(train_fol, train_physics_p2, balance_oversample=False)
-formatted_val_p2 = format_samples(val_fol, val_physics, balance_oversample=False)
-
-train_dataset_p2 = Dataset.from_list(formatted_train_p2)
-val_dataset_p2 = Dataset.from_list(formatted_val_p2)
-
-train_dataset_p2 = train_dataset_p2.map(apply_template, batched=True, remove_columns=["messages"])
-val_dataset_p2 = val_dataset_p2.map(apply_template, batched=True, remove_columns=["messages"])
-train_dataset_p2 = train_dataset_p2.shuffle(seed=42)
-val_dataset_p2 = val_dataset_p2.shuffle(seed=42)
-
-print(f"FOL Train/Val Split: original train={len(train_orig_fol)}, original val={len(val_orig_fol)}")
-print(f"FOL Augmented added to Train: {len(train_augmented_fol)}")
-print(f"Physics Train/Val Split: train={len(train_physics)}, val={len(val_physics)}")
-print(f"Phase 1 - Train size: {len(train_dataset_p1)}, Val size: {len(val_dataset_p1)}")
-print(f"Phase 2 - Train size: {len(train_dataset_p2)}, Val size: {len(val_dataset_p2)}")"""
-
-    # Cell 6: Custom Trainer and train_model function
-    cell6_text = """# 6. Configure Custom Trainer for Loss Weighting and start training
+=== CELL 5 ===
+# 6. SFT Training Setup and Callbacks
 import os
 import glob
 import torch
@@ -265,10 +42,12 @@ class CustomDataCollator(DataCollatorForLanguageModeling):
                 
         return batch
 
+
+# --- DOWNSTREAM FOL EVALUATION AND Z3 PROVER (FROM train_folc_kaggle) ---
 def clean_json_response(response: str) -> str:
     response = response.strip()
     if response.startswith("```"):
-        match = re.search(r"```(?:json)?\\s*(.*?)\\s*```", response, re.DOTALL)
+        match = re.search(r"```(?:json)?\s*(.*?)\s*```", response, re.DOTALL)
         if match:
             response = match.group(1).strip()
             
@@ -276,19 +55,19 @@ def clean_json_response(response: str) -> str:
     first_bracket = response.find("[")
     
     if first_brace != -1 and (first_bracket == -1 or first_brace < first_bracket):
-        obj_match = re.search(r"(\\{.*\\})", response, re.DOTALL)
+        obj_match = re.search(r"(\{.*\})", response, re.DOTALL)
         if obj_match:
             response = obj_match.group(1).strip()
         else:
-            obj_match_open = re.search(r"(\\{.*)", response, re.DOTALL)
+            obj_match_open = re.search(r"(\{.*)", response, re.DOTALL)
             if obj_match_open:
                 response = obj_match_open.group(1).strip()
     elif first_bracket != -1:
-        array_match = re.search(r"(\\[.*\\])", response, re.DOTALL)
+        array_match = re.search(r"(\[.*\])", response, re.DOTALL)
         if array_match:
             response = array_match.group(1).strip()
         else:
-            array_match_open = re.search(r"(\\[.*)", response, re.DOTALL)
+            array_match_open = re.search(r"(\[.*)", response, re.DOTALL)
             if array_match_open:
                 response = array_match_open.group(1).strip()
                 
@@ -300,7 +79,7 @@ def clean_json_response(response: str) -> str:
         char = response[i]
         if escape:
             escape = False
-        elif char == '\\\\':
+        elif char == '\\':
             escape = True
         elif char == '"':
             in_quote = not in_quote
@@ -348,7 +127,7 @@ try:
     from typing import Dict, Iterable, List, Optional, Tuple
     
     _TOKEN_RE = re.compile(
-        r"\\s*(->|<->|AND|OR|NOT|IN|ForAll|Exists|>=|<=|!=|=|>|<|\\(|\\)|,|\\+|-|\\d+\\.\\d+|\\d+|'[^']*'|[^\\W\\d][\\w-]*)"
+        r"\s*(->|<->|AND|OR|NOT|IN|ForAll|Exists|>=|<=|!=|=|>|<|\(|\)|,|\+|-|\d+\.\d+|\d+|'[^']*'|[^\W\d][\w-]*)"
     )
     
     class Z3Symbols:
@@ -485,7 +264,7 @@ try:
                 numeric = comp in (">=", "<=", ">", "<")
                 if comp in ("=", "!="):
                     next_tok = stream.peek_offset(1)
-                    if next_tok is not None and re.fullmatch(r"\\d+(?:\\.\\d+)?", next_tok):
+                    if next_tok is not None and re.fullmatch(r"\d+(?:\.\d+)?", next_tok):
                         numeric = True
                 if numeric and isinstance(term, BoolRef):
                     stream.index = start_index
@@ -536,7 +315,7 @@ try:
             if tok.startswith("'") and tok.endswith("'"):
                 return StringVal(tok[1:-1])
     
-            time_match = re.match(r"^Time(\\d{1,2})(\\d{2})?(AM|PM)$", tok, re.IGNORECASE)
+            time_match = re.match(r"^Time(\d{1,2})(\d{2})?(AM|PM)$", tok, re.IGNORECASE)
             if time_match:
                 hour = int(time_match.group(1))
                 minute = int(time_match.group(2)) if time_match.group(2) else 0
@@ -548,7 +327,7 @@ try:
                 minutes = hour * 60 + minute
                 return IntVal(minutes)
     
-            duration_match = re.match(r"^Duration(\\d+(?:\\.\\d+)?)(Hours|Minutes|Days)$", tok, re.IGNORECASE)
+            duration_match = re.match(r"^Duration(\d+(?:\.\d+)?)(Hours|Minutes|Days)$", tok, re.IGNORECASE)
             if duration_match:
                 value = float(duration_match.group(1))
                 unit = duration_match.group(2).lower()
@@ -610,19 +389,19 @@ try:
         for f in formulas:
             f_temp = re.sub(r"'[^']*'", "", f)
             # Find comparison variables
-            comp_matches = re.finditer(r"\\b([A-Za-z_][A-Za-z0-9_-]*)\\s*(?:>=|<=|>|<)\\s*(?:\\d+(?:\\.\\d+)?|Time\\d+[A-Za-z]+|Duration\\d+[A-Z]+)\\b", f_temp)
+            comp_matches = re.finditer(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*(?:>=|<=|>|<)\s*(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\b", f_temp)
             for m in comp_matches:
                 name = m.group(1)
                 if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
                     numeric_symbols.add(name)
                     
-            eq_matches = re.finditer(r"\\b([A-Za-z_][A-Za-z0-9_-]*)\\s*(?:=|!=)\\s*(?:\\d+(?:\\.\\d+)?|Time\\d+[A-Za-z]+|Duration\\d+[A-Z]+)\\b", f_temp)
+            eq_matches = re.finditer(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*(?:=|!=)\s*(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\b", f_temp)
             for m in eq_matches:
                 name = m.group(1)
                 if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
                     numeric_symbols.add(name)
                     
-            eq_rev_matches = re.finditer(r"\\b(?:\\d+(?:\\.\\d+)?|Time\\d+[A-Za-z]+|Duration\\d+[A-Z]+)\\s*(?:=|!=)\\s*([A-Za-z_][A-Za-z0-9_-]*)\\b", f_temp)
+            eq_rev_matches = re.finditer(r"\b(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\s*(?:=|!=)\s*([A-Za-z_][A-Za-z0-9_-]*)\b", f_temp)
             for m in eq_rev_matches:
                 name = m.group(1)
                 if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
@@ -694,7 +473,7 @@ def basic_validate_fol(formula: str) -> bool:
 # --- Z3 DOWNSTREAM QA EVALUATION HELPERS ---
 def parse_mcq_options(text: str) -> dict[str, str]:
     options = {}
-    pattern = r'(?:\\s+|^)([A-D])[\\.\\)]\\s+(.*?)(?=\\s+[A-D][\\.\\)]\\s+|$)'
+    pattern = r'(?:\s+|^)([A-D])[\.\)]\s+(.*?)(?=\s+[A-D][\.\)]\s+|$)'
     matches = re.findall(pattern, text, re.DOTALL)
     for opt_char, opt_text in matches:
         options[opt_char] = opt_text.strip()
@@ -705,7 +484,7 @@ def strip_question_framing(text: str) -> str:
     patterns = [
         r"^(?:does it follow that|is it true that|can we conclude that|is it the case that"
         r"|do the premises imply that|does the passage imply that"
-        r"|does it follow from the premises that)\\s*",
+        r"|does it follow from the premises that)\s*",
     ]
     for pat in patterns:
         m = re.match(pat, stripped, re.IGNORECASE)
@@ -775,7 +554,7 @@ def translate_sentences(model, tokenizer, sentences: list[str]) -> list[str]:
         
     nl_content = ""
     for i, nl in enumerate(sentences, start=1):
-        nl_content += f"{i}. {nl}\\n"
+        nl_content += f"{i}. {nl}\n"
         
     user_prompt = user_prompt_template.format(num_premises=len(sentences), premises=nl_content.strip())
     messages = [
@@ -857,7 +636,7 @@ def split_camel_snake(s: str) -> list[str]:
     parts = s.split('_')
     words = []
     for part in parts:
-        camel_parts = re.findall(r'[A-Z]?[a-z0-9]+|[A-Z]+(?=[A-Z][a-z0-9]|\\b)', part)
+        camel_parts = re.findall(r'[A-Z]?[a-z0-9]+|[A-Z]+(?=[A-Z][a-z0-9]|\b)', part)
         if camel_parts:
             words.extend(camel_parts)
         else:
@@ -886,7 +665,7 @@ def clean_repetitive_name(name: str) -> str:
 def unify_fol_predicates(formulas: list[str]) -> list[str]:
     if not formulas:
         return formulas
-    predicate_pattern = r'\\b([A-Za-z_][A-Za-z0-9_]*)\\s*\\('
+    predicate_pattern = r'\b([A-Za-z_][A-Za-z0-9_]*)\s*\('
     predicates = set()
     for f in formulas:
         matches = re.findall(predicate_pattern, f)
@@ -908,39 +687,39 @@ def unify_fol_predicates(formulas: list[str]) -> list[str]:
         for name in sorted(mapping.keys(), key=len, reverse=True):
             canonical = mapping[name]
             if name != canonical:
-                new_f = re.sub(rf'\\b{name}\\b', canonical, new_f)
+                new_f = re.sub(rf'\b{name}\b', canonical, new_f)
         unified_formulas.append(new_f)
     return unified_formulas
 
 # --- SEMANTIC FALLBACK PROMPTS & HELPERS ---
 SEMANTIC_YESNO_SYSTEM_PROMPT = (
     "You are a logical reasoning assistant. "
-    "Given a set of premises and a conclusion, determine whether the conclusion logically follows from the premises.\\n\\n"
-    "STRICT RULES:\\n"
-    "- Answer ONLY with one of: Yes, No, or Uncertain.\\n"
-    "- 'Yes' means the conclusion is a logical consequence of the premises.\\n"
-    "- 'No' means the conclusion contradicts or is inconsistent with the premises.\\n"
-    "- 'Uncertain' means the premises do not provide enough information to determine the conclusion.\\n"
+    "Given a set of premises and a conclusion, determine whether the conclusion logically follows from the premises.\n\n"
+    "STRICT RULES:\n"
+    "- Answer ONLY with one of: Yes, No, or Uncertain.\n"
+    "- 'Yes' means the conclusion is a logical consequence of the premises.\n"
+    "- 'No' means the conclusion contradicts or is inconsistent with the premises.\n"
+    "- 'Uncertain' means the premises do not provide enough information to determine the conclusion.\n"
     "- Do NOT add any explanation, punctuation, or extra text."
 )
 
 SEMANTIC_YESNO_USER_PROMPT_TEMPLATE = (
-    "Premises:\\n{premises_text}\\n\\n"
-    "Conclusion:\\n{conclusion_nl}\\n\\n"
+    "Premises:\n{premises_text}\n\n"
+    "Conclusion:\n{conclusion_nl}\n\n"
     "Does the conclusion logically follow from the premises? Answer Yes, No, or Uncertain only."
 )
 
 SEMANTIC_MCQ_SYSTEM_PROMPT = (
     "You are a logical reasoning assistant. "
-    "Given a set of premises and a multiple-choice question, select the single best answer that logically follows from the premises.\\n\\n"
-    "STRICT RULES:\\n"
-    "- Answer ONLY with the capital letter of your chosen option (A, B, C, or D).\\n"
+    "Given a set of premises and a multiple-choice question, select the single best answer that logically follows from the premises.\n\n"
+    "STRICT RULES:\n"
+    "- Answer ONLY with the capital letter of your chosen option (A, B, C, or D).\n"
     "- Do NOT add any explanation or extra text."
 )
 
 SEMANTIC_MCQ_USER_PROMPT_TEMPLATE = (
-    "Premises:\\n{premises_text}\\n\\n"
-    "Question:\\n{question_nl}\\n\\n"
+    "Premises:\n{premises_text}\n\n"
+    "Question:\n{question_nl}\n\n"
     "Select the single best answer: respond with ONLY the letter (A, B, C, or D)."
 )
 
@@ -1003,21 +782,21 @@ def check_sample_with_z3(predicted_premises_fol, question, model, tokenizer, pre
             choices_list = []
             for k in entailed_options:
                 choices_list.append(f"{k}. {options[k]}")
-            choices_str = "\\n".join(choices_list)
-            premises_text = "\\n".join(f"- {p}" for p in (premises_nl or []))
+            choices_str = "\n".join(choices_list)
+            premises_text = "\n".join(f"- {p}" for p in (premises_nl or []))
             prompt = (
-                f"You are a logical reasoning assistant.\\n"
-                f"Given the premises and the question:\\n\\n"
-                f"Premises:\\n{premises_text}\\n\\n"
-                f"Question: {question}\\n\\n"
-                f"Our formal symbolic prover has verified that the following options are mathematically valid conclusions:\\n"
-                f"{choices_str}\\n\\n"
-                f"Select the single most appropriate and intended conclusion from the verified options above.\\n"
+                f"You are a logical reasoning assistant.\n"
+                f"Given the premises and the question:\n\n"
+                f"Premises:\n{premises_text}\n\n"
+                f"Question: {question}\n\n"
+                f"Our formal symbolic prover has verified that the following options are mathematically valid conclusions:\n"
+                f"{choices_str}\n\n"
+                f"Select the single most appropriate and intended conclusion from the verified options above.\n"
                 f"Respond with ONLY the capital letter (A, B, C, or D) of your choice."
             )
             try:
                 best_opt = llm_generate_text(model, tokenizer, prompt, max_new_tokens=5).strip()
-                match = re.search(r"\\b([A-D])\\b", best_opt)
+                match = re.search(r"\b([A-D])\b", best_opt)
                 if match and match.group(1) in entailed_options:
                     return match.group(1)
             except Exception:
@@ -1027,28 +806,28 @@ def check_sample_with_z3(predicted_premises_fol, question, model, tokenizer, pre
             if len(consistent_options) == 1:
                 return consistent_options[0]
             else:
-                choices_str = "\\n".join(f"{k}. {options[k]}" for k in consistent_options)
-                premises_text = "\\n".join(f"- {p}" for p in (premises_nl or []))
+                choices_str = "\n".join(f"{k}. {options[k]}" for k in consistent_options)
+                premises_text = "\n".join(f"- {p}" for p in (premises_nl or []))
                 prompt = (
-                    f"You are a logical reasoning assistant.\\n"
-                    f"Given the premises and the question:\\n\\n"
-                    f"Premises:\\n{premises_text}\\n\\n"
-                    f"Question: {question}\\n\\n"
-                    f"Our formal symbolic prover has verified that the following options are consistent (not contradicted by the premises):\\n"
-                    f"{choices_str}\\n\\n"
-                    f"Select the single most appropriate and intended conclusion from the consistent options above.\\n"
+                    f"You are a logical reasoning assistant.\n"
+                    f"Given the premises and the question:\n\n"
+                    f"Premises:\n{premises_text}\n\n"
+                    f"Question: {question}\n\n"
+                    f"Our formal symbolic prover has verified that the following options are consistent (not contradicted by the premises):\n"
+                    f"{choices_str}\n\n"
+                    f"Select the single most appropriate and intended conclusion from the consistent options above.\n"
                     f"Respond with ONLY the capital letter (A, B, C, or D) of your choice."
                 )
                 try:
                     best_opt = llm_generate_text(model, tokenizer, prompt, max_new_tokens=5).strip()
-                    match = re.search(r"\\b([A-D])\\b", best_opt)
+                    match = re.search(r"\b([A-D])\b", best_opt)
                     if match and match.group(1) in consistent_options:
                         return match.group(1)
                 except Exception:
                     pass
                 return consistent_options[0]
         else:
-            premises_text = "\\n".join(f"- {p}" for p in (premises_nl or []))
+            premises_text = "\n".join(f"- {p}" for p in (premises_nl or []))
             sem_prompt = SEMANTIC_MCQ_USER_PROMPT_TEMPLATE.format(
                 premises_text=premises_text,
                 question_nl=question
@@ -1058,7 +837,7 @@ def check_sample_with_z3(predicted_premises_fol, question, model, tokenizer, pre
                 sem_clean = sem_resp.strip("., ")
                 if "unknown" in sem_clean.lower():
                     return "Unknown"
-                match = re.search(r"\\b([A-D])\\b", sem_clean)
+                match = re.search(r"\b([A-D])\b", sem_clean)
                 if match:
                     return match.group(1)
             except Exception:
@@ -1071,7 +850,7 @@ def check_sample_with_z3(predicted_premises_fol, question, model, tokenizer, pre
         conclusion_fol = conclusion_fol_list[0] if conclusion_fol_list else ""
         
         if not conclusion_fol:
-            premises_text = "\\n".join(f"- {p}" for p in (premises_nl or []))
+            premises_text = "\n".join(f"- {p}" for p in (premises_nl or []))
             sem_prompt = SEMANTIC_YESNO_USER_PROMPT_TEMPLATE.format(
                 premises_text=premises_text,
                 conclusion_nl=question
@@ -1100,7 +879,7 @@ def check_sample_with_z3(predicted_premises_fol, question, model, tokenizer, pre
         if res_neg.get("result") == unsat:
             return "No"
             
-        premises_text = "\\n".join(f"- {p}" for p in (premises_nl or []))
+        premises_text = "\n".join(f"- {p}" for p in (premises_nl or []))
         sem_prompt = SEMANTIC_YESNO_USER_PROMPT_TEMPLATE.format(
             premises_text=premises_text,
             conclusion_nl=question
@@ -1130,6 +909,8 @@ def evaluate_fol_accuracy(model, tokenizer, val_samples, limit=None):
     z3_correct_count = 0
     z3_total_count = 0
     
+    failed_cases = []
+    
     if limit is not None:
         eval_subset = random.Random(42).sample(val_samples, min(len(val_samples), limit))
     else:
@@ -1141,7 +922,7 @@ def evaluate_fol_accuracy(model, tokenizer, val_samples, limit=None):
         
         nl_content = ""
         for i, nl in enumerate(nl_list, start=1):
-            nl_content += f"{i}. {nl}\\n"
+            nl_content += f"{i}. {nl}\n"
             
         user_prompt = user_prompt_template.format(num_premises=len(nl_list), premises=nl_content.strip())
         messages = [
@@ -1163,12 +944,22 @@ def evaluate_fol_accuracy(model, tokenizer, val_samples, limit=None):
             
         generated_ids = outputs[0][inputs.input_ids.shape[1]:]
         response = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
-        cleaned_response = clean_json_response(response)
         
+        cleaned_response = ""
+        try:
+            cleaned_response = clean_json_response(response)
+        except Exception as e:
+            cleaned_response = response
+            
         predicted_premises_fol = []
+        is_json_valid = False
+        is_syntax_valid = False
+        is_exact_match = False
+        
         try:
             parsed_response = json.loads(cleaned_response)
             valid_json_count += 1
+            is_json_valid = True
             if isinstance(parsed_response, list):
                 predicted_premises_fol = [str(x).strip() for x in parsed_response]
                 all_formulas_valid = True
@@ -1189,10 +980,12 @@ def evaluate_fol_accuracy(model, tokenizer, val_samples, limit=None):
                             break
                 if all_formulas_valid:
                     syntax_valid_count += 1
+                    is_syntax_valid = True
                 
                 if isinstance(fol_list_gt, list):
                     if [str(x).strip() for x in parsed_response] == [str(x).strip() for x in fol_list_gt]:
                         correct_count += 1
+                        is_exact_match = True
                     
                     matched_formulas = 0
                     for p_f, g_f in zip(parsed_response, fol_list_gt):
@@ -1205,15 +998,19 @@ def evaluate_fol_accuracy(model, tokenizer, val_samples, limit=None):
             
         question = item.get("question", "")
         gt_answer = item.get("answer", "")
+        pred_ans = "N/A"
+        is_qa_correct = False
+        
         if question and gt_answer and predicted_premises_fol:
             z3_total_count += 1
             try:
                 pred_ans = check_sample_with_z3(predicted_premises_fol, question, model, tokenizer, premises_nl=nl_list)
                 if check_answers_match(pred_ans, gt_answer):
                     z3_correct_count += 1
+                    is_qa_correct = True
                 
                 if total_count < 2:
-                    print(f"\\n--- Z3 QA Evaluation Sample {total_count + 1} ---")
+                    print(f"\n--- Z3 QA Evaluation Sample {total_count + 1} ---")
                     print(f"Question: {question}")
                     print(f"GT Answer: {gt_answer} | Z3 Predicted Answer: {pred_ans}")
                     print(f"Predicted FOL: {predicted_premises_fol}")
@@ -1222,6 +1019,24 @@ def evaluate_fol_accuracy(model, tokenizer, val_samples, limit=None):
                 if total_count < 2:
                     print(f"Z3 Evaluation Error for Sample {total_count + 1}: {z3_err}")
                     
+        # Track failure cases
+        if not is_exact_match or not is_syntax_valid or (question and not is_qa_correct):
+            failed_cases.append({
+                "example_id": item.get("example_id", ""),
+                "premises-NL": nl_list,
+                "premises-FOL-GT": fol_list_gt,
+                "premises-FOL-Pred": predicted_premises_fol,
+                "raw_response": response,
+                "cleaned_response": cleaned_response,
+                "question": question,
+                "answer-GT": gt_answer,
+                "answer-Pred": pred_ans,
+                "is_json_valid": is_json_valid,
+                "is_syntax_valid": is_syntax_valid,
+                "is_exact_match": is_exact_match,
+                "is_qa_correct": is_qa_correct
+            })
+            
         total_count += 1
         
     em_acc = (correct_count / total_count) * 100 if total_count > 0 else 0
@@ -1230,194 +1045,62 @@ def evaluate_fol_accuracy(model, tokenizer, val_samples, limit=None):
     syntax_rate = (syntax_valid_count / total_count) * 100 if total_count > 0 else 0
     z3_acc = (z3_correct_count / z3_total_count) * 100 if z3_total_count > 0 else 0
     
-    print("\\n=== FOL Evaluation Metrics ===")
+    print("\n=== FOL Evaluation Metrics ===")
     print(f"FOL Exact Match Accuracy (Sample Level): {em_acc:.2f}% ({correct_count}/{total_count})")
     print(f"FOL Formula Level Match Accuracy: {formula_acc:.2f}% ({formula_correct}/{formula_total})")
     print(f"FOL Syntax Validity Rate: {syntax_rate:.2f}% ({syntax_valid_count}/{total_count})")
     print(f"FOL JSON Validity Rate: {json_rate:.2f}% ({valid_json_count}/{total_count})")
     print(f"FOL Z3 Downstream QA Accuracy: {z3_acc:.2f}% ({z3_correct_count}/{z3_total_count})")
+    
+    # Save failure cases to a file
+    output_failed_path = "fol_failed_cases.json"
+    try:
+        with open(output_failed_path, "w", encoding="utf-8") as f_out:
+            json.dump(failed_cases, f_out, indent=2, ensure_ascii=False)
+        print(f"Saved {len(failed_cases)} failed cases to: {os.path.abspath(output_failed_path)}")
+    except Exception as save_err:
+        print(f"Error saving failed cases: {save_err}")
+        
     return em_acc, json_rate, syntax_rate
 
-def evaluate_physics_accuracy(model, tokenizer, val_samples, limit=None):
-    eval_limit = limit if limit is not None else len(val_samples)
-    print(f"Evaluating Physics Accuracy on {eval_limit} samples...")
-    correct_count = 0
-    total_count = 0
-    valid_json_count = 0
-    python_syntax_count = 0
-    exec_count = 0
-    
-    if limit is not None:
-        eval_subset = random.Random(42).sample(val_samples, min(len(val_samples), limit))
-    else:
-        eval_subset = val_samples
-    
-    for item in eval_subset:
-        inp = item["input"]
-        gt_output_str = item["output"]
-        
-        messages = [
-            {"role": "system", "content": physics_system_prompt},
-            {"role": "user", "content": inp.strip()}
-        ]
-        
-        prompt_text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
-        
-        with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=1024,
-                do_sample=False,
-                pad_token_id=tokenizer.pad_token_id,
-                eos_token_id=tokenizer.eos_token_id
-            )
-            
-        generated_ids = outputs[0][inputs.input_ids.shape[1]:]
-        response = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
-        cleaned_response = clean_json_response(response)
-        try:
-            parsed_response = json.loads(cleaned_response)
-            valid_json_count += 1
-            code_str = parsed_response.get("python_code", "")
-            
-            try:
-                gt_parsed = json.loads(gt_output_str)
-                gt_code_str = gt_parsed.get("python_code", "")
-            except Exception:
-                gt_code_str = ""
-                
-            if code_str:
-                try:
-                    compile(code_str, "<string>", "exec")
-                    python_syntax_count += 1
-                except Exception:
-                    pass
 
-                if gt_code_str:
-                    local_vars_pred = {}
-                    local_vars_gt = {}
-                    try:
-                        import sympy as sp
-                        exec(code_str, {"sp": sp}, local_vars_pred)
-                        pred_ans = local_vars_pred.get("ans", None)
-                        pred_unit = local_vars_pred.get("unit", None)
-                        
-                        exec(gt_code_str, {"sp": sp}, local_vars_gt)
-                        gt_ans = local_vars_gt.get("ans", None)
-                        gt_unit = local_vars_gt.get("unit", None)
-                        
-                        if pred_ans is not None and gt_ans is not None:
-                            exec_count += 1
-                            if compare_physics_answers(pred_ans, pred_unit, gt_ans, gt_unit):
-                                correct_count += 1
-                    except Exception:
-                        pass
-        except Exception:
-            pass
-        total_count += 1
-        
-    acc = (correct_count / total_count) * 100 if total_count > 0 else 0
-    json_rate = (valid_json_count / total_count) * 100 if total_count > 0 else 0
-    python_syntax_rate = (python_syntax_count / total_count) * 100 if total_count > 0 else 0
-    exec_rate = (exec_count / total_count) * 100 if total_count > 0 else 0
-    
-    print("\\n=== Physics Evaluation Metrics ===")
-    print(f"Physics Accuracy: {acc:.2f}% ({correct_count}/{total_count})")
-    print(f"Physics JSON Validity Rate: {json_rate:.2f}% ({valid_json_count}/{total_count})")
-    print(f"Physics Python Syntax Validity Rate: {python_syntax_rate:.2f}% ({python_syntax_count}/{total_count})")
-    print(f"Physics Code Execution Rate: {exec_rate:.2f}% ({exec_count}/{total_count})")
-    return acc, json_rate, python_syntax_rate, exec_rate
-
-class CustomSFTTrainer(SFTTrainer):
-    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
-        if "labels" not in inputs:
-            return super().compute_loss(model, inputs, return_outputs, **kwargs)
-            
-        labels = inputs["labels"]
-        input_ids = inputs["input_ids"]
-        outputs = model(**inputs)
-        logits = outputs.get("logits")
-        
-        shift_logits = logits[..., :-1, :].contiguous()
-        shift_labels = labels[..., 1:].contiguous()
-        loss_fct = nn.CrossEntropyLoss(reduction="none")
-        
-        vocab_size = shift_logits.size(-1)
-        flat_logits = shift_logits.view(-1, vocab_size)
-        flat_labels = shift_labels.view(-1)
-        
-        token_losses = loss_fct(flat_logits, flat_labels)
-        token_losses = token_losses.view(shift_labels.size())
-        
-        weighted_losses = []
-        for i in range(input_ids.size(0)):
-            seq_input_ids = input_ids[i].tolist()
-            seq_losses = token_losses[i]
-            seq_labels = shift_labels[i]
-            
-            is_fol = False
-            for idx in range(len(seq_input_ids) - 5):
-                if idx > 20:
-                    break
-                if seq_input_ids[idx] == 2610 and seq_input_ids[idx+1] == 5508:
-                    is_fol = True
-                    break
-            
-            valid_mask = (seq_labels != -100)
-            active_losses = seq_losses[valid_mask]
-            
-            if len(active_losses) > 0:
-                mean_loss = active_losses.mean()
-                weight = 2.0 if is_fol else 1.0
-                weighted_losses.append(mean_loss * weight)
-            else:
-                weighted_losses.append(torch.tensor(0.0, device=logits.device, dtype=logits.dtype))
-                
-        loss = torch.stack(weighted_losses).mean()
-        return (loss, outputs) if return_outputs else loss
-
-def train_model(train_dataset, val_dataset, output_dir, epochs=2, learning_rate=1e-4, resume_from_dir=None):
+def train_model(train_dataset, val_dataset, val_samples, output_dir):
     clean_memory()
     
+    # Mathematically exact, dynamic warmup steps calculation based on actual dataset size
     num_samples = len(train_dataset)
     effective_batch_size = BATCH_SIZE * GRADIENT_ACCUMULATION
     steps_per_epoch = num_samples // effective_batch_size
     if num_samples % effective_batch_size != 0:
         steps_per_epoch += 1
-    total_steps = steps_per_epoch * epochs
+    total_steps = steps_per_epoch * EPOCHS
     
+    # Target exactly 3% warmup steps of total training steps (HF v5.2 compliant integer steps)
     warmup_steps = max(1, int(total_steps * 0.05))
     print(f"Training on {num_samples} samples. Steps per epoch: {steps_per_epoch}. Total steps: {total_steps}. Dynamic warmup steps: {warmup_steps}")
     
     base_model = load_base_model()
     
-    load_dir = resume_from_dir if resume_from_dir else output_dir
-    adapter_config_path = os.path.join(load_dir, "adapter_config.json")
-    if os.path.exists(adapter_config_path):
-        print(f"Loading PEFT adapter weights from {load_dir}...")
-        model = PeftModel.from_pretrained(base_model, load_dir, is_trainable=True)
-    else:
-        print("Initializing a new PEFT adapter...")
-        model = get_peft_model(base_model, peft_config)
-        
+    print("Initializing a new PEFT adapter...")
+    model = get_peft_model(base_model, peft_config)
     model.print_trainable_parameters()
     
+    # Highly Optimized SFTConfig with Cosine Decay Scheduler & Warmup
     sft_config = SFTConfig(
         output_dir=output_dir,
-        num_train_epochs=epochs,
+        num_train_epochs=EPOCHS,
         per_device_train_batch_size=BATCH_SIZE,
         gradient_accumulation_steps=GRADIENT_ACCUMULATION,
         eval_strategy="epoch",
         save_strategy="epoch",
-        learning_rate=learning_rate,
-        lr_scheduler_type="cosine",
-        warmup_steps=warmup_steps,
+        learning_rate=LEARNING_RATE,
+        lr_scheduler_type="cosine",             # Cosine learning rate decay scheduler
+        warmup_steps=warmup_steps,              # Compliant, dynamic warm-up steps to stabilize updates
         fp16=use_fp16,
         bf16=use_bf16,
         logging_steps=1,
         logging_first_step=True,
-        optim="adamw_torch_fused",
+        optim="adamw_torch",
         gradient_checkpointing=GRADIENT_CHECKPOINTING,
         gradient_checkpointing_kwargs={"use_reentrant": False},
         per_device_eval_batch_size=BATCH_SIZE,
@@ -1432,14 +1115,11 @@ def train_model(train_dataset, val_dataset, output_dir, epochs=2, learning_rate=
         dataloader_num_workers=2,
         dataloader_pin_memory=True
     )
-
-    response_template = "<|im_start|>assistant\\n"
-    collator = CustomDataCollator(
-        response_template=response_template, 
-        tokenizer=tokenizer
-    )
     
-    trainer = CustomSFTTrainer(
+    response_template = "<|im_start|>assistant\n"
+    collator = CustomDataCollator(response_template=response_template, tokenizer=tokenizer)
+    
+    trainer = SFTTrainer(
         model=model,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
@@ -1448,7 +1128,7 @@ def train_model(train_dataset, val_dataset, output_dir, epochs=2, learning_rate=
         data_collator=collator,
         callbacks=[LossLoggingCallback()]
     )
-
+    
     checkpoints = glob.glob(os.path.join(output_dir, "checkpoint-*"))
     resume_path = None
     if checkpoints:
@@ -1464,72 +1144,16 @@ def train_model(train_dataset, val_dataset, output_dir, epochs=2, learning_rate=
     print("Training completed successfully!")
     
     try:
-        print("\\n=== Starting Post-Training Accuracy Evaluation ===")
+        print("\n=== Starting Post-Training Accuracy Evaluation ===")
         model.eval()
-        evaluate_fol_accuracy(model, tokenizer, val_fol, limit=None)
-        evaluate_physics_accuracy(model, tokenizer, val_physics, limit=None)
+        evaluate_fol_accuracy(model, tokenizer, val_samples, limit=None)
     except Exception as e:
         print(f"Error during post-training evaluation: {e}")
     
+    # Clean up model & trainer from memory
     del trainer
     del model
     del base_model
-    clean_memory()"""
+    clean_memory()
 
-    # Cell 7: Start Training and Post-Training Evaluation
-    cell7_text = """# 7. Start Training and Post-Training Evaluation (2-Phase Strategy)
-print("=== STARTING PHASE 1 (FOL focus: 100% FOL : 20% Physics) ===")
-train_model(
-    train_dataset=train_dataset_p1,
-    val_dataset=val_dataset_p1,
-    output_dir=OUTPUT_DIR_P1,
-    epochs=EPOCHS_P1,
-    learning_rate=LEARNING_RATE_P1,
-    resume_from_dir=None
-)
-
-print("\\n=== STARTING PHASE 2 (Physics focus: 80% Physics : 100% FOL) ===")
-train_model(
-    train_dataset=train_dataset_p2,
-    val_dataset=val_dataset_p2,
-    output_dir=OUTPUT_DIR_P2,
-    epochs=EPOCHS_P2,
-    learning_rate=LEARNING_RATE_P2,
-    resume_from_dir=OUTPUT_DIR_P1
-)"""
-
-    # Apply changes
-    found_2 = False
-    found_5 = False
-    found_6 = False
-    found_7 = False
-    
-    for cell in nb['cells']:
-        if cell.get('cell_type') == 'code':
-            source_str = "".join(cell['source'])
-            if "# 2. TRAINING HYPERPARAMETERS" in source_str:
-                cell['source'] = to_cell_source(cell2_text)
-                found_2 = True
-                print("Patched Cell 2 (hyperparameters)")
-            elif "# 5. Format Dataset" in source_str:
-                cell['source'] = to_cell_source(cell5_text)
-                found_5 = True
-                print("Patched Cell 5 (dataset split & balanced oversampling)")
-            elif "# 6. Configure" in source_str:
-                cell['source'] = to_cell_source(cell6_text)
-                found_6 = True
-                print("Patched Cell 6 (CustomSFTTrainer & train_model)")
-            elif "# 7. Start Training" in source_str:
-                cell['source'] = to_cell_source(cell7_text)
-                found_7 = True
-                print("Patched Cell 7 (Execution)")
-                
-    if found_2 and found_5 and found_6 and found_7:
-        with open(notebook_path, 'w', encoding='utf-8') as f:
-            json.dump(nb, f, indent=1, ensure_ascii=False)
-        print("Successfully saved patched notebook!")
-    else:
-        print(f"Error: Could not find all cells (found: Cell 2={found_2}, Cell 5={found_5}, Cell 6={found_6}, Cell 7={found_7})")
-
-if __name__ == '__main__':
-    main()
+==================================================

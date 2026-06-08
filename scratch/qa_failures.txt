@@ -1,0 +1,1659 @@
+=== 41 QA INCORRECT CASES ===
+
+=================== Failed Case 1 (ID: 6_0) ===================
+NL Premises:
+  - If a driver has passed vehicle inspection and has the appropriate license, they can transport standard goods.
+  - If a driver can transport standard goods and has completed hazmat training and received a safety endorsement, they can transport hazardous materials.
+  - If a driver can transport hazardous materials and has an interstate permit, they can cross state lines with hazardous cargo.
+  - John has passed vehicle inspection.
+  - John has the appropriate license.
+  - John has completed hazmat training.
+  - John has not received a safety endorsement.
+  - John has an interstate permit.
+GT FOL:
+  - ForAll(x, (passed_vehicle_inspection(x) AND has_appropriate_license(x)) -> can_transport_standard_goods(x))
+  - ForAll(x, (can_transport_standard_goods(x) AND completed_hazmat_training(x) AND received_safety_endorsement(x)) -> can_transport_hazardous_materials(x))
+  - ForAll(x, (can_transport_hazardous_materials(x) AND has_interstate_permit(x)) -> can_cross_state_lines(x))
+  - passed_vehicle_inspection(john)
+  - has_appropriate_license(john)
+  - completed_hazmat_training(john)
+  - NOT received_safety_endorsement(john)
+  - has_interstate_permit(john)
+Pred FOL:
+  - ForAll(x, (VehicleInspection(x) AND AppropriateLicense(x) -> TransportStandardGoods(x)))
+  - ForAll(x, (TransportStandardGoods(x) AND HazmatTraining(x) AND SafetyEndorsement(x) -> TransportHazardousMaterials(x)))
+  - ForAll(x, (TransportHazardousMaterials(x) AND InterstatePermit(x) -> CrossStateLinesWithHazardousCargo(x)))
+  - VehicleInspection(john)
+  - AppropriateLicense(john)
+  - HazmatTraining(john)
+  - NOT SafetyEndorsement(john)
+  - InterstatePermit(john)
+Question: Based on the premises, what can we conclude about John’s qualifications?
+A. John can transport hazardous materials but cannot cross state lines
+B. John can cross state lines with hazardous cargo
+C. John cannot transport hazardous materials
+D. John is not qualified to transport any kind of goods
+GT Answer: C
+Pred Answer: B
+is_syntax_valid: True
+
+=================== Failed Case 2 (ID: 11_0) ===================
+NL Premises:
+  - Alex has completed safety orientation.
+  - Alex has a membership duration of 8 months.
+  - Alex has paid annual fees on time.
+  - If a person has a valid membership card and has completed safety orientation, they can use equipment.
+  - If a person can use equipment and has a trainer, they can book training.
+  - If a persons membership duration is at least 6 months, they are eligible for a trainer.
+  - If a person has paid the annual fee, they have a valid membership.
+GT FOL:
+  - safety_orientation(alex)
+  - membership_duration(alex) = 8
+  - paid_annual_fee(alex)
+  - ForAll(x, (valid_membership(x) AND safety_orientation(x)) -> use_equipment(x))
+  - ForAll(x, (use_equipment(x) AND has_trainer(x)) -> book_training(x))
+  - ForAll(x, (membership_duration(x) >= 6) -> eligible_trainer(x))
+  - ForAll(x, paid_annual_fee(x) -> valid_membership(x))
+Pred FOL:
+  - CompletedSafetyOrientation(alex)
+  - MembershipDuration(alex, 8)
+  - PaidAnnualFee(alex)
+  - ForAll(x, (ValidMembershipCard(x) AND CompletedSafetyOrientation(x) -> CanUseEquipment(x)))
+  - ForAll(x, (CanUseEquipment(x) AND HasTrainer(x) -> CanBookTraining(x)))
+  - ForAll(x, (MembershipDuration(x, 6) -> EligibleForTrainer(x)))
+  - ForAll(x, (PaidAnnualFee(x) -> ValidMembershipCard(x)))
+Question: Based on Alex's status, which statement is correct?
+A. Alex can use equipment but cannot book training without a trainer
+B. Alex can book personal training sessions if assigned a trainer
+C. Alex needs a longer membership duration
+D. Alex must pay additional fees
+GT Answer: C
+Pred Answer: A
+is_syntax_valid: False
+
+=================== Failed Case 3 (ID: 88_0) ===================
+NL Premises:
+  - If a person is not registered, then they are not qualified.
+  - If a person studies, then they are qualified.
+  - If a person trains, then they are qualified.
+  - If training makes someone qualified, then studying should also make them qualified.
+  - If a person is not registered, then they do not study.
+  - If a person is not qualified, then they are not registered.
+GT FOL:
+  - ForAll(x, (NOT Registered(x) -> NOT Qualified(x)))
+  - ForAll(x, (Studies(x) -> Qualified(x)))
+  - ForAll(x, (Trains(x) -> Qualified(x)))
+  - ForAll(x, ((Trains(x) -> Qualified(x)) -> (Studies(x) -> Qualified(x))))
+  - ForAll(x, (NOT Registered(x) -> NOT Studies(x)))
+  - ForAll(x, (NOT Qualified(x) -> NOT Registered(x)))
+Pred FOL:
+  - ForAll(x, (NOT Registered(x) -> NOT Qualified(x)))
+  - ForAll(x, (Studies(x) -> Qualified(x)))
+  - ForAll(x, (Trains(x) -> Qualified(x)))
+  - ForAll(x, ((Trains(x) -> Qualified(x)) -> (Studies(x) -> Qualified(x))))
+  - ForAll(x, (NOT Registered(x) -> NOT Studies(x)))
+  - ForAll(x, (NOT Qualified(x) -> NOT Registered(x)))
+Question: Based on the above premises, which statement can be inferred?
+A. A person is qualified if and only if they are registered.
+B. A person is qualified only if they are not registered.
+C. A person is registered only if they do not study.
+D. A person is qualified only if they do not train.
+GT Answer: Unknown
+Pred Answer: A
+is_syntax_valid: True
+
+=================== Failed Case 4 (ID: 372_0) ===================
+NL Premises:
+  - If you are a student of the school and have a valid library card, you can borrow books.
+  - If you return books overdue, you will be fined.
+  - If you are fined, you cannot borrow books.
+  - An is a student of the school.
+  - An has a valid library card.
+  - An returned books overdue.
+GT FOL:
+  - ForAll(x, ((Student(x) AND Valid(x)) AND NOT Fined(x)) -> Borrow(x))
+  - ForAll(x, (Overdue(x) -> Fined(x)))
+  - ForAll(x, (Fined(x) -> NOT Borrow(x)))
+  - Student(an)
+  - Valid(an)
+  - Overdue(an)
+Pred FOL:
+  - ForAll(x, (Student(x) AND LibraryCard(x) -> BorrowBooks(x)))
+  - ForAll(x, (Overdue(x) -> Fine(x)))
+  - ForAll(x, (Fine(x) -> NOT BorrowBooks(x)))
+  - Student(an)
+  - LibraryCard(an)
+  - Overdue(an)
+Question: Based on the above premises, which statement can be inferred?
+A. ∀x (O(x) → ¬B(x))
+B. B(An)
+C. ¬F(An)
+D. ¬O(An)
+GT Answer: Unknown
+Pred Answer: D
+is_syntax_valid: True
+
+=================== Failed Case 5 (ID: 73_0) ===================
+NL Premises:
+  - There is at least one excellent student.
+  - If a student is not excellent, then that student does not receive a scholarship.
+  - If a student does not participate in extracurricular activities, then that student does not receive a scholarship.
+  - If there is at least one excellent student, then if a student is not excellent, that student does not receive a scholarship.
+  - There is at least one student who fully participates in conduct training.
+  - If x is enrolled in the university, then x is an excellent student.
+  - All students must complete the foundational courses.
+  - Every student must submit their research paper.
+  - There is at least one student participating in extracurricular activities.
+  - If a student does not participate in extracurricular activities, they will not develop leadership skills.
+  - If a student does not complete the foundational courses, they will not be eligible for graduation.
+  - If a student enrolls in the honors program, they gain access to advanced research materials.
+  - All students in the honors program must maintain a high GPA.
+  - If a student does not participate in extracurricular activities, they cannot join the student council.
+  - If failing to complete foundational courses leads to ineligibility for graduation, then students in the honors program must gain access to advanced materials.
+  - If students who do not complete foundational courses cannot graduate, then all students in the honors program must maintain a high GPA.
+  - If students who do not participate in extracurricular activities cannot develop leadership skills, then if students who do not complete foundational courses cannot graduate, all students in the honors program must maintain a high GPA.
+  - If (if students who do not participate in extracurricular activities lack leadership skills then if students who do not complete foundational courses cannot graduate, all students in the honors program must maintain a high GPA), then students in the honors program must gain access to advanced materials.
+  - If (if students who do not complete foundational courses cannot graduate then students in the honors program gain access to advanced materials), then all students must complete the foundational courses.
+  - If a student enrolls in the honors program, they must also complete foundational courses.
+  - All students must participate in group projects.
+  - If a student does not submit their research paper, they will not receive a passing grade.
+GT FOL:
+  - Exists(x, P(x))
+  - ForAll(x, (NOT P(x) -> NOT U(x)))
+  - ForAll(x, (NOT S(x) -> NOT U(x)))
+  - (Exists(x, P(x)) -> (NOT P(x) -> NOT U(x)))
+  - Exists(x, R(x))
+  - ForAll(x, (Q(x) -> P(x)))
+  - ForAll(x, CompletesFundamentalCourses(x))
+  - ForAll(x, SubmitsResearchPaper(x))
+  - Exists(x, S(x))
+  - ForAll(x, (NOT S(x) -> NOT DevelopsLeadershipSkills(x)))
+  - ForAll(x, (NOT CompletesFundamentalCourses(x) -> NOT EligibleGraduation(x)))
+  - ForAll(x, (EnrolledHonorsProgram(x) -> HasAccessAdvancedMaterials(x)))
+  - ForAll(x, EnrolledHonorsProgram(x) -> HighGPA(x))
+  - ForAll(x, (NOT S(x) -> NOT JoinsStudentCouncil(x)))
+  - ForAll(x, ((NOT CompletesFundamentalCourses(x) -> NOT EligibleGraduation(x)) -> (EnrolledHonorsProgram(x) -> HasAccessAdvancedMaterials(x))))
+  - ((NOT CompletesFundamentalCourses(x) -> NOT EligibleGraduation(x)) -> ForAll(x, EnrolledHonorsProgram(x) -> HighGPA(x)))
+  - ((NOT S(x) -> NOT DevelopsLeadershipSkills(x)) -> ((NOT CompletesFundamentalCourses(x) -> NOT EligibleGraduation(x)) -> ForAll(x, EnrolledHonorsProgram(x) -> HighGPA(x))))
+  - (((NOT S(x) -> NOT DevelopsLeadershipSkills(x)) -> ((NOT CompletesFundamentalCourses(x) -> NOT EligibleGraduation(x)) -> ForAll(x, EnrolledHonorsProgram(x) -> HighGPA(x)))) -> (EnrolledHonorsProgram(x) -> HasAccessAdvancedMaterials(x)))
+  - (((NOT CompletesFundamentalCourses(x) -> NOT EligibleGraduation(x)) -> (EnrolledHonorsProgram(x) -> HasAccessAdvancedMaterials(x))) -> ForAll(x, CompletesFundamentalCourses(x)))
+  - ForAll(x, (EnrolledHonorsProgram(x) -> CompletesFundamentalCourses(x)))
+  - ForAll(x, ParticipatesGroupProject(x))
+  - ForAll(x, (NOT SubmitsResearchPaper(x) -> NOT ReceivesPassingGrade(x)))
+Pred FOL:
+  - Exists(x, Excellent(x))
+  - ForAll(x, (NOT Excellent(x) -> NOT Scholarship(x)))
+  - ForAll(x, (NOT Extracurricular(x) -> NOT Scholarship(x)))
+  - (Exists(x, Excellent(x) -> ForAll(x, (NOT Excellent(x) -> NOT Scholarship(x)))))
+  - Exists(x, ConductTraining(x))
+  - ForAll(x, (Enrolled(x) -> Excellent(x)))
+  - ForAll(x, CompleteCourses(x))
+  - ForAll(x, SubmitResearch(x))
+  - Exists(x, Extracurricular(x))
+  - ForAll(x, (NOT Extracurricular(x) -> NOT Leadership(x)))
+  - ForAll(x, (NOT CompleteCourses(x) -> NOT Graduate(x)))
+  - ForAll(x, (Honors(x) -> AdvancedMaterials(x)))
+  - ForAll(x, (Honors(x) -> HighGPA(x)))
+  - ForAll(x, (NOT Extracurricular(x) -> NOT StudentCouncil(x)))
+  - ((NOT CompleteCourses(x) -> NOT Graduate(x)) -> ForAll(x, (Honors(x) -> AdvancedMaterials(x))))
+  - ((NOT CompleteCourses(x) -> NOT Graduate(x)) -> ForAll(x, (Honors(x) -> HighGPA(x))))
+  - ((NOT Extracurricular(x) -> NOT Leadership(x)) -> ((NOT CompleteCourses(x) -> NOT Graduate(x)) -> ForAll(x, (Honors(x) -> HighGPA(x)))))
+  - (((NOT Extracurricular(x) -> NOT Leadership(x)) -> ((NOT CompleteCourses(x) -> NOT Graduate(x)) -> ForAll(x, (Honors(x) -> HighGPA(x))))) -> ForAll(x, (Honors(x) -> AdvancedMaterials(x))))
+  - (((NOT CompleteCourses(x) -> NOT Graduate(x)) -> ForAll(x, (Honors(x) -> AdvancedMaterials(x)))) -> ForAll(x, CompleteCourses(x)))
+  - ForAll(x, (Honors(x) -> CompleteCourses(x)))
+  - ForAll(x, GroupProject(x))
+  - ForAll(x, (NOT SubmitResearch(x) -> NOT PassingGrade(x)))
+Question: Based on the above premises, which statement can be inferred?
+A. If a student receives a scholarship, they must be excellent.
+B. If a student does not participate in extracurricular activities, then they receive a scholarship.
+C. If a student does not submit their research paper, then they are excellent.
+D. If all enrolled students are excellent, then no student without excellence can receive a scholarship.
+GT Answer: Unknown
+Pred Answer: D
+is_syntax_valid: True
+
+=================== Failed Case 6 (ID: 341_0) ===================
+NL Premises:
+  - At least one student has received a Scholarship.
+  - All students are required to submit a Research project.
+  - Research project completion grants access to University housing.
+  - Students who skip the Thesis requirement cannot submit a Research project.
+  - Failure to pass Philosophy disqualifies students from Scholarships.
+  - Research project submission requires Thesis completion.
+  - Some students have passed the Philosophy prerequisite.
+  - Research project participants must pass Philosophy.
+  - There exists at least one student who completed their Thesis.
+  - Non-submission of Research projects blocks Thesis completion.
+  - At least one student has submitted a Research project.
+  - Scholarship disqualification revokes Philosophy eligibility.
+  - The policy Research -> Housing enforces Scholarship-Philosophy linkage.
+  - The Research-Housing policy ensures Scholarship availability.
+  - Research-Housing compliance requires Scholarship-Philosophy alignment.
+  - The rule No Research -> No Thesis guarantees Thesis completion.
+  - Some students have secured University housing.
+  - Quantum Physics enrollment provides housing access.
+  - At least one student is enrolled in Quantum Physics.
+  - Research project disqualification revokes Scholarships.
+  - All students are enrolled in Quantum Physics.
+GT FOL:
+  - Exists(x, Scholarship(x))
+  - ForAll(x, Research(x))
+  - ForAll(x, (Research(x) -> University(x)))
+  - ForAll(x, (NOT Thesis(x) -> NOT Research(x)))
+  - ForAll(x, (NOT Philosophy(x) -> NOT Scholarship(x)))
+  - ForAll(x, (Research(x) -> Thesis(x)))
+  - Exists(x, Philosophy(x))
+  - ForAll(x, (Research(x) -> Philosophy(x)))
+  - Exists(x, Thesis(x))
+  - ForAll(x, (NOT Research(x) -> NOT Thesis(x)))
+  - Exists(x, Research(x))
+  - ForAll(x, (NOT Scholarship(x) -> NOT Philosophy(x)))
+  - (ForAll(x, (Research(x) -> University(x))) -> ForAll(x, (NOT Scholarship(x) -> NOT Philosophy(x))))
+  - (ForAll(x, (Research(x) -> University(x))) -> Exists(x, Scholarship(x)))
+  - (ForAll(x, (Research(x) -> University(x))) -> ForAll(x, (NOT Philosophy(x) -> NOT Scholarship(x))))
+  - (ForAll(x, (NOT Research(x) -> NOT Thesis(x))) -> Exists(x, Thesis(x)))
+  - Exists(x, University(x))
+  - ForAll(x, (Quantum(x) -> University(x)))
+  - Exists(x, Quantum(x))
+  - ForAll(x, (NOT Research(x) -> NOT Scholarship(x)))
+  - ForAll(x, Quantum(x))
+Pred FOL:
+  - Exists(x, Scholarship(x))
+  - ForAll(x, Research(x))
+  - ForAll(x, (Research(x) -> Housing(x)))
+  - ForAll(x, (NOT Thesis(x) -> NOT Research(x)))
+  - ForAll(x, (NOT Philosophy(x) -> NOT Scholarship(x)))
+  - ForAll(x, (Research(x) -> Thesis(x)))
+  - Exists(x, Philosophy(x))
+  - ForAll(x, (Research(x) -> Philosophy(x)))
+  - Exists(x, Thesis(x))
+  - ForAll(x, (NOT Research(x) -> NOT Thesis(x)))
+  - Exists(x, Research(x))
+  - ForAll(x, (NOT Scholarship(x) -> NOT Philosophy(x)))
+  - ForAll(x, ((Research(x) -> Housing(x)) -> (Scholarship(x) -> Philosophy(x))))
+  - ForAll(x, ((Research(x) -> Housing(x)) -> (Research(x) -> Scholarship(x))))
+  - ForAll(x, ((Research(x) -> Housing(x)) -> (Scholarship(x) -> Philosophy(x))))
+  - ForAll(x, ((NOT Research(x) -> NOT Thesis(x)) -> Thesis(x)))
+  - Exists(x, Housing(x))
+  - ForAll(x, (Quantum(x) -> Housing(x)))
+  - Exists(x, Quantum(x))
+  - ForAll(x, (NOT Research(x) -> NOT Scholarship(x)))
+  - ForAll(x, Quantum(x))
+Question: Based on university policies, which conclusion is valid if we know that all students are required to submit a Research project?
+A. The Thesis-Research rule is a tautology.
+B. The policy is contradictory.
+C. The rule 'No Research → No Thesis' ensures Thesis completion.
+D. The rule is both true and false.
+GT Answer: Unknown
+Pred Answer: A
+is_syntax_valid: True
+
+=================== Failed Case 7 (ID: 383) ===================
+NL Premises:
+  - The Turing Award has been awarded to Donald Knuth, Marvin Minsky, Richard Hamming and John McCarthy.
+  - Donald Knuth made major contributions to the analysis of algorithms.
+  - Marvin Minsky is recognized by his contributions to the field of artificial intelligence.
+  - Richard Hamming did research on numerical methods.
+  - John McCarthy had a central role in creating and shaping the field of artificial inteligence.
+GT FOL:
+  - TuringAwarded(donaldknuth) AND TuringAwarded(marvinminsky) AND TuringAwarded(richardhamming) AND TuringAwarded(johnmccarthy)
+  - ContributedTo(donaldknuth, algorithms)
+  - ContributedTo(marvinminsky, ai)
+  - ContributedTo(richardhamming, numericalmethods)
+  - ContributedTo(johnmccarthy, ai)
+Pred FOL:
+  - Awarded(turingaward, donaldknuth) AND Awarded(turingaward, marvinkinsky) AND Awarded(turingaward, richardhamming) AND Awarded(turingaward, johnmccarthy)
+  - Contribution(donaldknuth, algorithmanalysis)
+  - Contribution(marvinkinsky, artificialintelligence)
+  - Research(richardhamming, numericalmethods)
+  - Role(johnmccarthy, artificialintelligence)
+Question: At least two people who have won the Turing Award worked in the field of artificial intelligence.
+GT Answer: True
+Pred Answer: Unknown
+is_syntax_valid: True
+
+=================== Failed Case 8 (ID: 12_0) ===================
+NL Premises:
+  - Students with active status who have completed at least 5 courses are eligible for advanced classes.
+  - Eligible students must obtain advisor approval to take advanced classes.
+  - Sarah has active student status.
+  - Sarah has completed 4 courses.
+  - Sarah has obtained advisor approval.
+GT FOL:
+  - ForAll(x, (active_status(x) AND completed_courses(x) >= 5) -> eligible_advanced(x))
+  - ForAll(x, eligible_advanced(x) -> requires_approval(x))
+  - active_status(sarah)
+  - completed_courses(sarah) = 4
+  - has_approval(sarah)
+Pred FOL:
+  - ForAll(x, (Student(x) AND Active(x) AND Completed(x, five) -> Eligible(x)))
+  - ForAll(x, (Eligible(x) AND Advisor(x) -> Advanced(x)))
+  - Student(sarah) AND Active(sarah)
+  - Completed(sarah, four)
+  - Advisor(sarah)
+Question: Based on the requirements, which statement about Sarah is correct?
+A. She can take advanced classes because she has approval
+B. She cannot take advanced classes due to insufficient completed courses
+C. She is eligible but lacks approval
+D. Her active status alone qualifies her
+GT Answer: D
+Pred Answer: B
+is_syntax_valid: True
+
+=================== Failed Case 9 (ID: 219_0) ===================
+NL Premises:
+  - All students have qualifications.
+  - All students have recognition.
+  - If a student lacks understanding, then they lack recognition.
+  - There exists at least one student with proficiency.
+  - All students have training.
+  - If a student has qualifications, then they have recognition.
+  - If a student has proficiency, then they have qualifications.
+  - There exists at least one student with training.
+  - If a student lacks qualifications, then they lack training.
+  - If a student has proficiency, then they have training.
+  - If a student has training, then they have qualifications.
+  - If a student lacks training, then they lack proficiency.
+  - If lacking training leads to lacking proficiency, then proficiency leads to training.
+  - If lacking understanding leads to lacking recognition, then proficiency leads to qualifications.
+  - There exists at least one student with understanding.
+  - If a student lacks understanding, then they lack training.
+GT FOL:
+  - ForAll(x, Qualifications(x))
+  - ForAll(x, Recognition(x))
+  - ForAll(x, (NOT Understanding(x) -> NOT Recognition(x)))
+  - Exists(x, Proficiency(x))
+  - ForAll(x, Training(x))
+  - ForAll(x, (Qualifications(x) -> Recognition(x)))
+  - ForAll(x, (Proficiency(x) -> Qualifications(x)))
+  - Exists(x, Training(x))
+  - ForAll(x, (NOT Qualifications(x) -> NOT Training(x)))
+  - ForAll(x, (Proficiency(x) -> Training(x)))
+  - ForAll(x, (Training(x) -> Qualifications(x)))
+  - ForAll(x, (NOT Training(x) -> NOT Proficiency(x)))
+  - ForAll(x, ((NOT Training(x) -> NOT Proficiency(x)) -> (Proficiency(x) -> Training(x))))
+  - ForAll(x, ((NOT Understanding(x) -> NOT Recognition(x)) -> (Proficiency(x) -> Qualifications(x))))
+  - Exists(x, Understanding(x))
+  - ForAll(x, (NOT Understanding(x) -> NOT Training(x)))
+Pred FOL:
+  - ForAll(x, HasQualifications(x))
+  - ForAll(x, HasRecognition(x))
+  - ForAll(x, (NOT HasUnderstanding(x) -> NOT HasRecognition(x)))
+  - Exists(x, HasProficiency(x))
+  - ForAll(x, HasTraining(x))
+  - ForAll(x, (HasQualifications(x) -> HasRecognition(x)))
+  - ForAll(x, (HasProficiency(x) -> HasQualifications(x)))
+  - Exists(x, HasTraining(x))
+  - ForAll(x, (NOT HasQualifications(x) -> NOT HasTraining(x)))
+  - ForAll(x, (HasProficiency(x) -> HasTraining(x)))
+  - ForAll(x, (HasTraining(x) -> HasQualifications(x)))
+  - ForAll(x, (NOT HasTraining(x) -> NOT HasProficiency(x)))
+  - ForAll(x, ((NOT HasTraining(x) -> NOT HasProficiency(x)) -> (HasProficiency(x) -> HasTraining(x))))
+  - ForAll(x, ((NOT HasUnderstanding(x) -> NOT HasRecognition(x)) -> (HasProficiency(x) -> HasQualifications(x))))
+  - Exists(x, HasUnderstanding(x))
+  - ForAll(x, (NOT HasUnderstanding(x) -> NOT HasTraining(x)))
+Question: Based on the above premises, which statement can be inferred?
+A. ∀x (U(x) → P(x))
+B. ¬∀x (P(x) → U(x))
+C. ∀x (P(x) → U(x))
+D. (∀x (P(x) → U(x)) ∧ ¬∀x (P(x) → U(x)))
+GT Answer: Unknown
+Pred Answer: C
+is_syntax_valid: True
+
+=================== Failed Case 10 (ID: 747) ===================
+NL Premises:
+  - If violence is good, it is justified.
+  - If something is justified, it is lawful.
+GT FOL:
+  - ForAll(x, ((Violence(x) AND Good(x)) -> Justified(x)))
+  - ForAll(x, (Justified(x) -> Lawful(x)))
+Pred FOL:
+  - ForAll(x, (Violence(x) -> Good(x) -> Justified(x)))
+  - ForAll(x, (Justified(x) -> Lawful(x)))
+Question: If violence is good, it is lawful.
+GT Answer: True
+Pred Answer: Unknown
+is_syntax_valid: True
+
+=================== Failed Case 11 (ID: 256_0) ===================
+NL Premises:
+  - If a student was caught using unauthorized materials, then they were reported for cheating
+  - If a student behaved suspiciously during the exam, then they were caught using unauthorized materials
+  - If a student was reported for cheating, then they behaved suspiciously during the exam
+  - There exists at least one student who attempted to communicate during the exam
+  - If a student behaved suspiciously during the exam, then they are summoned for a disciplinary hearing
+GT FOL:
+  - ForAll(x, (Student(x) -> (Caught(x) -> Reported(x))))
+  - ForAll(x, (Student(x) -> (Behaved(x) -> Caught(x))))
+  - ForAll(x, (Student(x) -> (Reported(x) -> Behaved(x))))
+  - Exists(x, (Student(x) AND Attempted(x)))
+  - ForAll(x, (Student(x) -> (Behaved(x) -> Disciplinary(x))))
+Pred FOL:
+  - ForAll(x, (Caught(x) -> Reported(x)))
+  - ForAll(x, (Suspicious(x) -> Caught(x)))
+  - ForAll(x, (Reported(x) -> Suspicious(x)))
+  - Exists(x, (Communicated(x)))
+  - ForAll(x, (Suspicious(x) -> Summoned(x)))
+Question: Which of the following can be inferred about students?
+A. Some students behaved suspiciously during the exam
+B. All students were caught using unauthorized materials
+C. Some students were not reported for cheating
+D. All students are summoned for a disciplinary hearing
+GT Answer: Unknown
+Pred Answer: A
+is_syntax_valid: True
+
+=================== Failed Case 12 (ID: 402_0) ===================
+NL Premises:
+  - All students have completed the foundational course.
+  - If a student completed the foundational course, then they are eligible for advanced coursework.
+  - If a student is not eligible for advanced coursework, then they did not complete the seminar.
+  - If a student completed the seminar, then they passed the public speaking module.
+  - If a student lacks presentation skills, then they are not eligible for advanced coursework.
+  - If a student is eligible for advanced coursework, then they passed the public speaking module.
+  - If a student completed the foundational course, then they submitted their thesis.
+  - All students have academic communication skills.
+  - All students passed the public speaking module.
+GT FOL:
+  - ForAll(x, CompletedFoundationCourse(x))
+  - ForAll(x, CompletedFoundationCourse(x) -> EligibleAdvancedCoursework(x))
+  - ForAll(x, NOT EligibleAdvancedCoursework(x) -> NOT CompletedSeminar(x))
+  - ForAll(x, CompletedSeminar(x) -> PassedSpeakingModule(x))
+  - ForAll(x, NOT HasPresentationSkills(x) -> NOT EligibleAdvancedCoursework(x))
+  - ForAll(x, EligibleAdvancedCoursework(x) -> PassedSpeakingModule(x))
+  - ForAll(x, CompletedFoundationCourse(x) -> SubmittedThesis(x))
+  - ForAll(x, HasAcademicCommunication(x))
+  - ForAll(x, PassedSpeakingModule(x))
+Pred FOL:
+  - ForAll(x, CompletedFoundationalCourse(x))
+  - ForAll(x, CompletedFoundationalCourse(x) -> EligibleForAdvancedCoursework(x))
+  - ForAll(x, NOT EligibleForAdvancedCoursework(x) -> NOT CompletedSeminar(x))
+  - ForAll(x, CompletedSeminar(x) -> PassedPublicSpeakingModule(x))
+  - ForAll(x, NOT HasPresentationSkills(x) -> NOT EligibleForAdvancedCoursework(x))
+  - ForAll(x, EligibleForAdvancedCoursework(x) -> PassedPublicSpeakingModule(x))
+  - ForAll(x, CompletedFoundationalCourse(x) -> SubmittedThesis(x))
+  - ForAll(x, HasAcademicCommunicationSkills(x))
+  - ForAll(x, PassedPublicSpeakingModule(x))
+Question: Do all students complete the seminar?
+GT Answer: Yes
+Pred Answer: Unknown
+is_syntax_valid: True
+
+=================== Failed Case 13 (ID: 101_0) ===================
+NL Premises:
+  - Every student with a GPA of 4.0 is eligible for a full scholarship.
+  - If a student receives a full scholarship, they do not have to pay tuition fees.
+  - A student who maintains a GPA of 4.0 for all semesters will graduate with honors.
+  - There exists at least one student who has received a full scholarship.
+  - If a student participates in research, they have a higher chance of receiving a scholarship.
+  - Students who engage in extracurricular activities have a better chance of getting scholarships.
+  - At least one student who received a full scholarship has participated in research.
+  - If maintaining a GPA of 4.0 leads to graduating with honors, then every honors graduate must have a high GPA.
+  - If research participation improves scholarship chances, then at least one research student has a scholarship.
+  - If all students with a GPA of 4.0 are eligible for scholarships, then top students are financially supported.
+  - If a student has received a full scholarship, they must have demonstrated academic excellence.
+  - If a student does not maintain a high GPA, they might lose their scholarship.
+  - There exists at least one student who has lost a scholarship due to a GPA drop.
+GT FOL:
+  - ForAll(x, GPA40(x) -> EligibleForFullScholarship(x))
+  - ForAll(x, ReceivesFullScholarship(x) -> NOT PaysTuition(x))
+  - ForAll(x, MaintainsGPA40(x) -> GraduatesWithHonors(x))
+  - Exists(x, ReceivesFullScholarship(x))
+  - ForAll(x, ParticipatesInResearch(x) -> HigherChanceOfScholarship(x))
+  - ForAll(x, EngagesInExtracurriculars(x) -> BetterChanceOfScholarship(x))
+  - Exists(x, ReceivesFullScholarship(x) AND ParticipatesInResearch(x))
+  - (ForAll(x, MaintainsGPA40(x) -> GraduatesWithHonors(x)) -> ForAll(x, GraduatesWithHonors(x) -> HighGPA(x)))
+  - (ForAll(x, ParticipatesInResearch(x) -> HigherChanceOfScholarship(x)) -> Exists(x, ResearchStudent(x) AND ReceivesScholarship(x)))
+  - (ForAll(x, GPA40(x) -> EligibleForFullScholarship(x)) -> ForAll(x, TopStudent(x) -> FinanciallySupported(x)))
+  - ForAll(x, ReceivesFullScholarship(x) -> DemonstratedAcademicExcellence(x))
+  - ForAll(x, NOT MaintainsHighGPA(x) -> MightLoseScholarship(x))
+  - Exists(x, LostScholarship(x) AND NOT MaintainsHighGPA(x))
+Pred FOL:
+  - ForAll(x, (GPA4_0(x) -> EligibleForScholarship(x)))
+  - ForAll(x, (ReceivesScholarship(x) -> NOT PaysTuition(x)))
+  - ForAll(x, (MaintainsGPA4_0(x) -> GraduatesWithHonors(x)))
+  - Exists(x, ReceivesScholarship(x))
+  - ForAll(x, (ParticipatesInResearch(x) -> HigherScholarshipChance(x)))
+  - ForAll(x, (EngagesInExtracurriculars(x) -> BetterScholarshipChance(x)))
+  - Exists(x, (ReceivesScholarship(x) AND ParticipatesInResearch(x)))
+  - ForAll(x, ((MaintainsGPA4_0(x) -> GraduatesWithHonors(x)) -> ForAll(y, (GraduatesWithHonors(y) -> HighGPA(y)))))
+  - ForAll(x, ((ParticipatesInResearch(x) -> HigherScholarshipChance(x)) -> Exists(y, (ParticipatesInResearch(y) AND ReceivesScholarship(y)))))
+  - ForAll(x, (GPA4_0(x) -> EligibleForScholarship(x)) -> ForAll(y, (TopStudent(y) -> FinanciallySupported(y))))
+  - ForAll(x, (ReceivesScholarship(x) -> DemonstratesAcademicExcellence(x)))
+  - ForAll(x, (NOT MaintainsHighGPA(x) -> LosesScholarship(x)))
+  - Exists(x, LosesScholarship(x))
+Question: Based on the premises, which of the following statements is correct?
+A. If at least one student who received a full scholarship has participated in research and if research participation improves scholarship chances, then at least one research student has a scholarship.
+B. If at least one student who received a full scholarship has participated in research and if research participation improves scholarship chances, then at least one research student does not have a scholarship.
+C. If at least one student who received a full scholarship has participated in research and if research participation improves scholarship chances, then some research students have scholarships while others do not.
+D. If at least one student who received a full scholarship has participated in research and if research participation improves scholarship chances, then at least one research student has a scholarship in some cases but not all.
+GT Answer: Unknown
+Pred Answer: A
+is_syntax_valid: True
+
+=================== Failed Case 14 (ID: 273_0) ===================
+NL Premises:
+  - There exists at least one student who is prepared.
+  - There exists at least one student who asks questions.
+  - If a student is prepared, then they receive a recommendation letter.
+  - All students take the test.
+  - All students study regularly.
+  - If a student does not receive a recommendation letter, then they do not ask questions.
+  - If a student is not prepared, then they do not receive a recommendation letter.
+  - All students ask questions.
+  - If a student asks questions, then they are prepared.
+  - If a student studies regularly, then they attend university.
+  - If a student does not take the test, then they do not ask questions.
+  - If a student does not take the test, then they do not attend university.
+  - If at least one student asks questions, then all students who study regularly also attend university.
+  - If all students take the test, then at least one student is prepared.
+  - If the previous statement is true, then at least one student is prepared.
+  - All students are prepared.
+  - If a student is not prepared, then they do not study regularly.
+  - There exists at least one student who attends university.
+  - If a student asks questions, then they study regularly.
+GT FOL:
+  - Exists(x, Prepared(x))
+  - Exists(x, AsksQuestions(x))
+  - ForAll(x, (Prepared(x) -> ReceivesRecommendation(x)))
+  - ForAll(x, TakesTest(x))
+  - ForAll(x, StudiesRegularly(x))
+  - ForAll(x, (NOT ReceivesRecommendation(x) -> NOT AsksQuestions(x)))
+  - ForAll(x, (NOT Prepared(x) -> NOT ReceivesRecommendation(x)))
+  - ForAll(x, AsksQuestions(x))
+  - ForAll(x, (AsksQuestions(x) -> Prepared(x)))
+  - ForAll(x, (StudiesRegularly(x) -> AttendsUniversity(x)))
+  - ForAll(x, (NOT TakesTest(x) -> NOT AsksQuestions(x)))
+  - ForAll(x, (NOT TakesTest(x) -> NOT AttendsUniversity(x)))
+  - (Exists(x, AsksQuestions(x)) -> (StudiesRegularly(x) -> AttendsUniversity(x)))
+  - (ForAll(x, TakesTest(x)) -> Exists(x, Prepared(x)))
+  - (((Exists(x, AsksQuestions(x)) -> (StudiesRegularly(x) -> AttendsUniversity(x))) -> Exists(x, Prepared(x))) -> Exists(x, Prepared(x)))
+  - ForAll(x, Prepared(x))
+  - ForAll(x, (NOT Prepared(x) -> NOT StudiesRegularly(x)))
+  - Exists(x, AttendsUniversity(x))
+  - ForAll(x, (AsksQuestions(x) -> StudiesRegularly(x)))
+Pred FOL:
+  - Exists(x, Prepared(x))
+  - Exists(x, AsksQuestions(x))
+  - ForAll(x, (Prepared(x) -> ReceivesRecommendation(x)))
+  - ForAll(x, TakesTest(x))
+  - ForAll(x, StudiesRegularly(x))
+  - ForAll(x, (NOT ReceivesRecommendation(x) -> NOT AsksQuestions(x)))
+  - ForAll(x, (NOT Prepared(x) -> NOT ReceivesRecommendation(x)))
+  - Exists(x, AsksQuestions(x))
+  - ForAll(x, (AsksQuestions(x) -> Prepared(x)))
+  - ForAll(x, (StudiesRegularly(x) -> AttendsUniversity(x)))
+  - ForAll(x, (NOT TakesTest(x) -> NOT AsksQuestions(x)))
+  - ForAll(x, (NOT TakesTest(x) -> NOT AttendsUniversity(x)))
+  - (Exists(x, AsksQuestions(x)) -> ForAll(x, (StudiesRegularly(x) -> AttendsUniversity(x))))
+  - (ForAll(x, TakesTest(x)) -> Exists(x, Prepared(x)))
+  - ((ForAll(x, TakesTest(x)) -> Exists(x, Prepared(x))) -> Exists(x, Prepared(x)))
+  - ForAll(x, Prepared(x))
+  - ForAll(x, (NOT Prepared(x) -> NOT StudiesRegularly(x)))
+  - Exists(x, AttendsUniversity(x))
+  - ForAll(x, (AsksQuestions(x) -> StudiesRegularly(x)))
+Question: Based on the above premises, which statement can be inferred?
+A. There exists a student who is not prepared.
+B. There exists a student who does not ask questions.
+C. All students attend university.
+D. There exists a student who does not study regularly.
+GT Answer: Unknown
+Pred Answer: C
+is_syntax_valid: True
+
+=================== Failed Case 15 (ID: 77_0) ===================
+NL Premises:
+  - If x participates in social work, then x meets extracurricular requirements.
+  - If x meets academic requirements, then x is a student.
+  - If (if x meets academic requirements then x is a student), then (if x fully participates in conduct training then x is eligible for graduation).
+  - There is at least one student who participates in social work.
+  - Every student fully participates in conduct training.
+GT FOL:
+  - ForAll(x, (Training(x) -> University(x)))
+  - ForAll(x, (Professional(x) -> Student(x)))
+  - ForAll(x, ((Professional(x) -> Student(x)) -> (Requirements(x) -> Qualified(x))))
+  - Exists(x, (Student(x) AND Training(x)))
+  - ForAll(x, (Student(x) -> Requirements(x)))
+Pred FOL:
+  - ForAll(x, (SocialWork(x) -> Extracurricular(x)))
+  - ForAll(x, (Academic(x) -> Student(x)))
+  - ForAll(x, ((Academic(x) -> Student(x)) -> (Conduct(x) -> Eligible(x))))
+  - Exists(x, (Student(x) AND SocialWork(x)))
+  - ForAll(x, (Student(x) -> Conduct(x)))
+Question: Based on the above premises, which statement can be inferred?
+A. If a student participates in social work, then they meet academic requirements.
+B. If someone participates in social work, then they meet extracurricular requirements.
+C. If someone meets academic requirements, then they are not a student.
+D. If a student meets academic requirements, they are not eligible for graduation.
+GT Answer: Unknown
+Pred Answer: B
+is_syntax_valid: True
+
+=================== Failed Case 16 (ID: 359_canonical) ===================
+NL Premises:
+  - Evangelos Eleftheriou is a Greek electrical engineer.
+  - Evangelos Eleftheriou worked for IBM in Zurich.
+  - If a company has employees working for them somewhere, then they have an office there.
+  - IBM is a company.
+GT FOL:
+  - Greek(evangeloseleftheriou) AND ElectricalEngineer(evangeloseleftheriou)
+  - WorkedFor(evangeloseleftheriou, ibm) AND WorkedIn(evangeloseleftheriou, zurich)
+  - ForAll(x, ForAll(x, ForAll(y, (Company(x) AND WorkedFor(y, x) AND WorkedIn(y, y) -> HasOfficeIn(x, y)))))
+  - Company(ibm)
+Pred FOL:
+  - Greek(eleftheriou) AND ElectricalEngineer(eleftheriou)
+  - WorkFor(eleftheriou, ibm) AND WorkFor(eleftheriou, zurich)
+  - ForAll(x, ForAll(y, (WorkFor(x, y) -> HasOffice(y, x))))
+  - Company(ibm)
+Question: IBM has an office in London or Zurich.
+GT Answer: True
+Pred Answer: Unknown
+is_syntax_valid: True
+
+=================== Failed Case 17 (ID: 344_0) ===================
+NL Premises:
+  - Students who dont conduct research (¬R) cant enroll in Quantum Physics (¬Q).
+  - Dormitory access (U) requires submitting a thesis (T).
+  - Some students have submitted theses.
+  - Thesis submission (T) guarantees dormitory access (U).
+  - No dormitory access (¬U) blocks Philosophy enrollment (¬P).
+  - All students take Quantum Physics.
+  - Some students conduct research.
+  - The rule Thesis->Dormitory enforces No Research->No Quantum.
+  - Existence of thesis submitters triggers the research-quantum policy link.
+  - Researchers get dormitory access.
+  - Quantum enrollment grants scholarship eligibility (S).
+  - Scholarships require Philosophy proficiency.
+  - All students receive scholarships.
+GT FOL:
+  - ForAll(x, (NOT Research(x) -> NOT Quantum(x)))
+  - ForAll(x, (Dormitory(x) -> Thesis(x)))
+  - Exists(x, Thesis(x))
+  - ForAll(x, (Thesis(x) -> Dormitory(x)))
+  - ForAll(x, (NOT Dormitory(x) -> NOT Philosophy(x)))
+  - ForAll(x, Quantum(x))
+  - Exists(x, Research(x))
+  - (ForAll(x, (Thesis(x) -> Dormitory(x)) -> ForAll(x, (NOT Research(x) -> NOT Quantum(x)))))
+  - (Exists(x, Thesis(x) -> (ForAll(x, (Thesis(x) -> Dormitory(x)) -> ForAll(x, (NOT Research(x) -> NOT Quantum(x)))))))
+  - ForAll(x, (Research(x) -> Dormitory(x)))
+  - ForAll(x, (Quantum(x) -> Scholarship(x)))
+  - ForAll(x, (Scholarship(x) -> Philosophy(x)))
+  - ForAll(x, Scholarship(x))
+Pred FOL:
+  - ForAll(x, (NOT Research(x) -> NOT Quantum(x)))
+  - ForAll(x, (Dormitory(x) -> Thesis(x)))
+  - Exists(x, Thesis(x))
+  - ForAll(x, (Thesis(x) -> Dormitory(x)))
+  - ForAll(x, (NOT Dormitory(x) -> NOT Philosophy(x)))
+  - ForAll(x, Quantum(x))
+  - Exists(x, Research(x))
+  - (ForAll(x, (Thesis(x) -> Dormitory(x)) -> ForAll(x, (NOT Research(x) -> NOT Quantum(x)))))
+  - (Exists(x, Thesis(x) -> (ForAll(x, (NOT Research(x) -> NOT Quantum(x)) -> ForAll(x, (Thesis(x) -> Dormitory(x)))))))
+  - ForAll(x, (Research(x) -> Dormitory(x)))
+  - ForAll(x, (Quantum(x) -> Scholarship(x)))
+  - ForAll(x, (Scholarship(x) -> Philosophy(x)))
+  - ForAll(x, Scholarship(x))
+Question: Based on university policies, which conclusion follows if we know that some students have submitted theses?
+A. Thesis existence doesn't affect research rules.
+B. Policy contradiction exists.
+C. Thesis submissions activate research-quantum link.
+D. The rule is tautological.
+GT Answer: Unknown
+Pred Answer: C
+is_syntax_valid: True
+
+=================== Failed Case 18 (ID: 306_0) ===================
+NL Premises:
+  - If a student does not practice Calculus exercises, they will not understand the concepts.
+  - If a student does not attend Calculus lectures, they will not understand the definitions.
+  - There exists at least one student who has mastered Calculus.
+  - All students have mastered Calculus.
+  - If a student does not attend lectures, they will not practice exercises.
+  - If a student does not master Calculus, they will not practice exercises.
+  - If a student practices exercises, they will perform well in exams.
+  - All students are required to submit assignments.
+  - If a student does not take notes, they will not practice exercises.
+  - If not attending lectures leads to not understanding definitions, then all students have mastered Calculus.
+  - If a student does not attend lectures, they will not master Calculus.
+  - If a student takes notes, they will perform well in exams.
+  - If a student does not practice exercises, they will not take notes.
+  - All students practice exercises.
+  - All students perform well in exams.
+  - If a student does not perform well in exams, they will not master Calculus.
+GT FOL:
+  - ForAll(x, (NOT PracticeExercises(x) -> NOT UnderstandConcepts(x)))
+  - ForAll(x, (NOT AttendLectures(x) -> NOT UnderstandDefinitions(x)))
+  - Exists(x, MasterCalculus(x))
+  - ForAll(x, MasterCalculus(x))
+  - ForAll(x, (NOT AttendLectures(x) -> NOT PracticeExercises(x)))
+  - ForAll(x, (NOT MasterCalculus(x) -> NOT PracticeExercises(x)))
+  - ForAll(x, (PracticeExercises(x) -> PerformWell(x)))
+  - ForAll(x, SubmitAssignments(x))
+  - ForAll(x, (NOT TakeNotes(x) -> NOT PracticeExercises(x)))
+  - ((ForAll(x, (NOT AttendLectures(x) -> NOT UnderstandDefinitions(x))) -> ForAll(x, MasterCalculus(x))))
+  - ForAll(x, (NOT AttendLectures(x) -> NOT MasterCalculus(x)))
+  - ForAll(x, (TakeNotes(x) -> PerformWell(x)))
+  - ForAll(x, (NOT PracticeExercises(x) -> NOT TakeNotes(x)))
+  - ForAll(x, PracticeExercises(x))
+  - ForAll(x, PerformWell(x))
+  - ForAll(x, (NOT PerformWell(x) -> NOT MasterCalculus(x)))
+Pred FOL:
+  - ForAll(x, (NOT Practice(x) -> NOT Understand(x)))
+  - ForAll(x, (NOT Attend(x) -> NOT Definitions(x)))
+  - Exists(x, Master(x))
+  - ForAll(x, Master(x))
+  - ForAll(x, (NOT Attend(x) -> NOT Practice(x)))
+  - ForAll(x, (NOT Master(x) -> NOT Practice(x)))
+  - ForAll(x, (Practice(x) -> Perform(x)))
+  - ForAll(x, Submit(x))
+  - ForAll(x, (NOT TakeNotes(x) -> NOT Practice(x)))
+  - ForAll(x, (NOT Attend(x) -> NOT Definitions(x)) -> ForAll(x, Master(x)))
+  - ForAll(x, (NOT Attend(x) -> NOT Master(x)))
+  - ForAll(x, (TakeNotes(x) -> Perform(x)))
+  - ForAll(x, (NOT Practice(x) -> NOT TakeNotes(x)))
+  - ForAll(x, Practice(x))
+  - ForAll(x, Perform(x))
+  - ForAll(x, (NOT Perform(x) -> NOT Master(x)))
+Question: Based on the above premises, which statement can be inferred?
+A. There exists a student who has not mastered Calculus.
+B. There exists a student who does not practice exercises.
+C. All students attend lectures.
+D. There exists a student who does not perform well in exams.
+GT Answer: Unknown
+Pred Answer: C
+is_syntax_valid: True
+
+=================== Failed Case 19 (ID: 558) ===================
+NL Premises:
+  - The SAT test is wholly owned and developed by the College Board.
+  - The SAT test is intended to assess students readiness for college.
+  - The SAT was originally designed not to be aligned with high school curricula.
+  - Several adjustments were made for the version of the SAT introduced in 2016 to reflect more closely on what students learn in high school.
+GT FOL:
+  - Own(sat, collegeboard) AND NOT Own(sat, others)
+  - Test(sat, readiness)
+  - ForAll(x, (Year(x) AND Before2016(x) -> NOT AlignHighSchool(x)))
+  - Exists(x, (Year(x) AND Since2016(x) AND AlignHighSchool(x)))
+Pred FOL:
+  - ForAll(x, (SAT(x) -> CollegeBoard(x)))
+  - ForAll(x, (SAT(x) -> AssessReadiness(x)))
+  - ForAll(x, (SAT(x) -> NOT AlignedWithCurricula(x)))
+  - ForAll(x, (SAT(x) -> MadeAdjustments(x)))
+Question: Since 2016 the SAT has been better aligned with high school curricula.
+GT Answer: True
+Pred Answer: Unknown
+is_syntax_valid: True
+
+=================== Failed Case 20 (ID: 379_0_canonical) ===================
+NL Premises:
+  - Students must accumulate at least 65% of the total credits of their training program to be eligible for an internship.
+  - The training program has a total of 120 credits.
+  - Hà has accumulated 80 credits in the training program.
+  - Students must submit an internship application by June 1st to be considered.
+  - Hà submitted her application on May 15th.
+  - The training program includes 30 credits of elective courses, but only 20 credits are counted toward the internship requirement.
+  - Another student, Vinh, has accumulated 75 credits and is also in the training program.
+  - Students with a GPA below 2.5 are required to take a remedial course before interning.
+  - Hàs GPA is 3.2, and she has no remedial requirements.
+  - Internships are offered in two cycles: summer and fall, with summer priority for seniors.
+  - Hà is a junior and applying for a fall internship.
+  - The program advisor must approve all internship applications, and Hàs was approved.
+  - Vinh missed the application deadline and accumulated only 10 elective credits.
+GT FOL:
+  - ForAll(x, (EligibleForInternship(x) <-> AccumulatedCredits(x) >= 78))
+  - TotalCredits(trainingprogram) = 120
+  - AccumulatedCredits(ha) = 80
+  - ForAll(x, (EligibleForInternship(x) -> SubmittedApplicationBeforeJune1(x)))
+  - SubmittedApplicationBeforeJune1(ha)
+  - ElectiveCredits(trainingprogram) = 30 AND CountedElectiveCredits(trainingprogram) = 20
+  - AccumulatedCredits(vinh) = 75 AND Program(vinh, trainingprogram)
+  - ForAll(x, (GPA(x) < 2.5 -> RequiresRemedialCourse(x)))
+  - GPA(ha) = 3.2 AND NOT RequiresRemedialCourse(ha)
+  - InternshipCycle(summer) AND InternshipCycle(fall) AND Priority(summer, seniors)
+  - Status(ha, junior) AND ApplyingFor(ha, fall)
+  - ForAll(x, (EligibleForInternship(x) -> ApprovedByAdvisor(x))) AND ApprovedByAdvisor(ha)
+  - NOT SubmittedApplicationBeforeJune1(vinh) AND ElectiveCreditsAccumulated(vinh) = 10
+Pred FOL:
+  - ForAll(x, (TrainingProgram(x) AND Credits(x) >= 78 -> InternshipEligible(x)))
+  - ForAll(x, (TrainingProgram(x) -> TotalCredits(x) = 120))
+  - TrainingProgram(ha) AND Credits(ha) = 80
+  - ForAll(x, (TrainingProgram(x) AND ApplicationDeadline(x) -> InternshipEligible(x)))
+  - TrainingProgram(ha) AND ApplicationDeadline(ha) = may15
+  - ForAll(x, (TrainingProgram(x) -> ElectiveCredits(x) = 30 AND InternshipCredits(x) = 20))
+  - TrainingProgram(vinh) AND Credits(vinh) = 75
+  - ForAll(x, (TrainingProgram(x) AND GPA(x) < 2.5 -> RemedialRequired(x)))
+  - TrainingProgram(ha) AND GPA(ha) = 3.2 AND RemedialRequired(ha) = false
+  - ForAll(x, (TrainingProgram(x) -> InternshipCycle(x) = summer OR InternshipCycle(x) = fall))
+  - TrainingProgram(ha) AND InternshipCycle(ha) = fall
+  - ForAll(x, (TrainingProgram(x) -> AdvisorApproval(x)))
+  - TrainingProgram(vinh) AND AdvisorApproval(vinh) = false
+Question: Based on the above premises, which statement can be inferred if we know that Hà has accumulated 80 credits in the training program?
+A. Hà is eligible for an internship because she has accumulated 80 credits.
+B. Hà is not eligible for an internship due to insufficient credits.
+C. Hà must take remedial courses before applying for the internship.
+D. Hà’s internship application was submitted after June 1st.
+GT Answer: B
+Pred Answer: Unknown
+is_syntax_valid: False
+
+=================== Failed Case 21 (ID: 665) ===================
+NL Premises:
+  - Deng Xiaoping served as the paramount leader of the Peoples Republic of China (PRC).
+  - Deng Xiaoping was praised for his reaffirmation of the reform program in his Southern Tour of 1992 as well as the reversion of Hong Kong to Chinese control in 1997 and the return of Macau in 1999.
+  - As the partys Secretary-General under Mao and Vice Premier in he 1950s, Deng Xiaoping presided over the Anti-Rightist Campaign launched by Mao.
+  - Deng Xiaoping became instrumental in Chinas economic reconstruction following the disastrous Great Leap Forward (1958–1960).
+  - Mao Zedong died in 1976.
+  - After Mao Zedongs death, Deng Xiaoping gradually rose to supreme power.
+GT FOL:
+  - ParamountLeaderOf(dengxiaoping, prc)
+  - PraisedFor(dengxiaoping, reaffirmationofreformprogram) AND PraisedFor(dengxiaoping, reversionofhongkong) AND PraisedFor(dengxiaoping, returnofmacau)
+  - PartysSecretaryGeneral(dengxiaoping) AND Under(dengxiaoping, mao) AND VicePremier(dengxiaoping) AND PresidedOver(dengxiaoping, antirightistcampaign) AND LaunchedBy(antirightistcampaign, mao)
+  - InstrumentalIn(dengxiaoping, chinaseconomicreconstruction) AND Following(chinaseconomicreconstruction, greatleapforward) AND Disastrous(greatleapforward)
+  - DiedIn(mao, y1976)
+  - GraduallyRoseTo(dengxiaoping, supremepower)
+Pred FOL:
+  - ServedAsParamountLeaderOfDengXiaoping(prc)
+  - PraisedForReaffirmationOfReformProgramDengXiaoping() AND PraisedForReversionOfHongKongToChineseControlDengXiaoping() AND PraisedForReturnOfMacauToChineseControlDengXiaoping()
+  - SecretaryGeneralUnderMaoDengXiaoping() AND VicePremierDengXiaoping() AND PresidedOverAntiRightistCampaignDengXiaoping()
+  - InstrumentalInEconomicReconstructionDengXiaoping()
+  - DiedInYearMaoZedong(1976)
+  - GraduallyRoseToSupremePowerDengXiaoping()
+Question: The paramount leader of the PRC was also the vice premier.
+GT Answer: True
+Pred Answer: Unknown
+is_syntax_valid: False
+
+=================== Failed Case 22 (ID: 190_0) ===================
+NL Premises:
+  - There exists a student who has received the company stamp for their internship.
+  - There exists a student who has received feedback from the company for their internship.
+  - If x completes the necessary internship requirements, then x has received the company stamp for their internship.
+  - If x completes the necessary internship requirements, then x has received feedback from the company.
+  - If x has received the company stamp, then x has received feedback from the company.
+GT FOL:
+  - Exists(x, (Student(x) AND Stamp(x)))
+  - Exists(x, (Student(x) AND Feedback(x)))
+  - ForAll(x, (Completion(x) -> Stamp(x)))
+  - ForAll(x, (Completion(x) -> Feedback(x)))
+  - ForAll(x, (Stamp(x) -> Feedback(x)))
+Pred FOL:
+  - Exists(x, (Student(x) AND Stamp(x)))
+  - Exists(x, (Student(x) AND Feedback(x)))
+  - ForAll(x, (Internship(x) -> Stamp(x)))
+  - ForAll(x, (Internship(x) -> Feedback(x)))
+  - ForAll(x, (Stamp(x) -> Feedback(x)))
+Question: Which of the following can be inferred about students based on the premises?
+A. If a student has feedback, they completed the internship requirements.
+B. If a student has the stamp, they have feedback.
+C. All students have the company stamp.
+D. No student has feedback.
+GT Answer: Unknown
+Pred Answer: B
+is_syntax_valid: True
+
+=================== Failed Case 23 (ID: 195_0) ===================
+NL Premises:
+  - All students have completed all quizzes.
+  - If x finishes all quizzes, then x is eligible for the final exam.
+  - If x completes all course requirements, then x is eligible for the final exam.
+  - If x has not completed all course requirements, then x has not completed all quizzes.
+  - If x has not finished all quizzes, then x is not eligible for the final exam.
+GT FOL:
+  - ForAll(x, (Student(x) -> Quiz(x)))
+  - ForAll(x, (Quiz(x) -> Eligible(x)))
+  - ForAll(x, (Completed(x) -> Eligible(x)))
+  - ForAll(x, (NOT Completed(x) -> NOT Quiz(x)))
+  - ForAll(x, (NOT Quiz(x) -> NOT Eligible(x)))
+Pred FOL:
+  - ForAll(x, (Student(x) -> CompletedQuizzes(x)))
+  - ForAll(x, (CompletedQuizzes(x) -> EligibleFinalExam(x)))
+  - ForAll(x, (CompletedRequirements(x) -> EligibleFinalExam(x)))
+  - ForAll(x, (NOT CompletedRequirements(x) -> NOT CompletedQuizzes(x)))
+  - ForAll(x, (NOT CompletedQuizzes(x) -> NOT EligibleFinalExam(x)))
+Question: Which of the following can be inferred about students based on the premises?
+A. All students are eligible for the final exam.
+B. All students have not completed course requirements.
+C. No students are eligible for the final exam.
+D. Some students complete quizzes but are not eligible.
+GT Answer: Unknown
+Pred Answer: A
+is_syntax_valid: True
+
+=================== Failed Case 24 (ID: 288_0) ===================
+NL Premises:
+  - If a language learner completes immersion programs, then that learner achieves conversational fluency.
+  - If a student doesnt engage with native speakers, then that student cannot complete immersion programs effectively.
+  - There exists at least one language learner who regularly engages with native speakers.
+  - If a language student doesnt engage with native speakers, then that student doesnt achieve conversational fluency.
+  - There exists at least one student receiving cultural competency recognition.
+  - If there exists a language learner who engages with native speakers, then students who dont engage with natives cannot complete immersion programs.
+  - If not engaging with native speakers means not achieving fluency, then at least one student receives cultural competency recognition.
+  - If not engaging with native speakers prevents completing immersion programs, then completing immersion programs leads to achieving conversational fluency.
+  - All language students create digital pronunciation portfolios.
+  - There exists at least one student who has completed an immersion program.
+GT FOL:
+  - ForAll(x, (CompletesImmersionProgram(x) -> AchievesConversationalFluency(x)))
+  - ForAll(x, (NOT EngagesWithNativeSpeakers(x) -> NOT CompletesImmersionProgram(x)))
+  - Exists(x, (EngagesWithNativeSpeakers(x)))
+  - ForAll(x, (NOT EngagesWithNativeSpeakers(x) -> NOT AchievesConversationalFluency(x)))
+  - Exists(x, (ReceivesCulturalCompetencyRecognition(x)))
+  - (Exists(x, (EngagesWithNativeSpeakers(x)) -> ForAll(y, (NOT EngagesWithNativeSpeakers(y) -> NOT CompletesImmersionProgram(y)))))
+  - (ForAll(x, (NOT EngagesWithNativeSpeakers(x) -> NOT AchievesConversationalFluency(x)) -> Exists(y, (ReceivesCulturalCompetencyRecognition(y)))))
+  - (ForAll(x, (NOT EngagesWithNativeSpeakers(x) -> NOT CompletesImmersionProgram(x)) -> ForAll(y, (CompletesImmersionProgram(y) -> AchievesConversationalFluency(y)))))
+  - ForAll(x, (LanguageStudent(x) -> CreatesPronunciationPortfolio(x)))
+  - Exists(x, (CompletesImmersionProgram(x)))
+Pred FOL:
+  - ForAll(x, (Immersion(x) -> Fluency(x)))
+  - ForAll(x, (NOT Native(x) -> NOT Immersion(x)))
+  - Exists(x, Native(x))
+  - ForAll(x, (NOT Native(x) -> NOT Fluency(x)))
+  - Exists(x, Recognition(x))
+  - (Exists(x, Native(x)) -> ForAll(x, (NOT Native(x) -> NOT Immersion(x))))
+  - ((NOT Native(x) -> NOT Fluency(x)) -> Exists(x, Recognition(x)))
+  - ((NOT Native(x) -> NOT Immersion(x)) -> (Immersion(x) -> Fluency(x)))
+  - ForAll(x, Portfolio(x))
+  - Exists(x, Immersion(x))
+Question: Based on the above premises, which statement can be inferred if we know that there exists at least one student who has completed an immersion program?
+A. The necessary connection between native speaker engagement, immersion program completion, and conversational fluency is logically inconsistent.
+B. It is not the case that failure to engage with native speakers preventing immersion program completion implies completing immersion programs develops conversational fluency.
+C. If not engaging with native speakers prevents completing immersion programs, then completing immersion programs leads to achieving conversational fluency.
+D. Language students who engage with native speakers both do and do not achieve conversational fluency through immersion programs.
+GT Answer: Unknown
+Pred Answer: C
+is_syntax_valid: True
+
+=================== Failed Case 25 (ID: 123_0) ===================
+NL Premises:
+  - If a student has not passed the qualifying exam, then they are not eligible for the scholarship.
+  - At least one student is eligible for the scholarship.
+  - If a student is eligible for the scholarship, then they must have passed the qualifying exam.
+  - If a student is eligible for the scholarship, then they must have participated in extracurricular activities.
+  - Every student has participated in extracurricular activities.
+  - If a student has participated in extracurricular activities, they are eligible for the scholarship.
+GT FOL:
+  - ForAll(x, NOT PassedExam(x) -> NOT EligibleForScholarship(x))
+  - Exists(x, EligibleForScholarship(x))
+  - Exists(x, EligibleForScholarship(x)) -> ForAll(x, NOT PassedExam(x) -> NOT EligibleForScholarship(x))
+  - Exists(x, EligibleForScholarship(x)) -> Exists(x, ParticipatesInActivities(x))
+  - ForAll(x, ParticipatesInActivities(x))
+  - ForAll(x, ParticipatesInActivities(x) -> EligibleForScholarship(x))
+Pred FOL:
+  - ForAll(x, (NOT PassedQualifyingExam(x) -> NOT EligibleForScholarship(x)))
+  - Exists(x, EligibleForScholarship(x))
+  - ForAll(x, (EligibleForScholarship(x) -> PassedQualifyingExam(x)))
+  - ForAll(x, (EligibleForScholarship(x) -> ParticipatedInExtracurriculars(x)))
+  - ForAll(x, ParticipatedInExtracurriculars(x))
+  - ForAll(x, (ParticipatedInExtracurriculars(x) -> EligibleForScholarship(x)))
+Question: Are all students eligible for a scholarship?
+GT Answer: No
+Pred Answer: Yes
+is_syntax_valid: True
+
+=================== Failed Case 26 (ID: 632) ===================
+NL Premises:
+  - New York City is on the East Coast.
+  - Seattle is on the West Coast.
+  - If a person from a city on the East coast is traveling to a city on the west coast, they will be on a long flight.
+  - Most passengers on flights to Seattle from New York City are not in first class.
+  - People on long flights are uncomfortable unless theyre in first class
+GT FOL:
+  - On(newyorkcity, eastcoast)
+  - On(seattle, westcoast)
+  - ForAll(x, ForAll(y, ForAll(z, ((TravelingFrom(x, y) AND On(y, eastcoast) AND TravelingTo(x, z) AND On(z, westcoast)) -> OnLongFlight(x)))))
+  - Exists(x, (NOT InFirstClass(x) AND TravelingFrom(x, newyorkcity) AND TravelingTo(x, seattle)))
+  - ForAll(x, (OnLongFlight(x) AND NOT InFirstClass(x) -> Uncomfortable(x)))
+Pred FOL:
+  - ForAll(x, (City(newyorkcity) AND OnCoast(x, east) -> City(x)))
+  - ForAll(x, (City(seattle) AND OnCoast(x, west) -> City(x)))
+  - ForAll(x, ForAll(y, (City(x) AND City(y) AND OnCoast(x, east) AND OnCoast(y, west) AND TravelingTo(x, y) -> LongFlight(x, y))))
+  - ForAll(x, (City(x) AND City(newyorkcity) AND City(seattle) AND TravelingTo(x, seattle) -> NOT FirstClass(x)))
+  - ForAll(x, (LongFlight(x, y) -> (NOT FirstClass(x) -> Uncomfortable(x))))
+Question: Some people flying from New York City to Seattle will be uncomfortable.
+GT Answer: False
+Pred Answer: Unknown
+is_syntax_valid: True
+
+=================== Failed Case 27 (ID: 283_0) ===================
+NL Premises:
+  - There exists at least one educational technology laboratory on campus.
+  - All students take part in collaborative learning activities.
+  - If a student qualifies for academic scholarships, then that student submits all required assignments.
+  - If a student does not qualify for academic scholarships, then that student does not take part in collaborative learning activities.
+  - All students submit all required assignments.
+  - If there exists an educational technology laboratory on campus, then all students take part in collaborative learning activities.
+  - If all students take part in collaborative learning activities, then there exists an educational technology laboratory on campus.
+  - If all students submit required assignments, then if there exists an educational technology laboratory, all students take part in collaborative learning activities.
+  - All students participate in peer review sessions.
+  - All students qualify for academic scholarships.
+GT FOL:
+  - Exists(x, (EducationalTechLab(x)))
+  - ForAll(x, (Student(x) -> ParticipatesToCollaborativeLearning(x)))
+  - ForAll(x, (QualifiesForScholarship(x) -> SubmitsAssignments(x)))
+  - ForAll(x, (NOT QualifiesForScholarship(x) -> NOT ParticipatesToCollaborativeLearning(x)))
+  - ForAll(x, (Student(x) -> SubmitsAssignments(x)))
+  - (Exists(x, (EducationalTechLab(x)) -> ForAll(y, (Student(y) -> ParticipatesToCollaborativeLearning(y)))))
+  - (ForAll(x, (Student(x) -> ParticipatesToCollaborativeLearning(x)) -> Exists(y, (EducationalTechLab(y)))))
+  - (ForAll(x, (Student(x) -> SubmitsAssignments(x)) -> (Exists(y, (EducationalTechLab(y)) -> ForAll(z, (Student(z) -> ParticipatesToCollaborativeLearning(z)))))))
+  - ForAll(x, (Student(x) -> ParticipatesInPeerReview(x)))
+  - ForAll(x, (Student(x) -> QualifiesForScholarship(x)))
+Pred FOL:
+  - Exists(x, (EducationalTechnologyLab(x)))
+  - ForAll(x, (CollaborativeLearning(x)))
+  - ForAll(x, (AcademicScholarship(x) -> Assignment(x)))
+  - ForAll(x, (NOT AcademicScholarship(x) -> NOT CollaborativeLearning(x)))
+  - ForAll(x, (Assignment(x)))
+  - (Exists(x, (EducationalTechnologyLab(x)) -> ForAll(x, (CollaborativeLearning(x)))))
+  - (ForAll(x, (CollaborativeLearning(x)) -> Exists(x, (EducationalTechnologyLab(x)))))
+  - (ForAll(x, (Assignment(x)) -> (Exists(x, (EducationalTechnologyLab(x)) -> ForAll(x, (CollaborativeLearning(x)))))))
+  - ForAll(x, (PeerReview(x)))
+  - ForAll(x, (AcademicScholarship(x)))
+Question: Based on the above premises, which statement can be inferred if we know that all students submit all required assignments?
+A. If all students submitting assignments implies that an educational technology lab existing means students participate in collaborative learning implies itself.
+B. Both the statement that all students submitting assignments means tech labs lead to collaborative learning and its negation are simultaneously true.
+C. If all students submit required assignments, then if there exists an educational technology laboratory, all students take part in collaborative learning activities.
+D. It is not the case that all students submitting assignments implies that tech labs lead to collaborative learning.
+GT Answer: Unknown
+Pred Answer: C
+is_syntax_valid: True
+
+=================== Failed Case 28 (ID: 265) ===================
+NL Premises:
+  - Daveed Diggs is an actor and film producer.
+  - Daveed Diggs played two roles in the musical Hamilton.
+  - One of the actors from Hamilton won the best actor award.
+  - The actor playing Thomas Jefferson won the best actor award.
+  - Daveed Diggs played Thomas Jefferson.
+  - Musicals are not films.
+GT FOL:
+  - Actor(daveeddiggs) AND FilmProducer(daveeddiggs)
+  - PlayedTwoRoles(daveeddiggs) AND PlayedIn(daveeddiggs, hamilton) AND Musical(hamilton)
+  - Exists(x, (Actor(x) AND PlayedIn(x, hamilton) AND WonBestActorAward(x)))
+  - ForAll(x, (Actor(x) AND Played(x, thomasjefferson) -> WonBestActorAward(x)))
+  - Played(daveeddiggs, thomasjefferson)
+  - ForAll(x, (Musical(x) -> NOT Film(x)))
+Pred FOL:
+  - Actor(daveeddiggs) AND FilmProducer(daveeddiggs)
+  - Exists(x, (Role(x, daveeddiggs) AND Musical(x) AND Hamilton(x)))
+  - Exists(x, (Actor(x) AND Hamilton(x) AND WonBestActorAward(x)))
+  - Exists(x, (Actor(x) AND Hamilton(x) AND WonBestActorAward(x) AND Plays(x, thomasjefferson)))
+  - Plays(daveeddiggs, thomasjefferson)
+  - ForAll(x, (Musical(x) -> NOT Film(x)))
+Question: Hamilton is a film.
+GT Answer: False
+Pred Answer: Unknown
+is_syntax_valid: True
+
+=================== Failed Case 29 (ID: 80_0) ===================
+NL Premises:
+  - Every student attends classes.
+  - If a student does not study regularly, then they do not achieve high scores.
+  - If every student completes their assignments, then if a student does not study regularly, they do not achieve high scores.
+  - If not studying regularly implies not achieving high scores, then every student attends classes.
+  - If a student studies regularly, then they complete their assignments.
+  - If a student does not submit their homework on time, then they do not receive bonus points.
+GT FOL:
+  - ForAll(x, AttendsClasses(x))
+  - ForAll(x, (NOT StudiesRegularly(x) -> NOT AchievesHighScores(x)))
+  - (ForAll(x, CompletesAssignments(x)) -> (NOT StudiesRegularly(x) -> NOT AchievesHighScores(x)))
+  - ((NOT StudiesRegularly(x) -> NOT AchievesHighScores(x)) -> ForAll(x, AttendsClasses(x)))
+  - ForAll(x, (StudiesRegularly(x) -> CompletesAssignments(x)))
+  - ForAll(x, (NOT SubmitsHomeworkOnTime(x) -> NOT ReceivesBonusPoints(x)))
+Pred FOL:
+  - ForAll(x, AttendsClasses(x))
+  - ForAll(x, (NOT StudiesRegularly(x) -> NOT HighScores(x)))
+  - (ForAll(x, CompletesAssignments(x)) -> ForAll(x, (NOT StudiesRegularly(x) -> NOT HighScores(x))))
+  - ((NOT StudiesRegularly(x) -> NOT HighScores(x)) -> ForAll(x, AttendsClasses(x)))
+  - ForAll(x, (StudiesRegularly(x) -> CompletesAssignments(x)))
+  - ForAll(x, (NOT SubmitsHomeworkOnTime(x) -> NOT BonusPoints(x)))
+Question: Based on the above premises, which statement can be inferred?
+A. If a student does not complete their assignments, then they do not achieve high scores.
+B. If a student submits homework on time, then they receive bonus points.
+C. If a student does not attend class, they will achieve high scores.
+D. If a student achieves high scores, then they did not study regularly.
+GT Answer: Unknown
+Pred Answer: A
+is_syntax_valid: True
+
+=================== Failed Case 30 (ID: 998) ===================
+NL Premises:
+  - All people who enjoy eating gelato ice cream would enjoy a vacation to Italy.
+  - There are no people who can resist the hallmark delectable drinks and desserts that are famed in Italy.
+  - People either enjoy eating gelato ice cream or love to travel and vacation often.
+  - If people often take study abroad semesters to Europe, then they do not regret their college experiences.
+  - If people love to travel and vacation often, then they often take study abroad semesters to Europe.
+  - Robert either enjoys eating gelato ice cream and loves to travel and vacation often, or he neither enjoys eating gelato ice cream nor loves to travel and vacation often.
+GT FOL:
+  - ForAll(x, (Gelato(x) -> Italy(x)))
+  - ForAll(x, (NOT Resist(x)))
+  - ForAll(x, (Gelato(x) OR Travel(x)))
+  - ForAll(x, (Europe(x) -> NOT Regret(x)))
+  - ForAll(x, (Travel(x) -> Europe(x)))
+  - (Gelato(robert) AND Travel(robert)) OR (NOT Gelato(robert) AND NOT Travel(robert))
+Pred FOL:
+  - ForAll(x, (Gelato(x) -> Italy(x)))
+  - ForAll(x, (NOT Italy(x)))
+  - ForAll(x, (Gelato(x) OR Travel(x)))
+  - ForAll(x, (Europe(x) -> NOT Regret(x)))
+  - ForAll(x, (Travel(x) -> Europe(x)))
+  - (Gelato(robert) OR Travel(robert))
+Question: Robert can resist the hallmark delectable drinks and desserts that are famed in Italy.
+GT Answer: False
+Pred Answer: Yes
+is_syntax_valid: True
+
+=================== Failed Case 31 (ID: 193_0) ===================
+NL Premises:
+  - If x does not donate blood on the university campus, then x does not receive social work points for graduation.
+  - If x is not involved in social work, then x does not donate blood on the university campus.
+  - If x is eligible for receiving social work points, then x is involved in social work activities.
+  - All students donate blood on the university campus.
+  - If x participates in university activities, then x earns graduation points.
+GT FOL:
+  - ForAll(x, (NOT Donate(x) -> NOT Points(x)))
+  - ForAll(x, (NOT Work(x) -> NOT Donate(x)))
+  - ForAll(x, (Eligible(x) -> Work(x)))
+  - ForAll(x, (Student(x) -> Donate(x)))
+  - ForAll(x, (Participates(x) -> Graduation(x)))
+Pred FOL:
+  - ForAll(x, (NOT DonatesBlood(x) -> NOT ReceivesSocialWorkPoints(x)))
+  - ForAll(x, (NOT InvolvedInSocialWork(x) -> NOT DonatesBlood(x)))
+  - ForAll(x, (EligibleForSocialWorkPoints(x) -> InvolvedInSocialWork(x)))
+  - ForAll(x, (Student(x) -> DonatesBlood(x)))
+  - ForAll(x, (ParticipatesInUniversityActivities(x) -> ReceivesGraduationPoints(x)))
+Question: Which of the following can be inferred about students based on the premises?
+A. All students receive social work points.
+B. All students are eligible for social work points.
+C. No students are involved in social work.
+D. No students donate blood.
+GT Answer: Unknown
+Pred Answer: B
+is_syntax_valid: True
+
+=================== Failed Case 32 (ID: 51_0) ===================
+NL Premises:
+  - At least one student receives financial aid.
+  - All students can apply for financial aid.
+  - If a student has a low family income, they qualify for need-based financial aid.
+  - Students from middle- or high-income families are not eligible for need-based aid.
+  - All students can seek financial aid counseling.
+  - If a student applies for financial aid, they increase their chances of receiving financial support.
+  - If a student receives financial aid, their tuition burden is reduced.
+  - If a students tuition burden is reduced, they have less financial stress.
+  - If a student has less financial stress, they can focus better on their studies.
+  - If a student focuses better on their studies, their academic performance improves.
+  - If a students academic performance improves, they may become eligible for merit-based scholarships.
+  - If a student does not receive financial aid, they may have to take on student loans.
+GT FOL:
+  - Exists(x, (ReceivesFinancialAid(x)))
+  - ForAll(x, (Student(x) -> CanApplyFinancialAid(x)))
+  - ForAll(x, (LowFamilyIncome(x) -> QualifiesNeedBasedAid(x)))
+  - ForAll(x, (NOT LowFamilyIncome(x) -> NOT QualifiesNeedBasedAid(x)))
+  - ForAll(x, (Student(x) -> CanSeekFinancialAidCounseling(x)))
+  - ForAll(x, (AppliesFinancialAid(x) -> IncreasesChanceFinancialSupport(x)))
+  - ForAll(x, (ReceivesFinancialAid(x) -> ReducedTuitionBurden(x)))
+  - ForAll(x, (ReducedTuitionBurden(x) -> LessFinancialStress(x)))
+  - ForAll(x, (LessFinancialStress(x) -> BetterStudyFocus(x)))
+  - ForAll(x, (BetterStudyFocus(x) -> ImprovesAcademicPerformance(x)))
+  - ForAll(x, (ImprovesAcademicPerformance(x) -> EligibleMeritScholarship(x)))
+  - ForAll(x, (NOT ReceivesFinancialAid(x) -> MayTakeStudentLoans(x)))
+Pred FOL:
+  - Exists(x, ReceivesFinancialAid(x))
+  - ForAll(x, CanApplyForAid(x))
+  - ForAll(x, (LowFamilyIncome(x) -> QualifiesForNeedBasedAid(x)))
+  - ForAll(x, (MiddleIncome(x) OR HighIncome(x) -> NOT QualifiesForNeedBasedAid(x)))
+  - ForAll(x, CanSeekCounseling(x))
+  - ForAll(x, (AppliesForAid(x) -> IncreasedChancesOfReceivingSupport(x)))
+  - ForAll(x, (ReceivesFinancialAid(x) -> ReducedTuitionBurden(x)))
+  - ForAll(x, (ReducedTuitionBurden(x) -> LessFinancialStress(x)))
+  - ForAll(x, (LessFinancialStress(x) -> BetterFocusOnStudies(x)))
+  - ForAll(x, (BetterFocusOnStudies(x) -> ImprovedAcademicPerformance(x)))
+  - ForAll(x, (ImprovedAcademicPerformance(x) -> MayQualifyForMeritScholarships(x)))
+  - ForAll(x, (NOT ReceivesFinancialAid(x) -> MayNeedStudentLoans(x)))
+Question: Based on the premises above, which of the following statements can be logically concluded?
+A. If a student applies for financial aid and qualifies, they are more likely to receive support and reduce financial stress.
+B. If a student has less financial stress, they are more likely to perform better academically.
+C. If a student does not qualify for any aid and takes no counseling, they are guaranteed to take on student loans.
+D. If a student receives financial aid, their tuition burden remains the same.
+GT Answer: Unknown
+Pred Answer: B
+is_syntax_valid: True
+
+=================== Failed Case 33 (ID: 287_0) ===================
+NL Premises:
+  - There exists at least one student who graduates on time.
+  - All university students take required core curriculum courses.
+  - If a student doesnt understand foundational concepts, then that student wont graduate on time.
+  - There exists at least one student who studies regularly.
+  - If a student doesnt study regularly, then that student wont graduate on time.
+  - If its true that not understanding foundational concepts prevents graduating on time, then all university students take required core curriculum courses.
+  - If not understanding foundational concepts prevents on-time graduation, then there exists a student who studies regularly.
+  - If all university students take required core curriculum courses, then there exists at least one student who graduates on time.
+  - There exists at least one student who understands foundational concepts.
+  - If a student doesnt take required core curriculum courses, then that student doesnt understand foundational concepts.
+GT FOL:
+  - Exists(x, (GraduatesOnTime(x)))
+  - ForAll(x, (TakesRequiredCourses(x)))
+  - ForAll(x, (NOT UnderstandsFoundations(x) -> NOT GraduatesOnTime(x)))
+  - Exists(x, (StudiesRegularly(x)))
+  - ForAll(x, (NOT StudiesRegularly(x) -> NOT GraduatesOnTime(x)))
+  - (ForAll(x, (NOT UnderstandsFoundations(x) -> NOT GraduatesOnTime(x)) -> ForAll(x, (TakesRequiredCourses(x)))))
+  - (ForAll(x, (NOT UnderstandsFoundations(x) -> NOT GraduatesOnTime(x)) -> Exists(x, (StudiesRegularly(x)))))
+  - (ForAll(x, (TakesRequiredCourses(x)) -> Exists(x, (GraduatesOnTime(x)))))
+  - Exists(x, (UnderstandsFoundations(x)))
+  - ForAll(x, (NOT TakesRequiredCourses(x) -> NOT UnderstandsFoundations(x)))
+Pred FOL:
+  - Exists(x, GraduateOnTime(x))
+  - ForAll(x, TakeCoreCurriculum(x))
+  - ForAll(x, (NOT UnderstandConcepts(x) -> NOT GraduateOnTime(x)))
+  - Exists(x, StudyRegularly(x))
+  - ForAll(x, (NOT StudyRegularly(x) -> NOT GraduateOnTime(x)))
+  - ((NOT UnderstandConcepts(x) -> NOT GraduateOnTime(x)) -> ForAll(x, TakeCoreCurriculum(x)))
+  - ((NOT UnderstandConcepts(x) -> NOT GraduateOnTime(x)) -> Exists(x, StudyRegularly(x)))
+  - (ForAll(x, TakeCoreCurriculum(x) -> Exists(x, GraduateOnTime(x))))
+  - Exists(x, UnderstandConcepts(x))
+  - ForAll(x, (NOT TakeCoreCurriculum(x) -> NOT UnderstandConcepts(x)))
+Question: Based on the above premises, which statement can be inferred if we know that there exists at least one student who graduates on time?
+A. The statement 'if all students take required courses, then at least one student graduates on time' implies itself.
+B. It is not the case that all students taking required courses implies at least one student graduates on time.
+C. Both the statement that all students taking required courses implies someone graduates on time and its negation are simultaneously true.
+D. If all university students take required core curriculum courses, then there exists at least one student who graduates on time.
+GT Answer: Unknown
+Pred Answer: D
+is_syntax_valid: True
+
+=================== Failed Case 34 (ID: 186_0) ===================
+NL Premises:
+  - If x does not attend the orientation, then x is not eligible to register for the next academic year
+  - All students are required to attend the orientation
+  - If all students are required to attend the orientation, then if x does not attend, then x is not eligible to register
+  - If (all students required to attend implies non-attendance leads to ineligibility), then non-attendance leads to ineligibility
+  - If a student is not required to attend the orientation, then they are not eligible to register
+GT FOL:
+  - ForAll(x, NOT AttendsOrientation(x) -> NOT EligibleToRegister(x))
+  - ForAll(x, Student(x) -> RequiredToAttend(x))
+  - ForAll(x, Student(x) -> RequiredToAttend(x)) -> ForAll(x, NOT AttendsOrientation(x) -> NOT EligibleToRegister(x))
+  - (ForAll(x, Student(x) -> RequiredToAttend(x)) -> ForAll(x, NOT AttendsOrientation(x) -> NOT EligibleToRegister(x))) -> ForAll(x, NOT AttendsOrientation(x) -> NOT EligibleToRegister(x))
+  - ForAll(x, Student(x) AND NOT RequiredToAttend(x) -> NOT EligibleToRegister(x))
+Pred FOL:
+  - ForAll(x, (NOT Attends(x) -> NOT Eligible(x)))
+  - ForAll(x, Required(x))
+  - (ForAll(x, Required(x)) -> ForAll(x, (NOT Attends(x) -> NOT Eligible(x))))
+  - ((ForAll(x, Required(x)) -> ForAll(x, (NOT Attends(x) -> NOT Eligible(x))) -> ForAll(x, (NOT Attends(x) -> NOT Eligible(x)))))
+  - ForAll(x, (NOT Required(x) -> NOT Eligible(x)))
+Question: Which of the following can be inferred about student eligibility?
+A. All students are eligible to register.
+B. Some students are not eligible to register.
+C. No students are eligible to register.
+D. Eligibility to register depends on year level.
+GT Answer: A
+Pred Answer: B
+is_syntax_valid: True
+
+=================== Failed Case 35 (ID: 94_0) ===================
+NL Premises:
+  - If a student does not study, they will not pass the test.
+  - There exists at least one student who participates in extracurricular activities.
+  - All students are required to complete coursework.
+  - If a student does not submit assignments, they will not receive a grade.
+  - All students participate in extracurricular activities.
+  - There exists at least one student who submits assignments.
+  - All students pass the test.
+  - If a student passes the test, then they have studied.
+  - If all students complete coursework, then all students participate in extracurricular activities.
+  - If all students completing coursework implies that all students participate in extracurricular activities, then at least one student participates in extracurricular activities.
+  - If at least one student participates in extracurricular activities, then at least one student submits assignments.
+  - If at least one student participating in extracurricular activities implies that at least one student submits assignments, then the same implication holds itself.
+  - If a student not studying leads to failing the test, then a student not submitting assignments leads to not receiving a grade.
+  - If a student completes coursework, then they submit assignments.
+  - All students submit assignments.
+  - If a student does not participate in extracurricular activities, they will not pass the test.
+GT FOL:
+  - ForAll(x, (NOT Studies(x) -> NOT PassTest(x)))
+  - Exists(x, Participates(x))
+  - ForAll(x, Coursework(x))
+  - ForAll(x, (NOT SubmitsAssignment(x) -> NOT ReceivesGrade(x)))
+  - ForAll(x, Participates(x))
+  - Exists(x, SubmitsAssignment(x))
+  - ForAll(x, PassTest(x))
+  - ForAll(x, (PassTest(x) -> Studies(x)))
+  - (ForAll(x, Coursework(x)) -> ForAll(x, Participates(x)))
+  - ((ForAll(x, Coursework(x)) -> ForAll(x, Participates(x))) -> Exists(x, Participates(x)))
+  - (Exists(x, Participates(x)) -> Exists(x, SubmitsAssignment(x)))
+  - ((Exists(x, Participates(x)) -> Exists(x, SubmitsAssignment(x))) -> (Exists(x, Participates(x)) -> Exists(x, SubmitsAssignment(x))))
+  - ForAll(x, ((NOT Studies(x) -> NOT PassTest(x)) -> (NOT SubmitsAssignment(x) -> NOT ReceivesGrade(x))))
+  - ForAll(x, (Coursework(x) -> SubmitsAssignment(x)))
+  - ForAll(x, SubmitsAssignment(x))
+  - ForAll(x, (NOT Participates(x) -> NOT PassTest(x)))
+Pred FOL:
+  - ForAll(x, (NOT Study(x) -> NOT Pass(x)))
+  - Exists(x, Extracurricular(x))
+  - ForAll(x, Coursework(x))
+  - ForAll(x, (NOT Assignments(x) -> NOT Grade(x)))
+  - ForAll(x, Extracurricular(x))
+  - Exists(x, Assignments(x))
+  - ForAll(x, Pass(x))
+  - ForAll(x, (Pass(x) -> Study(x)))
+  - (ForAll(x, Coursework(x) -> ForAll(x, Extracurricular(x))))
+  - ((ForAll(x, Coursework(x) -> ForAll(x, Extracurricular(x))) -> Exists(x, Extracurricular(x))))
+  - (Exists(x, Extracurricular(x) -> Exists(x, Assignments(x))))
+  - ((Exists(x, Extracurricular(x) -> Exists(x, Assignments(x))) -> (Exists(x, Extracurricular(x) -> Exists(x, Assignments(x))))))
+  - ((ForAll(x, Study(x) -> ForAll(x, Pass(x))) -> ForAll(x, Assignments(x) -> ForAll(x, Grade(x)))))
+  - ForAll(x, (Coursework(x) -> Assignments(x)))
+  - ForAll(x, Assignments(x))
+  - ForAll(x, (NOT Extracurricular(x) -> NOT Pass(x)))
+Question: Based on the premises, which statement can be logically inferred?
+A. If all students pass the test and if a student passing the test implies they have studied, then all students have studied.
+B. If all students pass the test and if a student passing the test implies they have studied, then not all students have studied.
+C. If all students pass the test and if a student passing the test implies they have studied, then some students have not studied.
+D. If all students pass the test and if a student passing the test implies they have studied, then no students have studied.
+GT Answer: Unknown
+Pred Answer: A
+is_syntax_valid: True
+
+=================== Failed Case 36 (ID: 63_0) ===================
+NL Premises:
+  - Every autonomous vehicle is reliable.
+  - If an autonomous vehicle is thoroughly tested, then it is reliable.
+  - There does not necessarily exist an autonomous vehicle that is thoroughly tested.
+  - If an autonomous vehicle is safe, then it is thoroughly tested.
+  - If an autonomous vehicle is thoroughly tested, then it is safe.
+  - There exists at least one autonomous vehicle that is energy-efficient.
+  - If there exists at least one energy-efficient autonomous vehicle, then any safe vehicle is thoroughly tested.
+  - If every safe vehicle is thoroughly tested, then every thoroughly tested vehicle is not necessarily safe.
+  - If an autonomous vehicle is not reliable, then it is not adopted by the market.
+  - If an autonomous vehicle is not reliable, then it is not necessarily thoroughly tested.
+GT FOL:
+  - ForAll(x, Reliable(x))
+  - ForAll(x, ThoroughlyTested(x) -> Reliable(x))
+  - NOT Exists(x, ThoroughlyTested(x))
+  - ForAll(x, Safe(x) -> ThoroughlyTested(x))
+  - ForAll(x, ThoroughlyTested(x) -> Safe(x))
+  - Exists(x, EnergyEfficient(x))
+  - Exists(x, EnergyEfficient(x)) -> ForAll(x, Safe(x) -> ThoroughlyTested(x))
+  - ForAll(x, x__ = __x)
+  - ForAll(x, NOT Reliable(x) -> NOT MarketAdopted(x))
+  - ForAll(x, NOT Reliable(x) -> NOT ThoroughlyTested(x))
+Pred FOL:
+  - ForAll(x, AutonomousVehicle(x) -> Reliable(x))
+  - ForAll(x, AutonomousVehicle(x) AND ThoroughlyTested(x) -> Reliable(x))
+  - NOT (Exists(x, AutonomousVehicle(x) AND ThoroughlyTested(x)))
+  - ForAll(x, AutonomousVehicle(x) AND Safe(x) -> ThoroughlyTested(x))
+  - ForAll(x, AutonomousVehicle(x) AND ThoroughlyTested(x) -> Safe(x))
+  - Exists(x, AutonomousVehicle(x) AND EnergyEfficient(x))
+  - Exists(x, AutonomousVehicle(x) AND EnergyEfficient(x)) -> ForAll(x, Safe(x) -> ThoroughlyTested(x))
+  - ForAll(x, Safe(x) -> ThoroughlyTested(x)) -> ForAll(x, ThoroughlyTested(x) -> NOT Safe(x))
+  - ForAll(x, AutonomousVehicle(x) AND NOT Reliable(x) -> NOT AdoptedByMarket(x))
+  - ForAll(x, AutonomousVehicle(x) AND NOT Reliable(x) -> NOT ThoroughlyTested(x))
+Question: Are all autonomous vehicles safe?
+GT Answer: Unknown
+Pred Answer: No
+is_syntax_valid: True
+
+=================== Failed Case 37 (ID: 343_0) ===================
+NL Premises:
+  - Students who do not apply for Scholarships (¬S) cannot enroll in Thesis Writing (¬T).
+  - Passing Philosophy (P) grants eligibility for Research Methods (R).
+  - All students are guaranteed University housing (U).
+  - Enrollment in Research Methods (R) requires Thesis Writing (T).
+  - Passing Philosophy (P) necessitates enrolling in Thesis Writing (T).
+  - Every student is enrolled in Quantum Physics (Q).
+  - Some students are participating in Research Methods (R).
+  - All students have submitted Scholarship applications (S).
+  - Universal Quantum Physics enrollment (∀Q) enforces Philosophy-Thesis linkage (P->T).
+  - Mandatory Quantum Physics (∀Q) implies Scholarship applications are required for Thesis (¬S->¬T).
+  - The policy Philosophy -> Thesis ensures universal housing access (∀U).
+  - Universal housing (∀U) guarantees Scholarship-Thesis compliance under Quantum enrollment (∀Q -> ¬S->¬T).
+  - Lack of housing (¬U) revokes Research Methods eligibility (¬R).
+GT FOL:
+  - ForAll(x, (NOT Scholarship(x) -> NOT Thesis(x)))
+  - ForAll(x, (Philosophy(x) -> Research(x)))
+  - ForAll(x, University(x))
+  - ForAll(x, (Research(x) -> Thesis(x)))
+  - ForAll(x, (Philosophy(x) -> Thesis(x)))
+  - ForAll(x, Quantum(x))
+  - Exists(x, Research(x))
+  - ForAll(x, Scholarship(x))
+  - (ForAll(x, Quantum(x) -> ForAll(x, (Philosophy(x) -> Thesis(x)))))
+  - (ForAll(x, Quantum(x) -> ForAll(x, (NOT Scholarship(x) -> NOT Thesis(x)))))
+  - (ForAll(x, (Philosophy(x) -> Thesis(x)) -> ForAll(x, University(x))))
+  - (ForAll(x, University(x) -> (ForAll(x, Quantum(x) -> ForAll(x, (NOT Scholarship(x) -> NOT Thesis(x)))))))
+  - ForAll(x, (NOT University(x) -> NOT Research(x)))
+Pred FOL:
+  - ForAll(x, (NOT Scholarship(x) -> NOT Thesis(x)))
+  - ForAll(x, (Philosophy(x) -> Research(x)))
+  - ForAll(x, University(x))
+  - ForAll(x, (Research(x) -> Thesis(x)))
+  - ForAll(x, (Philosophy(x) -> Thesis(x)))
+  - ForAll(x, Quantum(x))
+  - Exists(x, Research(x))
+  - ForAll(x, Scholarship(x))
+  - (ForAll(x, Quantum(x) -> ForAll(x, (Philosophy(x) -> Thesis(x)))))
+  - (ForAll(x, Quantum(x) -> ForAll(x, (NOT Scholarship(x) -> NOT Thesis(x)))))
+  - (ForAll(x, (Philosophy(x) -> Thesis(x)) -> ForAll(x, University(x))))
+  - (ForAll(x, University(x) -> (ForAll(x, Quantum(x) -> ForAll(x, (NOT Scholarship(x) -> NOT Thesis(x)))))))
+  - ForAll(x, (NOT University(x) -> NOT Research(x)))
+Question: Based on university policies, which conclusion is valid if we know that all students are guaranteed University housing?
+A. The housing-Scholarship policy is contradictory.
+B. Universal housing ensures Scholarship-Thesis compliance under Quantum enrollment.
+C. The policy is a tautology.
+D. Housing and Quantum enrollment are unrelated.
+GT Answer: Unknown
+Pred Answer: B
+is_syntax_valid: True
+
+=================== Failed Case 38 (ID: 409_0) ===================
+NL Premises:
+  - If an e-commerce website offers competitive prices, then it has a secure payment system.
+  - If an e-commerce website does not have a user-friendly interface, then it does not provide customer support.
+  - If an e-commerce website does not have a secure payment system, then it does not have a user-friendly interface.
+  - There is at least one e-commerce website that offers fast delivery.
+  - If an e-commerce website provides customer support, then it has a wide product range.
+  - Every e-commerce website offers competitive prices.
+  - If an e-commerce website has a user-friendly interface, then it has a wide product range.
+  - There is at least one e-commerce website that has a secure payment system.
+  - If an e-commerce website does not provide customer support, then it does not have a secure payment system.
+  - Every e-commerce website provides customer support.
+  - If an e-commerce website does not have a wide product range, then it does not have a user-friendly interface.
+  - If an e-commerce website provides customer support, then it offers fast delivery.
+  - If an e-commerce website does not have a secure payment system, then it does not provide customer support.
+  - Every e-commerce website has a secure payment system.
+  - If an e-commerce website does not offer fast delivery, then it does not have a secure payment system.
+  - There is at least one e-commerce website that provides customer support.
+  - If an e-commerce website offers competitive prices, then it has a user-friendly interface.
+  - If an e-commerce website does not have a secure payment system, then it does not have a wide product range.
+  - If an e-commerce website provides customer support, then it offers competitive prices.
+  - If an e-commerce website offers fast delivery, then it has a user-friendly interface.
+  - There is at least one e-commerce website that offers competitive prices.
+  - If every e-commerce website offers competitive prices, then if a website does not have a user-friendly interface, it does not provide customer support.
+  - If the fact that every website offers competitive prices implies that lack of a user-friendly interface results in no customer support, then customer support implies fast delivery.
+  - If every e-commerce website has a secure payment system, then every website provides customer support.
+  - If customer support implies a wide product range, then lack of fast delivery implies lack of a secure payment system.
+  - If the implication from competitive prices to (lack of user-friendly interface leading to no customer support) implies that customer support leads to fast delivery, then fast delivery implies a user-friendly interface.
+  - If a user-friendly interface implies a wide product range, then customer support implies fast delivery.
+  - If customer support implies a wide product range, then every website with a secure payment system provides customer support.
+  - If fast delivery implies a user-friendly interface, then lack of a secure payment system implies lack of a wide product range.
+  - If there is at least one website that offers competitive prices, then if it does not have a user-friendly interface, it does not provide customer support.
+  - If lack of a wide product range implies lack of a user-friendly interface, then every website with a secure payment system provides customer support.
+  - If an e-commerce website does not provide customer support, then it does not have a wide product range.
+  - Every e-commerce website offers fast delivery.
+  - There is at least one e-commerce website that has a wide product range.
+  - If an e-commerce website offers competitive prices, then it has a wide product range.
+  - There is at least one e-commerce website that has a user-friendly interface.
+GT FOL:
+  - ForAll(x, (Competitive(x) -> Secure(x)))
+  - ForAll(x, (NOT UserFriendly(x) -> NOT Support(x)))
+  - ForAll(x, (NOT Secure(x) -> NOT UserFriendly(x)))
+  - Exists(x, Fast(x))
+  - ForAll(x, (Support(x) -> Wide(x)))
+  - ForAll(x, Competitive(x))
+  - ForAll(x, (UserFriendly(x) -> Wide(x)))
+  - Exists(x, Secure(x))
+  - ForAll(x, (NOT Support(x) -> NOT Secure(x)))
+  - ForAll(x, Support(x))
+  - ForAll(x, (NOT Wide(x) -> NOT UserFriendly(x)))
+  - ForAll(x, (Support(x) -> Fast(x)))
+  - ForAll(x, (NOT Secure(x) -> NOT Support(x)))
+  - ForAll(x, Secure(x))
+  - ForAll(x, (NOT Fast(x) -> NOT Secure(x)))
+  - Exists(x, Support(x))
+  - ForAll(x, (Competitive(x) -> UserFriendly(x)))
+  - ForAll(x, (NOT Secure(x) -> NOT Wide(x)))
+  - ForAll(x, (Support(x) -> Competitive(x)))
+  - ForAll(x, (Fast(x) -> UserFriendly(x)))
+  - Exists(x, Competitive(x))
+  - ForAll(x, Competitive(x) -> ForAll(x, (NOT UserFriendly(x) -> NOT Support(x))))
+  - (ForAll(x, Competitive(x) -> ForAll(x, (NOT UserFriendly(x) -> NOT Support(x))) -> ForAll(x, (Support(x) -> Fast(x)))))
+  - ForAll(x, Secure(x) -> ForAll(x, Support(x)))
+  - ForAll(x, (Support(x) -> Wide(x)) -> ForAll(x, (NOT Fast(x) -> NOT Secure(x))))
+  - ((ForAll(x, Competitive(x) -> ForAll(x, (NOT UserFriendly(x) -> NOT Support(x))) -> ForAll(x, (Support(x) -> Fast(x)))) -> ForAll(x, (Fast(x) -> UserFriendly(x)))))
+  - ForAll(x, (UserFriendly(x) -> Wide(x)) -> ForAll(x, (Support(x) -> Fast(x))))
+  - ForAll(x, (Support(x) -> Wide(x)) -> (ForAll(x, Secure(x) -> ForAll(x, Support(x)))))
+  - ForAll(x, (Fast(x) -> UserFriendly(x)) -> ForAll(x, (NOT Secure(x) -> NOT Wide(x))))
+  - Exists(x, Competitive(x) -> ForAll(x, (NOT UserFriendly(x) -> NOT Support(x))))
+  - ForAll(x, (NOT Wide(x) -> NOT UserFriendly(x)) -> (ForAll(x, Secure(x) -> ForAll(x, Support(x)))))
+  - ForAll(x, (NOT Support(x) -> NOT Wide(x)))
+  - ForAll(x, Fast(x))
+  - Exists(x, Wide(x))
+  - ForAll(x, (Competitive(x) -> Wide(x)))
+  - Exists(x, UserFriendly(x))
+Pred FOL:
+  - ForAll(x, (CompetitivePrices(x) -> SecurePayment(x)))
+  - ForAll(x, (NOT UserFriendly(x) -> NOT CustomerSupport(x)))
+  - ForAll(x, (NOT SecurePayment(x) -> NOT UserFriendly(x)))
+  - Exists(x, FastDelivery(x))
+  - ForAll(x, (CustomerSupport(x) -> WideProductRange(x)))
+  - ForAll(x, CompetitivePrices(x))
+  - ForAll(x, (UserFriendly(x) -> WideProductRange(x)))
+  - Exists(x, SecurePayment(x))
+  - ForAll(x, (NOT CustomerSupport(x) -> NOT SecurePayment(x)))
+  - ForAll(x, CustomerSupport(x))
+  - ForAll(x, (NOT WideProductRange(x) -> NOT UserFriendly(x)))
+  - ForAll(x, (CustomerSupport(x) -> FastDelivery(x)))
+  - ForAll(x, (NOT SecurePayment(x) -> NOT CustomerSupport(x)))
+  - ForAll(x, SecurePayment(x))
+  - ForAll(x, (NOT FastDelivery(x) -> NOT SecurePayment(x)))
+  - Exists(x, CustomerSupport(x))
+  - ForAll(x, (CompetitivePrices(x) -> UserFriendly(x)))
+  - ForAll(x, (NOT SecurePayment(x) -> NOT WideProductRange(x)))
+  - ForAll(x, (CustomerSupport(x) -> CompetitivePrices(x)))
+  - ForAll(x, (FastDelivery(x) -> UserFriendly(x)))
+  - Exists(x, CompetitivePrices(x))
+  - (ForAll(x, CompetitivePrices(x) -> ForAll(x, (NOT UserFriendly(x) -> NOT CustomerSupport(x)))))
+  - ((ForAll(x, CompetitivePrices(x) -> ForAll(x, (NOT UserFriendly(x) -> NOT CustomerSupport(x))) -> ForAll(x, (CustomerSupport(x) -> FastDelivery(x)))) -> ForAll(x, (FastDelivery(x) -> UserFriendly(x)))))
+  - (ForAll(x, SecurePayment(x) -> ForAll(x, CustomerSupport(x))))
+  - (ForAll(x, (CustomerSupport(x) -> WideProductRange(x)) -> ForAll(x, (NOT FastDelivery(x) -> NOT SecurePayment(x)))))
+  - ((ForAll(x, CompetitivePrices(x) -> ForAll(x, (NOT UserFriendly(x) -> NOT CustomerSupport(x))) -> ForAll(x, (CustomerSupport(x) -> FastDelivery(x)))) -> ForAll(x, (FastDelivery(x) -> UserFriendly(x)))))
+  - (ForAll(x, (UserFriendly(x) -> WideProductRange(x)) -> ForAll(x, (CustomerSupport(x) -> FastDelivery(x)))))
+  - (ForAll(x, (CustomerSupport(x) -> WideProductRange(x)) -> ForAll(x, (SecurePayment(x) -> CustomerSupport(x)))))
+  - (ForAll(x, (FastDelivery(x) -> UserFriendly(x)) -> ForAll(x, (NOT SecurePayment(x) -> NOT WideProductRange(x)))))
+  - (Exists(x, CompetitivePrices(x) -> ForAll(x, (NOT UserFriendly(x) -> NOT CustomerSupport(x)))))
+  - (ForAll(x, (NOT WideProductRange(x) -> NOT UserFriendly(x)) -> ForAll(x, (SecurePayment(x) -> CustomerSupport(x)))))
+  - ForAll(x, (NOT CustomerSupport(x) -> NOT WideProductRange(x)))
+  - ForAll(x, FastDelivery(x))
+  - Exists(x, WideProductRange(x))
+  - ForAll(x, (CompetitivePrices(x) -> WideProductRange(x)))
+  - Exists(x, UserFriendly(x))
+Question: Based on the above premises, which statement can be inferred?
+A. ∀x (C(x) → (U(x) ∧ W(x)))
+B. ∃x (¬T(x) ∧ S(x))
+C. ∀x (¬F(x) → W(x))
+D. ∀x (S(x) → ¬U(x))
+GT Answer: A
+Pred Answer: D
+is_syntax_valid: True
+
+=================== Failed Case 39 (ID: 912) ===================
+NL Premises:
+  - All students are members of the university.
+  - All graduate students are students.
+  - All PhD students are graduate students.
+  - Some PhD students have high IQs.
+  - If John is not a PhD student, then he is not a member of the university.
+  - If John has a high IQ, then he is a PhD student or a graduate student.
+GT FOL:
+  - ForAll(x, (Student(x) -> MemberOfUniversity(x)))
+  - ForAll(x, (GraduateStudent(x) -> Student(x)))
+  - ForAll(x, (PhDStudent(x) -> GraduateStudent(x)))
+  - Exists(x, (PhDStudent(x) AND HighIQ(x)))
+  - NOT PhDStudent(john) -> NOT MemberOfUniversity(john)
+  - HighIQ(john) -> PhDStudent(john) OR GraduateStudent(john)
+Pred FOL:
+  - ForAll(x, (Student(x) -> University(x)))
+  - ForAll(x, (Graduate(x) -> Student(x)))
+  - ForAll(x, (PhD(x) -> Graduate(x)))
+  - Exists(x, (PhD(x) AND HighIQ(x)))
+  - NOT PhD(john) -> NOT University(john)
+  - HighIQ(john) -> PhD(john) OR Graduate(john)
+Question: John has a high IQ.
+GT Answer: False
+Pred Answer: Unknown
+is_syntax_valid: True
+
+=================== Failed Case 40 (ID: 281_0) ===================
+NL Premises:
+  - There exists at least one teaching assistant in the computer science department.
+  - There exists at least one student who participates in research projects.
+  - If a student qualifies for graduate programs, then that student participates in research projects.
+  - If a student does not submit all assignments, then that student does not receive academic honors.
+  - There exists at least one student who utilizes university resources.
+  - If there exists a student who participates in research projects, then it is true that students who dont submit all assignments wont receive academic honors.
+  - If the existence of research project participants implies that non-submitters dont receive honors, then there exists a teaching assistant.
+  - If there exists a research participant, then if the existence of research participants implies non-submitters dont receive honors, there must be a teaching assistant.
+  - If a student doesnt qualify for graduate programs, then that student doesnt submit all assignments.
+  - There exists at least one student who receives academic honors.
+GT FOL:
+  - Exists(x, (TeachingAssistant(x)))
+  - Exists(x, (ResearchParticipant(x)))
+  - ForAll(x, (QualifiesForGrad(x) -> ResearchParticipant(x)))
+  - ForAll(x, (NOT SubmitsAssignments(x) -> NOT ReceivesHonors(x)))
+  - Exists(x, (UtilizesResources(x)))
+  - (Exists(x, (ResearchParticipant(x)) -> ForAll(y, (NOT SubmitsAssignments(y) -> NOT ReceivesHonors(y)))))
+  - ((Exists(x, (ResearchParticipant(x)) -> ForAll(y, (NOT SubmitsAssignments(y) -> NOT ReceivesHonors(y))) -> Exists(z, (TeachingAssistant(z))))))
+  - (Exists(x, (ResearchParticipant(x)) -> ((Exists(y, (ResearchParticipant(y)) -> ForAll(z, (NOT SubmitsAssignments(z) -> NOT ReceivesHonors(z))) -> Exists(w, (TeachingAssistant(w))))))))
+  - ForAll(x, (NOT QualifiesForGrad(x) -> NOT SubmitsAssignments(x)))
+  - Exists(x, (ReceivesHonors(x)))
+Pred FOL:
+  - Exists(x, TeachingAssistant(x))
+  - Exists(x, ResearchParticipant(x))
+  - ForAll(x, (QualifiesGraduate(x) -> ResearchParticipant(x)))
+  - ForAll(x, (NOT SubmitsAssignments(x) -> NOT ReceivesHonors(x)))
+  - Exists(x, UtilizesResources(x))
+  - (Exists(x, ResearchParticipant(x)) -> ForAll(x, (NOT SubmitsAssignments(x) -> NOT ReceivesHonors(x))))
+  - ((Exists(x, ResearchParticipant(x)) -> ForAll(x, (NOT SubmitsAssignments(x) -> NOT ReceivesHonors(x))) -> Exists(x, TeachingAssistant(x))))
+  - (Exists(x, ResearchParticipant(x)) -> ((Exists(x, ResearchParticipant(x)) -> ForAll(x, (NOT SubmitsAssignments(x) -> NOT ReceivesHonors(x))) -> Exists(x, TeachingAssistant(x)))))
+  - ForAll(x, (NOT QualifiesGraduate(x) -> NOT SubmitsAssignments(x)))
+  - Exists(x, ReceivesHonors(x))
+Question: Based on the above premises, which statement can be inferred if we know that there exists at least one teaching assistant in the computer science department?
+A. It is not the case that if there exists a research participant, then if the existence of research participants implies non-submitters don't receive honors, there must be a teaching assistant.
+B. If it's true that the existence of research participants implies that when research participants exist, non-submitters don't get honors leads to teaching assistants existing, then it's the same statement repeated again.
+C. Both the statement that if research participants exist then there being research participants implying non-submitters don't get honors leads to teaching assistants existing and its negation are simultaneously true.
+D. If there exists a research participant, then if the existence of research participants implies non-submitters don't receive honors, there must be a teaching assistant.
+GT Answer: Unknown
+Pred Answer: D
+is_syntax_valid: True
+
+=================== Failed Case 41 (ID: 369_0) ===================
+NL Premises:
+  - If students receive low grades, it may indicate insufficient effort, decreasing motivation, frustration, and anxiety, or they might seek additional support.
+  - If students reflect on their low grades, they will take proactive steps to improve.
+  - If students take proactive steps to improve, they will increase their study hours and focus more on their weaknesses.
+  - If students dont take proactive steps to improve, they wont increase their study hours and focus more on their weaknesses.
+GT FOL:
+  - ForAll(x, (Low(x) -> ((Effort(x) AND Motivation(x) AND Frustration(x) AND Anxiety(x)) OR Support(x))))
+  - ForAll(x, (Reflect(x) -> Proactive(x)))
+  - ForAll(x, (Proactive(x) -> (Hours(x) AND Weaknesses(x))))
+  - ForAll(x, (NOT Proactive(x) -> (NOT Hours(x) AND NOT Weaknesses(x))))
+Pred FOL:
+  - ForAll(x, (LowGrade(x) -> (InsufficientEffort(x) OR DecreasedMotivation(x) OR Frustration(x) OR Anxiety(x) OR AdditionalSupport(x))))
+  - ForAll(x, (LowGrade(x) -> Reflect(x) -> ProactiveSteps(x)))
+  - ForAll(x, (ProactiveSteps(x) -> IncreasedStudyHours(x) AND FocusWeaknesses(x)))
+  - ForAll(x, (NOT ProactiveSteps(x) -> NOT IncreasedStudyHours(x) AND NOT FocusWeaknesses(x)))
+Question: Based on the above premises, which statement can be inferred?
+A. ∀x (R(x) → (H(x) ∧ W(x)))
+B. ∀x (P(x) → ¬W(x))
+C. ∀x (R(x) → ¬H(x))
+D. ∀x (¬P(x) → (H(x) ∧ ¬S(x)))
+GT Answer: Unknown
+Pred Answer: D
+is_syntax_valid: True
