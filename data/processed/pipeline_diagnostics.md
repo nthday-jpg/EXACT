@@ -7,3 +7,33 @@ This report is generated dynamically by the LogicalDatasetPipeline when a sample
 - **Z3 Error**: `Unknown validation error`
 - **Root Cause**: Could not parse structured diagnostics. SMT sort collision or arithmetic constraint violation remains.
 
+## ❌ Sample 3
+
+- **Z3 Error**: `Unknown validation error`
+- **Root Cause**: Could not parse structured diagnostics. SMT sort collision or arithmetic constraint violation remains.
+
+## ❌ Sample 3
+
+- **Z3 Error**: `Unknown validation error`
+- **Root Cause**: Could not parse structured diagnostics. SMT sort collision or arithmetic constraint violation remains.
+
+## ❌ Sample 3
+
+- **Z3 Error**: `Unknown validation error`
+- **Root Cause**: Could not parse structured diagnostics. SMT sort collision or arithmetic constraint violation remains.
+
+## ❌ Sample 3
+
+- **Z3 Error**: `Unknown validation error`
+- **Root Cause**: Could not parse structured diagnostics. SMT sort collision or arithmetic constraint violation remains.
+
+## ❌ Sample 3
+
+- **Z3 Error**: `Unknown validation error`
+- **Root Cause**: Could not parse structured diagnostics. SMT sort collision or arithmetic constraint violation remains.
+
+## ❌ Sample 3
+
+- **Z3 Error**: `Unknown validation error`
+- **Root Cause**: Could not parse structured diagnostics. SMT sort collision or arithmetic constraint violation remains.
+
