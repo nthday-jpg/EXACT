@@ -47,6 +47,7 @@ def classify_question(
 ) -> QuestionClassification:
     """
     Route a physics question using LLM to classify domains and type.
+    Assumes question is already preprocessed
     
     Returns JSON with:
     {
