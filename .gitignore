@@ -17,3 +17,4 @@ results/*
 runs/
 model_cache/
 offline_packages/
+results_physics/
