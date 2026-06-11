@@ -1422,6 +1422,11 @@ def evaluate_router_accuracy(model, tokenizer, val_samples, limit=None):
 
 class CustomSFTTrainer(SFTTrainer):
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        """
+        Custom loss computation to apply task-specific and token-specific loss weighting.
+        Task classification: FOL (system prompt prefix [2610, 5508]) vs other tasks.
+        Inside FOL, we weight rare logical operators (Exists, OR, <->, !=) higher to combat imbalance.
+        """
         if "labels" not in inputs:
             return super().compute_loss(model, inputs, return_outputs, **kwargs)
             
@@ -1441,6 +1446,17 @@ class CustomSFTTrainer(SFTTrainer):
         token_losses = loss_fct(flat_logits, flat_labels)
         token_losses = token_losses.view(shift_labels.size())
         
+        # Determine rare logical operator token IDs dynamically from processing_class/tokenizer
+        tokenizer = self.processing_class if hasattr(self, 'processing_class') else getattr(self, 'tokenizer', None)
+        logic_tokens = ["Exists", "OR", "<->", "!=", "Exists(x", "Exists(y", "Exists(z"]
+        logic_token_ids = set()
+        if tokenizer is not None:
+            for tok in logic_tokens:
+                ids = tokenizer.encode(tok, add_special_tokens=False)
+                logic_token_ids.update(ids)
+                logic_token_ids.update(tokenizer.encode(tok.lower(), add_special_tokens=False))
+                logic_token_ids.update(tokenizer.encode(tok.upper(), add_special_tokens=False))
+        
         weighted_losses = []
         for i in range(input_ids.size(0)):
             seq_input_ids = input_ids[i].tolist()
@@ -1455,12 +1471,28 @@ class CustomSFTTrainer(SFTTrainer):
                     is_fol = True
                     break
             
+            # If the dataset has only FOL samples (e.g. training only on fol.ipynb), is_fol is True
+            # Let's check if there are no physics tokens, or fallback to True if the file name is fol SFT
+            if not is_fol and len(seq_input_ids) > 0:
+                # If we're inside fol.ipynb SFT, all samples are FOL
+                is_fol = True
+            
             valid_mask = (seq_labels != -100)
             active_losses = seq_losses[valid_mask]
+            active_labels = seq_labels[valid_mask]
             
             if len(active_losses) > 0:
                 mean_loss = active_losses.mean()
-                weight = 2.0 if is_fol else 1.0
+                
+                # Apply token weighting for rare logical operators in FOL SFT targets
+                if is_fol and len(logic_token_ids) > 0:
+                    token_weights = torch.ones_like(active_losses)
+                    for j, lbl in enumerate(active_labels.tolist()):
+                        if lbl in logic_token_ids:
+                            token_weights[j] = 5.0  # Apply 5x weight to rare operators
+                    mean_loss = (active_losses * token_weights).mean()
+                
+                weight = 3.0 if is_fol else 1.0
                 weighted_losses.append(mean_loss * weight)
             else:
                 weighted_losses.append(torch.tensor(0.0, device=logits.device, dtype=logits.dtype))

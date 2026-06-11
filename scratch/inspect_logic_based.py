@@ -1,25 +1,29 @@
 import json
+import sys
 
-file_path = r"d:\mduy\source\repos\EXACT\data\processed\logic_merged_valid.json"
+sys.stdout.reconfigure(encoding='utf-8')
 
-with open(file_path, 'r', encoding='utf-8') as f:
+with open(r"d:\mduy\source\repos\EXACT\data\processed\logic_merged_valid_augmented.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
-# Collect logic_based stories
-logic_based_samples = [d for d in data if d.get("dataset_source") == "logic_based"]
+sources = {}
+logic_based_mismatches = 0
+for item in data:
+    src = item.get("dataset_source", "unknown")
+    sources[src] = sources.get(src, 0) + 1
+    
+    if src == "logic_based":
+        nl = item.get("premises-NL", [])
+        fol = item.get("premises-FOL", [])
+        # Check if the content is completely different
+        # Let's count how many have rules in FOL but no rules in NL
+        nl_has_rules = any("if" in x.lower() or "all" in x.lower() or "every" in x.lower() or "no" in x.lower() for x in nl)
+        fol_has_rules = any("ForAll" in x or "Exists" in x for x in fol)
+        if fol_has_rules and not nl_has_rules:
+            logic_based_mismatches += 1
 
-seen_stories = set()
-unique_stories = []
-for s in logic_based_samples:
-    prem = tuple(s.get("premises-NL"))
-    if prem not in seen_stories:
-        seen_stories.add(prem)
-        unique_stories.append(s)
+print("Dataset sources distribution:")
+for src, count in sources.items():
+    print(f"  - {src}: {count}")
 
-print(f"Total unique logic_based stories: {len(unique_stories)}")
-
-for i in range(min(15, len(unique_stories))):
-    s = unique_stories[i]
-    print(f"\nStory {i} (Story ID: {s.get('story_id')}, Example ID: {s.get('example_id')}):")
-    for p in s.get("premises-NL"):
-        print(f"  - {p}")
+print(f"Logic based items with rules in FOL but no rules in NL: {logic_based_mismatches} / {sources.get('logic_based', 0)}")
