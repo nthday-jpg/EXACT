@@ -22,6 +22,7 @@ async def run_physics(
     *,
     model_name: str,
     api_key: Optional[str],
+    base_url: Optional[str] = None,
     router_model_name: Optional[str] = None,
     evaluator: Optional[PhysicsEvaluator] = None,
     output_path: Optional[str] = None,
@@ -49,6 +50,7 @@ async def run_physics(
             task.question,
             model_name=router_model,
             api_key=api_key,
+            base_url=base_url,
             temperature=0.0,
         )
     except Exception:
@@ -59,6 +61,7 @@ async def run_physics(
     solver = PhysicsSolver(
         model_name=model_name,
         api_key=api_key,
+        base_url=base_url,
         system_prompt=system_prompt,
         solver_prompt=solver_prompt,
         temperature=temperature,

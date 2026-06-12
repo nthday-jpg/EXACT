@@ -144,14 +144,14 @@ class LogicalReasoningPipeline:
         return self.reasoning_pipeline.generate_reasoning(premises_nl, conclusion_nl, verification)
 
     def generate_cot(
-        self, premises_nl: list[str], conclusion_nl: str, verification: dict
+        self, premises_nl: list[str], conclusion_nl: str, verification: dict, premises_fol: list[str] = None, conclusion_fol: str = None
     ) -> tuple[str, list[str]]:
         """Generate structured CoT reasoning. Returns (reasoning_str, cot_steps)."""
         # Propagate models if loaded
         if self.translation_pipeline.model:
             self.reasoning_pipeline.tokenizer = self.translation_pipeline.tokenizer
             self.reasoning_pipeline.model = self.translation_pipeline.model
-        return self.reasoning_pipeline.generate_cot(premises_nl, conclusion_nl, verification)
+        return self.reasoning_pipeline.generate_cot(premises_nl, conclusion_nl, verification, premises_fol, conclusion_fol)
 
     def run_pipeline(self, premises_nl: list[str], conclusion_nl: str, question_type: str = None) -> dict:
         # Propagate models if loaded
@@ -206,11 +206,10 @@ class LogicalReasoningPipeline:
                 options_fol[k] = unified_fol_list[offset] if offset < len(unified_fol_list) else ""
 
 
-            # Determine if we should bypass the premise filtering (e.g., if using the finetuned model)
             is_finetuned = False
             if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
                 model_name_lower = self.llm_client.model_name.lower()
-                if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower:
+                if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower or "fol_router" in model_name_lower or "physics" in model_name_lower:
                     is_finetuned = True
 
             if is_finetuned:
@@ -443,24 +442,27 @@ class LogicalReasoningPipeline:
                 conclusion_nl_cot = f"Option {opt}: {options[opt]}" if opt in options else opt
                 combined_verification = best_verification
 
-            reasoning, cot = self.generate_cot(
-                premises_nl=filt_premises_nl,
-                conclusion_nl=conclusion_nl_cot,
-                verification=combined_verification
-            )
-
-            answer_val = correct_options if question_type == "multiple_choice" else correct_options[0]
-
             # For conclusion_fol, we can represent it as AND of the options if multiple, else single
             if len(correct_options) > 1:
                 conclusion_fol_str = f"AND(" + ", ".join(options_fol.get(opt, opt) for opt in correct_options) + ")"
             else:
                 conclusion_fol_str = options_fol.get(correct_options[0], correct_options[0])
 
+            reasoning, cot = self.generate_cot(
+                premises_nl=filt_premises_nl,
+                conclusion_nl=conclusion_nl_cot,
+                verification=combined_verification,
+                premises_fol=filt_premises_fol,
+                conclusion_fol=conclusion_fol_str
+            )
+
+            answer_val = correct_options if question_type == "multiple_choice" else correct_options[0]
+
             return {
                 "answer": answer_val,
                 "confidence": _compute_confidence(best_verification, total_premises=len(filt_premises_fol)),
                 "premises_fol": filt_premises_fol,
+                "premises_nl": filt_premises_nl,
                 "conclusion_fol": conclusion_fol_str,
                 "verification": combined_verification,
                 "reasoning": reasoning,
@@ -483,11 +485,10 @@ class LogicalReasoningPipeline:
             # Translate the premises and the generated candidate answer statement
             premises_fol, conclusion_fol = self.translate_premises_and_conclusion(premises_nl, candidate_answer)
 
-            # Determine if we should bypass the premise filtering (e.g., if using the finetuned model)
             is_finetuned = False
             if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
                 model_name_lower = self.llm_client.model_name.lower()
-                if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower:
+                if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower or "fol_router" in model_name_lower or "physics" in model_name_lower:
                     is_finetuned = True
 
             if is_finetuned:
@@ -508,12 +509,19 @@ class LogicalReasoningPipeline:
                 # Z3 cannot verify the candidate answer, so standard logical answer is Unknown
                 answer_status = "Unknown"
 
-            reasoning, cot = self.generate_cot(filt_premises_nl, candidate_answer, verification)
+            reasoning, cot = self.generate_cot(
+                premises_nl=filt_premises_nl,
+                conclusion_nl=candidate_answer,
+                verification=verification,
+                premises_fol=filt_premises_fol,
+                conclusion_fol=conclusion_fol
+            )
 
             return {
                 "answer": answer_status,
                 "confidence": _compute_confidence(verification, total_premises=len(filt_premises_fol)),
                 "premises_fol": filt_premises_fol,
+                "premises_nl": filt_premises_nl,
                 "conclusion_fol": conclusion_fol,
                 "verification": verification,
                 "reasoning": reasoning,
@@ -524,11 +532,10 @@ class LogicalReasoningPipeline:
             # Yes/No or Statement Flow: Dual satisfiability check (both entailed or negated entailed)
             premises_fol, conclusion_fol = self.translate_premises_and_conclusion(premises_nl, conclusion_nl)
 
-            # Determine if we should bypass the premise filtering (e.g., if using the finetuned model)
             is_finetuned = False
             if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
                 model_name_lower = self.llm_client.model_name.lower()
-                if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower:
+                if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower or "fol_router" in model_name_lower or "physics" in model_name_lower:
                     is_finetuned = True
 
             if is_finetuned:
@@ -579,12 +586,19 @@ class LogicalReasoningPipeline:
                     except Exception:
                         pass
 
-            reasoning, cot = self.generate_cot(filt_premises_nl, conclusion_nl, verification)
+            reasoning, cot = self.generate_cot(
+                premises_nl=filt_premises_nl,
+                conclusion_nl=conclusion_nl,
+                verification=verification,
+                premises_fol=filt_premises_fol,
+                conclusion_fol=conclusion_fol
+            )
 
             return {
                 "answer": answer,
                 "confidence": _compute_confidence(verification, total_premises=len(filt_premises_fol)),
                 "premises_fol": filt_premises_fol,
+                "premises_nl": filt_premises_nl,
                 "conclusion_fol": conclusion_fol,
                 "verification": verification,
                 "reasoning": reasoning,

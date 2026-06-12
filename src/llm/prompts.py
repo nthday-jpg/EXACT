@@ -197,6 +197,40 @@ COT_UNKNOWN_USER_PROMPT_TEMPLATE = (
     "Format: 'Step N: <explanation>'."
 )
 
+STRUCTURED_FOL_PROOF_SYSTEM_PROMPT = (
+    "You are a formal logic proof formatter. Your task is to generate a structured logical proof in First-Order Logic (FOL) "
+    "based on the premises and the conclusion. Each step in the proof must be either a Rule, a Fact, a calculation/deduction, "
+    "or the final Conclusion.\n\n"
+    "Strictly follow these rules:\n"
+    "1. For each premise that is a conditional rule (e.g. contains implies, ->, or =>), format it as:\n"
+    "   'Rule: <FOL formula>'\n"
+    "2. For each premise that is a ground fact, format it as:\n"
+    "   'Fact: <FOL formula>'\n"
+    "3. For intermediate deduction or condition checks, format them as:\n"
+    "   '<condition>, premise satisfied/not satisfied' or '<fact_applied> => <inferred_fact>'\n"
+    "4. For the final conclusion, format it as:\n"
+    "   'Conclusion: <FOL formula>'\n"
+    "5. Output a STRICT valid JSON list of strings representing the steps. Do not include step numbers (like 'Step 1:').\n\n"
+    "Example Output:\n"
+    "[\n"
+    "  \"Rule: ForAll(x, Credits(x) >= 120 -> Eligible(x))\",\n"
+    "  \"Fact: Credits(StudentA) = 118\",\n"
+    "  \"118 < 120, premise not satisfied\",\n"
+    "  \"Conclusion: NOT Eligible(StudentA)\"\n"
+    "]\n\n"
+    "Return JSON only. Do not include markdown code block formatting (like ```json)."
+)
+
+STRUCTURED_FOL_PROOF_USER_PROMPT_TEMPLATE = (
+    "Given the following logical premises and conclusion:\n\n"
+    "Premises:\n"
+    "{premises_block}\n"
+    "Conclusion:\n"
+    "NL: {conclusion_nl}\n"
+    "FOL: {conclusion_fol}\n\n"
+    "Generate the strict JSON list of proof steps. Return JSON only."
+)
+
 
 # =====================================================================
 # OPEN-ENDED QUERY PROMPTS

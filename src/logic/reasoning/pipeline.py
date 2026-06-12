@@ -16,6 +16,8 @@ from src.llm.prompts import (
     COT_UNSAT_USER_PROMPT_TEMPLATE,
     COT_SAT_USER_PROMPT_TEMPLATE,
     COT_UNKNOWN_USER_PROMPT_TEMPLATE,
+    STRUCTURED_FOL_PROOF_SYSTEM_PROMPT,
+    STRUCTURED_FOL_PROOF_USER_PROMPT_TEMPLATE,
 )
 
 class ReasoningPipeline:
@@ -198,6 +200,8 @@ class ReasoningPipeline:
         premises_nl: list[str],
         conclusion_nl: str,
         verification: dict,
+        premises_fol: list[str] = None,
+        conclusion_fol: str = None,
     ) -> tuple[str, list[str]]:
         """Generate structured Chain-of-Thought reasoning.
 
@@ -211,6 +215,42 @@ class ReasoningPipeline:
             ``cot_steps`` is a parsed list of individual reasoning steps.
         """
         result = verification["result"]
+
+        if result == unsat and premises_fol and conclusion_fol:
+            core_indices = []
+            for var_str in verification.get("unsat_core", []):
+                if var_str.startswith("p_"):
+                    try:
+                        core_indices.append(int(var_str.split("_")[1]) - 1)
+                    except ValueError:
+                        pass
+            core_indices.sort()
+
+            core_premises_nl = [premises_nl[i] for i in core_indices if i < len(premises_nl)]
+            core_premises_fol = [premises_fol[i] for i in core_indices if i < len(premises_fol)]
+
+            premises_block = ""
+            for idx, (nl, fol) in enumerate(zip(core_premises_nl, core_premises_fol)):
+                premises_block += f"Premise {idx + 1}:\nNL: {nl}\nFOL: {fol}\n\n"
+
+            user_prompt_fol = STRUCTURED_FOL_PROOF_USER_PROMPT_TEMPLATE.format(
+                premises_block=premises_block.strip(),
+                conclusion_nl=conclusion_nl,
+                conclusion_fol=conclusion_fol
+            )
+            
+            try:
+                raw_fol_resp = self._generate_text(STRUCTURED_FOL_PROOF_SYSTEM_PROMPT, user_prompt_fol, max_new_tokens=512)
+                cleaned_fol = raw_fol_resp.strip()
+                if cleaned_fol.startswith("```"):
+                    cleaned_fol = re.sub(r"^```(?:json)?\n", "", cleaned_fol)
+                    cleaned_fol = re.sub(r"\n```$", "", cleaned_fol)
+                cot_steps = json.loads(cleaned_fol.strip())
+                if isinstance(cot_steps, list) and len(cot_steps) > 0:
+                    raw_text = self.generate_reasoning(premises_nl, conclusion_nl, verification)
+                    return raw_text, cot_steps
+            except Exception as e:
+                print(f"Warning: Failed to parse structured FOL proof: {str(e)}. Falling back to standard CoT.")
 
         if result == unsat:
             core_indices = []

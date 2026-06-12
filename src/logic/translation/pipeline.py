@@ -135,7 +135,7 @@ class NLToFOLPipeline:
         is_finetuned = False
         if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
             model_name_lower = self.llm_client.model_name.lower()
-            if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower:
+            if "exact-qwen" in model_name_lower or "lora" in model_name_lower or "finetune" in model_name_lower or "fol_router" in model_name_lower or "physics" in model_name_lower:
                 is_finetuned = True
 
         # If a glossary is explicitly provided, we run the translation strictly under its constraints
