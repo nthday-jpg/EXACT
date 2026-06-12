@@ -10,25 +10,27 @@ from google.genai import types
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass
 
 
 class LLMClient:
-    def __init__(self,
-                 model_name: str = "Qwen/Qwen3-8B",
-                 api_key: str | None = None,
-                 base_url: str = "https://router.huggingface.co/v1",
-                 system_prompt: str = "",
-                 temperature: float = 0.0,
-                 frequency_penalty: float = 0.0,
-                 enable_thinking: bool = False,
-                 use_local: bool = False,
-                 model_dir: str | None = None,
-                 device: str | None = None,
-                 extra_body: dict | None = None):
-
+    def __init__(
+        self,
+        model_name: str = "Qwen/Qwen3-8B",
+        api_key: str | None = None,
+        base_url: str = "https://router.huggingface.co/v1",
+        system_prompt: str = "",
+        temperature: float = 0.0,
+        frequency_penalty: float = 0.0,
+        enable_thinking: bool = False,
+        use_local: bool = False,
+        model_dir: str | None = None,
+        device: str | None = None,
+        extra_body: dict | None = None,
+    ):
         self.model_name = model_name
         self.system_prompt = system_prompt
         self.temperature = temperature
@@ -46,7 +48,9 @@ class LLMClient:
             self.model_dir = str(root_dir / "results")
 
         # Resolve device
-        self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = (
+            device if device else ("cuda" if torch.cuda.is_available() else "cpu")
+        )
 
         # Define Gemini variants
         self.gemini_models = [
@@ -54,7 +58,7 @@ class LLMClient:
             "gemini-3.5-flash",
             "gemini-3.1-flash-lite",
             "gemini-2.5-flash-lite",
-            "gemini-3-flash"
+            "gemini-3-flash",
         ]
 
         # Route client initializations
@@ -65,7 +69,9 @@ class LLMClient:
                 self.base_url = "https://generativelanguage.googleapis.com/v1/openai/"
 
                 if not gemini_key:
-                    raise RuntimeError("GEMINI_API_KEY is not set in environment or arguments.")
+                    raise RuntimeError(
+                        "GEMINI_API_KEY is not set in environment or arguments."
+                    )
                 self.gemini_client = genai.Client(api_key=gemini_key)
                 self.client = None
             else:
@@ -78,24 +84,29 @@ class LLMClient:
                 self.gemini_client = None
             try:
                 from dotenv import load_dotenv
+
                 load_dotenv()
             except ImportError:
                 pass
-                
+
             self.base_url = base_url
-            
+
             # Detect endpoint type based on the base URL
             is_modal = False
-            if self.base_url and ("modal.run" in self.base_url or "modal" in self.base_url.lower()):
+            if self.base_url and (
+                "modal.run" in self.base_url or "modal" in self.base_url.lower()
+            ):
                 is_modal = True
-                
+
             self.api_key = api_key or os.environ.get("HF_API_KEY")
             if not self.api_key:
-                if is_modal and (os.environ.get("MODAL_KEY") or os.environ.get("MODAL_SECRET")):
+                if is_modal and (
+                    os.environ.get("MODAL_KEY") or os.environ.get("MODAL_SECRET")
+                ):
                     self.api_key = "modal-placeholder"
                 else:
                     raise RuntimeError("HF_API_KEY is not set")
-            
+
             headers = {}
             if is_modal:
                 modal_key = os.environ.get("MODAL_KEY")
@@ -104,17 +115,20 @@ class LLMClient:
                     headers["Modal-Key"] = modal_key
                 if modal_secret:
                     headers["Modal-Secret"] = modal_secret
-                
+
             self.client = OpenAI(
                 api_key=self.api_key,
                 base_url=self.base_url,
-                default_headers=headers if headers else None
+                default_headers=headers if headers else None,
             )
-            
+
             # Load tokenizer locally to enable perfect local chat template formatting for remote completions
             from transformers import AutoTokenizer
+
             try:
-                self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir, trust_remote_code=True)
+                self.tokenizer = AutoTokenizer.from_pretrained(
+                    self.model_dir, trust_remote_code=True
+                )
                 if self.tokenizer.pad_token is None:
                     self.tokenizer.pad_token = self.tokenizer.eos_token
             except Exception as e:
@@ -143,7 +157,9 @@ class LLMClient:
             bnb_4bit_use_double_quant=True,
         )
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir, trust_remote_code=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self.model_dir, trust_remote_code=True
+        )
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
@@ -161,11 +177,15 @@ class LLMClient:
             attn_implementation="sdpa" if torch.cuda.is_available() else None,
         )
 
-
         self.model = PeftModel.from_pretrained(base_model, self.model_dir)
         self.model.eval()
 
-    def generate(self, prompt: str, max_tokens: int | None = None, system_prompt: str | None = None) -> dict:
+    def generate(
+        self,
+        prompt: str,
+        max_tokens: int | None = None,
+        system_prompt: str | None = None,
+    ) -> dict:
         """Generates text from prompt, returning a structured dictionary with token counts."""
         sys_prompt = system_prompt if system_prompt is not None else self.system_prompt
         limit_tokens = max_tokens if max_tokens is not None else 4096
@@ -199,7 +219,7 @@ class LLMClient:
                 )
 
             response_text = self.tokenizer.decode(
-                outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True
+                outputs[0][inputs.input_ids.shape[1] :], skip_special_tokens=True
             )
             return {
                 "content": response_text.strip(),
@@ -211,7 +231,6 @@ class LLMClient:
         # ── Remote inference: Gemini ─────────────────────────────────────────
         if self.model_name in self.gemini_models:
             return self._generate_gemini(prompt, limit_tokens, sys_prompt)
-
 
         # ── Remote inference: OpenAI / HF Router ─────────────────────────────
         assert self.client is not None, "OpenAI client not initialised"
@@ -286,7 +305,10 @@ class LLMClient:
         # Strip thinking blocks from the content if present
         if "<think>" in content:
             import re
-            content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+
+            content = re.sub(
+                r"<think>.*?</think>", "", content, flags=re.DOTALL
+            ).strip()
 
         return {
             "content": content.strip(),
@@ -295,10 +317,13 @@ class LLMClient:
             "output_tokens": output_tokens,
         }
 
-
-    def generate_text(self, prompt: str, system_prompt: str | None = None, max_new_tokens: int = 512) -> str:
+    def generate_text(
+        self, prompt: str, system_prompt: str | None = None, max_new_tokens: int = 512
+    ) -> str:
         """Helper to generate text directly as a string."""
-        res = self.generate(prompt, max_tokens=max_new_tokens, system_prompt=system_prompt)
+        res = self.generate(
+            prompt, max_tokens=max_new_tokens, system_prompt=system_prompt
+        )
         return res["content"]
 
     def _generate_gemini(self, prompt: str, max_tokens: int, sys_prompt: str) -> dict:
@@ -326,7 +351,13 @@ class LLMClient:
 
         return {
             "content": full_content.strip(),
-            "total_tokens": response.usage_metadata.total_token_count if response.usage_metadata else 0,
-            "input_tokens": response.usage_metadata.prompt_token_count if response.usage_metadata else 0,
-            "output_tokens": response.usage_metadata.candidates_token_count if response.usage_metadata else 0,
+            "total_tokens": response.usage_metadata.total_token_count
+            if response.usage_metadata
+            else 0,
+            "input_tokens": response.usage_metadata.prompt_token_count
+            if response.usage_metadata
+            else 0,
+            "output_tokens": response.usage_metadata.candidates_token_count
+            if response.usage_metadata
+            else 0,
         }

@@ -17,12 +17,12 @@ GLOSSARY_SYSTEM_PROMPT = (
     "and 'constants' (a dictionary mapping the constant name to its English description).\n\n"
     "Example output format:\n"
     "{\n"
-    "  \"predicates\": {\n"
-    "    \"Human(x)\": \"x is a human\",\n"
-    "    \"Mortal(x)\": \"x is mortal\"\n"
+    '  "predicates": {\n'
+    '    "Human(x)": "x is a human",\n'
+    '    "Mortal(x)": "x is mortal"\n'
     "  },\n"
-    "  \"constants\": {\n"
-    "    \"Socrates\": \"Socrates\"\n"
+    '  "constants": {\n'
+    '    "Socrates": "Socrates"\n'
     "  }\n"
     "}\n\n"
     "Return JSON only. Do not include markdown code block formatting (like ```json)."
@@ -213,10 +213,10 @@ STRUCTURED_FOL_PROOF_SYSTEM_PROMPT = (
     "5. Output a STRICT valid JSON list of strings representing the steps. Do not include step numbers (like 'Step 1:').\n\n"
     "Example Output:\n"
     "[\n"
-    "  \"Rule: ForAll(x, Credits(x) >= 120 -> Eligible(x))\",\n"
-    "  \"Fact: Credits(StudentA) = 118\",\n"
-    "  \"118 < 120, premise not satisfied\",\n"
-    "  \"Conclusion: NOT Eligible(StudentA)\"\n"
+    '  "Rule: ForAll(x, Credits(x) >= 120 -> Eligible(x))",\n'
+    '  "Fact: Credits(StudentA) = 118",\n'
+    '  "118 < 120, premise not satisfied",\n'
+    '  "Conclusion: NOT Eligible(StudentA)"\n'
     "]\n\n"
     "Return JSON only. Do not include markdown code block formatting (like ```json)."
 )
@@ -276,16 +276,16 @@ COMBINED_GLOSSARY_AND_TRANSLATION_SYSTEM_PROMPT = (
     "Use nested quantifiers only. E.g., ForAll(x, ForAll(y, P(x,y)))\n\n"
     "Example output format:\n"
     "{\n"
-    "  \"predicates\": {\n"
-    "    \"Human(x)\": \"x is a human\",\n"
-    "    \"Mortal(x)\": \"x is mortal\"\n"
+    '  "predicates": {\n'
+    '    "Human(x)": "x is a human",\n'
+    '    "Mortal(x)": "x is mortal"\n'
     "  },\n"
-    "  \"constants\": {\n"
-    "    \"Socrates\": \"Socrates\"\n"
+    '  "constants": {\n'
+    '    "Socrates": "Socrates"\n'
     "  },\n"
-    "  \"formulas\": [\n"
-    "    \"Human(Socrates)\",\n"
-    "    \"ForAll(x, Human(x) -> Mortal(x))\"\n"
+    '  "formulas": [\n'
+    '    "Human(Socrates)",\n'
+    '    "ForAll(x, Human(x) -> Mortal(x))"\n'
     "  ]\n"
     "}\n\n"
     "Return JSON only. Do not include markdown code block formatting (like ```json)."
@@ -355,12 +355,12 @@ REPAIR_PLAN_SYSTEM_PROMPT = (
     "Provide your response as a valid JSON list of objects, one for each sample analyzed. E.g.:\n"
     "[\n"
     "  {\n"
-    "    \"example_id\": \"sample_id_here\",\n"
-    "    \"validation_error\": \"error text\",\n"
-    "    \"root_cause_analysis\": \"technical reason...\",\n"
-    "    \"repair_steps\": \"1. Renamed 'a+' constant to aplus...\",\n"
-    "    \"repaired_premises_fol\": [\n"
-    "       \"ForAll(x, ...)\"\n"
+    '    "example_id": "sample_id_here",\n'
+    '    "validation_error": "error text",\n'
+    '    "root_cause_analysis": "technical reason...",\n'
+    '    "repair_steps": "1. Renamed \'a+\' constant to aplus...",\n'
+    '    "repaired_premises_fol": [\n'
+    '       "ForAll(x, ...)"\n'
     "    ]\n"
     "  }\n"
     "]\n\n"
@@ -372,5 +372,3 @@ REPAIR_PLAN_USER_TEMPLATE = (
     "{invalid_samples_json}\n\n"
     "Generate the strict JSON list of reports. Return JSON only."
 )
-
-

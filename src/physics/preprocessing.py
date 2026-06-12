@@ -1,6 +1,7 @@
 import re
 from src.utils.normalization import normalize_physics_input
 
+
 def format_scientific(val: float) -> str:
     s = f"{val:.15g}"
     if "e" in s:
@@ -9,6 +10,7 @@ def format_scientific(val: float) -> str:
         return f"{base}e{exp}"
     return s
 
+
 def preprocess(text: str) -> str:
     """
     Apply normalization and convert input to SI base units.
@@ -16,7 +18,7 @@ def preprocess(text: str) -> str:
     mathematical context for the fine-tuned 8B router and math solver.
     """
     text = normalize_physics_input(text)
-    
+
     # IMPROVED REGEX PATTERN:
     # 1. Captures negative and multi-digit exponents (e.g., ^-1, ^2).
     # 2. Explicitly allows greek omega (Ω) and unit combinations like Hz.
@@ -27,12 +29,12 @@ def preprocess(text: str) -> str:
         r"([A-Z][a-zA-Z]*|m|s|g|Ω)"
         r"(?:\^?([+-]?\d+))?\b"
     )
-    
+
     def repl(match):
         val_str, prefix_raw, unit, exp_str = match.groups()
         val = float(val_str)
         exp = int(exp_str) if exp_str else 1
-        
+
         prefix_clean = prefix_raw.replace("\\", "") if prefix_raw else ""
         if prefix_clean in ("mu", "Mu", "μ", "µ", "u"):
             multiplier = 1e-6
@@ -56,23 +58,23 @@ def preprocess(text: str) -> str:
             multiplier = 1e-12
         else:
             multiplier = 1.0
-            
+
         true_multiplier = multiplier ** abs(exp)
 
         if unit == "g":
             true_val = val * true_multiplier * (1e-3 ** abs(exp))
             unit_out = "kg" if exp == 1 else f"kg^{exp}"
             return f"{format_scientific(true_val)} {unit_out}"
-            
+
         if unit in ("Ω", "ohm", "Ohm", "ohms"):
             unit_out = "ohm"
         elif unit.lower() == "hertz" or unit == "Hz":
             unit_out = "Hz"
         else:
             unit_out = unit if exp == 1 else f"{unit}^{exp}"
-            
+
         true_val = val * true_multiplier
         return f"{format_scientific(true_val)} {unit_out}"
-        
+
     text = re.sub(pattern, repl, text)
     return text

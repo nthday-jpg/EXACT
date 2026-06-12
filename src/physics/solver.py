@@ -6,7 +6,6 @@ from typing import Any, Dict, Optional
 from src.llm.llm_client import LLMClient
 from src.physics.llm_execution import execute_llm_code
 from src.physics.postprocessing import postprocess_answer
-from src.physics.preprocessing import preprocess
 from src.physics.types import PhysicsResult, PhysicsTask
 
 
@@ -34,7 +33,7 @@ class PhysicsSolver:
 
     def solve(self, task: PhysicsTask) -> PhysicsResult:
         """
-            Solve a physics task. Assumes the question has already been preprocessed
+        Solve a physics task. Assumes the question has already been preprocessed
         """
         start = time.time()
         prompt = task.question
@@ -57,14 +56,33 @@ class PhysicsSolver:
         except Exception as exc:
             err_msg = str(exc).lower()
             # If it's a system/provider error, RAISE it so the main script can retry/swap keys
-            is_system_error = any(x in err_msg for x in ["503", "429", "quota", "limit", "overloaded", "timeout", "401", "403", "404", "400"])
+            is_system_error = any(
+                x in err_msg
+                for x in [
+                    "503",
+                    "429",
+                    "quota",
+                    "limit",
+                    "overloaded",
+                    "timeout",
+                    "401",
+                    "403",
+                    "404",
+                    "400",
+                ]
+            )
             if is_system_error:
-                raise exc 
-                
+                raise exc
+
             # Otherwise, it's a content error, return as a failed result
             return PhysicsResult(
-                task=task, model_answer=None, raw_response=str(exc),
-                error=str(exc), tokens=None, elapsed_s=time.time() - start, domains=None,
+                task=task,
+                model_answer=None,
+                raw_response=str(exc),
+                error=str(exc),
+                tokens=None,
+                elapsed_s=time.time() - start,
+                domains=None,
             )
 
         # 2. EXECUTION PHASE (Math/Code logic)

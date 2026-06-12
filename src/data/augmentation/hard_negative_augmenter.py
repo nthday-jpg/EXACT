@@ -1,19 +1,20 @@
 import json
 import re
+import threading
 import z3
 from src.llm import LLMClient
 from src.logic.reasoning.parser import parse_formulas
 
 from src.utils.normalization import normalize_logic_fol_entry
 
+
 def standardize_fol_formula(f_str: str) -> str:
     """Standardize logical operators and balance parentheses in an FOL formula string."""
     return normalize_logic_fol_entry(f_str)
 
 
-import threading
-
 _z3_validation_lock = threading.Lock()
+
 
 def validate_fol_formulas(formulas: list[str]) -> tuple[bool, str]:
     """Validate FOL formulas using Z3 parser."""
@@ -33,7 +34,6 @@ def validate_fol_formulas(formulas: list[str]) -> tuple[bool, str]:
             return False, str(e)
 
 
-
 class HardNegativeAugmenter:
     """
     Handles Hard Negative Augmentation using LLM-assisted logical mutation.
@@ -41,6 +41,7 @@ class HardNegativeAugmenter:
     logically-decisive mutations to NL premises/conclusions and FOL formulas,
     updating the answer label accordingly, then validating the result using Z3.
     """
+
     def __init__(self, llm_client=None):
         if llm_client is not None:
             self.llm_client = llm_client
@@ -48,12 +49,18 @@ class HardNegativeAugmenter:
             self.llm_client = LLMClient(
                 model_name="Qwen/Qwen3-235B-A22B-Instruct-2507",
                 extra_body={"provider": "together"},
-                temperature=0.1
+                temperature=0.1,
             )
             # Force chat completions and correct Together provider routing
             self.llm_client.tokenizer = None
 
-    def augment_sample(self, sample: dict, variant_idx: int = 0, max_retries: int = 3, validate_z3: bool = True) -> dict | None:
+    def augment_sample(
+        self,
+        sample: dict,
+        variant_idx: int = 0,
+        max_retries: int = 3,
+        validate_z3: bool = True,
+    ) -> dict | None:
         """
         Generates a hard negative variant of a sample by logic mutation via Qwen3-235B.
         Validates the output with Z3 if validate_z3 is True. Returns the augmented sample or None on failure.
@@ -61,84 +68,100 @@ class HardNegativeAugmenter:
         # Determine the key naming convention used in the input sample
         has_question = "question" in sample
         has_answer = "answer" in sample
-        
+
         q_key = "question" if has_question else "conclusion"
         a_key = "answer" if has_answer else "label"
-        
+
         orig_nl = sample.get("premises-NL", [])
         orig_fol = sample.get("premises-FOL", [])
         orig_q = sample.get(q_key, "")
         orig_a = sample.get(a_key, "")
-        
+
         if not orig_nl or not orig_fol:
             return None
 
         # Build prompt
         prompt = self._build_prompt(orig_nl, orig_fol, orig_q, orig_a)
-        
+
         for attempt in range(max_retries):
             try:
                 response = self.llm_client.generate_text(prompt, max_new_tokens=4096)
                 mutated = self._parse_response(response)
                 if not mutated:
                     continue
-                
+
                 # Check structure
                 mutated_nl = mutated.get("premises-NL", [])
                 mutated_fol = mutated.get("premises-FOL", [])
                 mutated_q = mutated.get("question", "")
                 mutated_a = mutated.get("answer", "")
-                
+
                 if len(mutated_nl) != len(orig_nl) or len(mutated_fol) != len(orig_fol):
                     # Maintain 1:1 mapping count
                     continue
-                
+
                 # Validate FOL syntax with Z3
                 if validate_z3:
                     is_valid, err = validate_fol_formulas(mutated_fol)
                     if not is_valid:
-                        print(f"Z3 validation failed for mutated sample (attempt {attempt+1}): {err}")
+                        print(
+                            f"Z3 validation failed for mutated sample (attempt {attempt + 1}): {err}"
+                        )
                         continue
-                
+
                 # Ensure the answer is valid
                 if mutated_a not in ["True", "False", "Unknown"]:
                     continue
-                
+
                 # Check that something actually changed compared to original
-                if (mutated_nl == orig_nl and mutated_fol == orig_fol and mutated_q == orig_q and mutated_a == orig_a):
+                if (
+                    mutated_nl == orig_nl
+                    and mutated_fol == orig_fol
+                    and mutated_q == orig_q
+                    and mutated_a == orig_a
+                ):
                     continue
-                
+
                 # Construct augmented sample, keeping original keys
                 augmented = sample.copy()
                 augmented["premises-NL"] = mutated_nl
                 augmented["premises-FOL"] = mutated_fol
                 augmented[q_key] = mutated_q
                 augmented[a_key] = mutated_a
-                
+
                 # Update source metadata
                 orig_source = sample.get("dataset_source", "unknown")
-                augmented["dataset_source"] = f"{orig_source}-augmented-negative-var{variant_idx}"
-                
+                augmented["dataset_source"] = (
+                    f"{orig_source}-augmented-negative-var{variant_idx}"
+                )
+
                 if "example_id" in sample:
-                    augmented["example_id"] = f"{sample['example_id']}_neg_var{variant_idx}"
-                    
+                    augmented["example_id"] = (
+                        f"{sample['example_id']}_neg_var{variant_idx}"
+                    )
+
                 return augmented
 
-                
             except Exception as e:
-                print(f"Error during hard negative augmentation attempt {attempt+1}: {e}")
-                
+                print(
+                    f"Error during hard negative augmentation attempt {attempt + 1}: {e}"
+                )
+
         return None
 
     def _build_prompt(self, nl_premises, fol_premises, question, answer):
         # Format the input sample for the prompt
-        sample_str = json.dumps({
-            "premises-NL": nl_premises,
-            "premises-FOL": fol_premises,
-            "question": question,
-            "answer": answer
-        }, indent=2, ensure_ascii=False)
-        
+        sample_str = json.dumps(
+            {
+                "premises-NL": nl_premises,
+                "premises-FOL": fol_premises,
+                "question": question,
+                "answer": answer,
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+
         prompt = f"""You are a precise logical reasoning assistant and expert in First-Order Logic (FOL) and Z3 syntax.
 Your task is to take a logic puzzle sample and generate a "hard negative" variant of it.
 
@@ -180,10 +203,10 @@ Respond with ONLY a valid JSON object in this format. No conversation, no markdo
             start = text.find("{")
             end = text.rfind("}")
             if start != -1 and end != -1:
-                json_str = text[start:end+1].strip()
+                json_str = text[start : end + 1].strip()
             else:
                 json_str = text.strip()
-                
+
         try:
             return json.loads(json_str)
         except Exception:

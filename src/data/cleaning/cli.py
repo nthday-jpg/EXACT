@@ -9,40 +9,43 @@ def main() -> None:
         description="Logical Dataset Validation and Automated Repair Pipeline"
     )
     parser.add_argument(
-        "--input", "-i",
-        required=True,
-        help="Path to the input JSON dataset file"
+        "--input", "-i", required=True, help="Path to the input JSON dataset file"
     )
     parser.add_argument(
-        "--output-valid", "-v",
+        "--output-valid",
+        "-v",
         required=True,
-        help="Path to write the valid JSON samples to"
+        help="Path to write the valid JSON samples to",
     )
     parser.add_argument(
-        "--output-invalid", "-x",
+        "--output-invalid",
+        "-x",
         required=True,
-        help="Path to write the invalid/unrepaired JSON samples to"
+        help="Path to write the invalid/unrepaired JSON samples to",
     )
     parser.add_argument(
         "--no-repair",
         action="store_true",
-        help="Disable automated LLM-assisted repair, only perform Z3 validation filtering"
+        help="Disable automated LLM-assisted repair, only perform Z3 validation filtering",
     )
     parser.add_argument(
-        "--model", "-m",
+        "--model",
+        "-m",
         default="Qwen/Qwen3-235B-A22B-Instruct-2507",
-        help="LLM model name to use for logical repair"
+        help="LLM model name to use for logical repair",
     )
     parser.add_argument(
-        "--provider", "-p",
+        "--provider",
+        "-p",
         default="together",
-        help="Provider for API routing (e.g. together, huggingface)"
+        help="Provider for API routing (e.g. together, huggingface)",
     )
     parser.add_argument(
-        "--retries", "-r",
+        "--retries",
+        "-r",
         type=int,
         default=3,
-        help="Maximum self-correction repair dialogue turns per sample"
+        help="Maximum self-correction repair dialogue turns per sample",
     )
 
     args = parser.parse_args()
@@ -68,15 +71,15 @@ def main() -> None:
     try:
         pipeline = LogicalDatasetPipeline(
             model_name=args.model,
-            extra_body={"provider": args.provider} if args.provider else None
+            extra_body={"provider": args.provider} if args.provider else None,
         )
-        
+
         pipeline.run_pipeline(
             input_path=str(input_path),
             output_valid_path=args.output_valid,
             output_invalid_path=args.output_invalid,
             auto_repair=not args.no_repair,
-            max_retries=args.retries
+            max_retries=args.retries,
         )
         sys.exit(0)
     except Exception as e:

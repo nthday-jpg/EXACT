@@ -51,13 +51,14 @@ _UNIT_NORMALIZATION = {
     "microfarad": "μF",
     "uF": "μF",
     "muF": "μF",
-    "µF": "μF",          
+    "µF": "μF",
     "millicoulombs": "mC",
     "millicoulomb": "mC",
     "mC": "mC",
     "kilohertz": "kHz",
-    "kHz": "kHz"
+    "kHz": "kHz",
 }
+
 
 def normalize_logic_premise_text(text: str) -> str:
     """Normalize logic premises to avoid parser-hostile tokens."""
@@ -68,6 +69,7 @@ def normalize_logic_premise_text(text: str) -> str:
     text = text.replace("\u2192", "->")
     text = text.replace("\u2194", "<->")
     text = text.replace("\u2019", "'").replace("\u2018", "'")
+
     def join_title(match: re.Match) -> str:
         parts = match.group(2).split()
         return f"{match.group(1)}{''.join(parts)}"
@@ -98,7 +100,9 @@ def normalize_logic_fol_entry(text: str) -> str:
         return text
 
     # Strip <think>...</think> blocks (including space-padded variants) before any processing
-    text = re.sub(r"<\s*think\s*>.*?<\s*/\s*think\s*>", "", text, flags=re.DOTALL | re.IGNORECASE).strip()
+    text = re.sub(
+        r"<\s*think\s*>.*?<\s*/\s*think\s*>", "", text, flags=re.DOTALL | re.IGNORECASE
+    ).strip()
     if not text:
         return text
 
@@ -129,8 +133,12 @@ def normalize_logic_fol_entry(text: str) -> str:
         text,
         flags=re.IGNORECASE,
     )
-    text = re.sub(r"\u2200\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*", r"ForAll(\1, ", text)
-    text = re.sub(r"\u2203\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*", r"Exists(\1, ", text)
+    text = re.sub(
+        r"\u2200\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*", r"ForAll(\1, ", text
+    )
+    text = re.sub(
+        r"\u2203\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*", r"Exists(\1, ", text
+    )
     text = re.sub(r"\u2200\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*", r"ForAll(\1, ", text)
     text = re.sub(r"\u2203\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*", r"Exists(\1, ", text)
     text = re.sub(r"\u2200\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*", r"ForAll(\1, ", text)
@@ -156,7 +164,7 @@ def normalize_logic_fol_entry(text: str) -> str:
     text = text.replace("&", " AND ")
     text = text.replace("~", " NOT ")
     text = text.replace("^", " AND ")
-    
+
     def normalize_args(match: re.Match) -> str:
         pred_name = match.group(1)
         args_str = match.group(2)
@@ -165,14 +173,14 @@ def normalize_logic_fol_entry(text: str) -> str:
         return f"{pred_name}({', '.join(normalized_args)})"
 
     text = re.sub(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*\(([^()]+)\)", normalize_args, text)
-    
+
     # Repair mathematical prefix predicates (e.g. ">= 3Publications(x)" -> "Publications(x) >= 3")
     text = re.sub(
         r"(>=|<=|!=|=|>|<)\s*(\d+(?:\.\d+)?)\s*([A-Za-z_][A-Za-z0-9_-]*)\s*\(\s*([^()]+)\s*\)",
         r"\3(\4) \1 \2",
-        text
+        text,
     )
-    
+
     # Standardize spaces around logical operators, comparisons, commas and parentheses
     text = re.sub(r"\s*<->\s*", " <-> ", text)
     text = re.sub(r"(?<!<)\s*->\s*", " -> ", text)
@@ -186,42 +194,53 @@ def normalize_logic_fol_entry(text: str) -> str:
     text = re.sub(r"\s*,\s*", ", ", text)
     text = re.sub(r"\(\s+", "(", text)
     text = re.sub(r"\s+\)", ")", text)
-    
+
     text = re.sub(r"\s+", " ", text)
-    
+
     # Robust parenthesis balancing (remove extra closing parens first, then add missing closing parens)
     text = text.strip()
     while True:
         depth = 0
         extra_found = False
         for i, char in enumerate(text):
-            if char == '(':
+            if char == "(":
                 depth += 1
-            elif char == ')':
+            elif char == ")":
                 depth -= 1
                 if depth < 0:
-                    text = text[:i] + text[i+1:]
+                    text = text[:i] + text[i + 1 :]
                     extra_found = True
                     break
         if not extra_found:
             break
-            
+
     open_count = text.count("(")
     close_count = text.count(")")
     if close_count < open_count:
         text = text + ")" * (open_count - close_count)
 
     # Automatically lowercase all entity constants and variables to resolve casing mismatches in Z3
-    reserved = {"ForAll", "Exists", "AND", "OR", "NOT", "In", "implies", "BICOND", "IMPLIES"}
+    reserved = {
+        "ForAll",
+        "Exists",
+        "AND",
+        "OR",
+        "NOT",
+        "In",
+        "implies",
+        "BICOND",
+        "IMPLIES",
+    }
+
     def repl(match: re.Match) -> str:
         word = match.group(1)
         if word in reserved or word.isdigit():
             return word
         return word.lower()
-    text = re.sub(r"\b([A-Za-z_][A-Za-z0-9_]*)\b(?!\s*\()", repl, text)
-        
-    return text.strip()
 
+    text = re.sub(r"\b([A-Za-z_][A-Za-z0-9_]*)\b(?!\s*\()", repl, text)
+
+    return text.strip()
 
 
 def normalize_physics_input(text: str) -> str:
@@ -236,7 +255,7 @@ def normalize_physics_input(text: str) -> str:
     text = _normalize_multiply(text)
     text = _normalize_exponent_notation(text)
     text = _normalize_fractions_ascii(text)
-    text = _normalize_units(text) 
+    text = _normalize_units(text)
     text = _normalize_scientific_notation(text)
     text = _normalize_exponent_notation(text)
     return text
@@ -346,7 +365,9 @@ def normalize_physics_scientific_text(text: str) -> str:
 
 def _normalize_units(text: str) -> str:
     for token, replacement in _UNIT_NORMALIZATION.items():
-        text = re.sub(rf"\b{re.escape(token)}\b", replacement, text, flags=re.IGNORECASE)
+        text = re.sub(
+            rf"\b{re.escape(token)}\b", replacement, text, flags=re.IGNORECASE
+        )
     return text
 
 
@@ -372,19 +393,24 @@ _UNIT_PATTERN = re.compile(r"[A-Za-z][A-Za-z0-9/^\-]*")
 
 def _parse_number(value_text: str) -> Optional[float]:
     value_text = value_text.replace(" ", "")
-    sci_match = re.match(r"^(?P<coef>[+-]?(?:\d+\.\d+|\d+))\*10\^(?P<exp>[+-]?\d+)$", value_text)
+    sci_match = re.match(
+        r"^(?P<coef>[+-]?(?:\d+\.\d+|\d+))\*10\^(?P<exp>[+-]?\d+)$", value_text
+    )
     if sci_match:
         coef = float(sci_match.group("coef"))
         exp = int(sci_match.group("exp"))
-        return coef * (10 ** exp)
+        return coef * (10**exp)
 
     try:
         return float(value_text)
     except ValueError:
         return None
 
+
 # Matches <think>, < think >, <think >, < think> etc. — any whitespace inside the angle brackets
-_THINK_TAG_RE = re.compile(r"<\s*think\s*>.*?<\s*/\s*think\s*>", re.DOTALL | re.IGNORECASE)
+_THINK_TAG_RE = re.compile(
+    r"<\s*think\s*>.*?<\s*/\s*think\s*>", re.DOTALL | re.IGNORECASE
+)
 
 
 def extract_fol_formulas(text: str) -> list[str]:
@@ -395,7 +421,7 @@ def extract_fol_formulas(text: str) -> list[str]:
         if cleaned_text.startswith("```"):
             cleaned_text = re.sub(r"^```(?:json)?\n", "", cleaned_text)
             cleaned_text = re.sub(r"\n```$", "", cleaned_text)
-        
+
         parsed = json.loads(cleaned_text.strip())
         if isinstance(parsed, list):
             return [item.strip() for item in parsed if isinstance(item, str)]
@@ -408,7 +434,19 @@ def extract_fol_formulas(text: str) -> list[str]:
         line = line.strip()
         if not line:
             continue
-        if any(marker in line for marker in ["---", "Key Predicates", "Explanation:", "Predicate Key", "Key:", "Predicates:", "Notes:", "Key predicates:"]):
+        if any(
+            marker in line
+            for marker in [
+                "---",
+                "Key Predicates",
+                "Explanation:",
+                "Predicate Key",
+                "Key:",
+                "Predicates:",
+                "Notes:",
+                "Key predicates:",
+            ]
+        ):
             break
         if ":" in line:
             continue
@@ -420,50 +458,83 @@ def extract_fol_formulas(text: str) -> list[str]:
 
 
 GENERIC_WORDS = {
-    'project', 'projects', 'python', 'code', 'standard', 'standards',
-    'rule', 'rules', 'requirement', 'requirements', 'practice', 'practices',
-    'convention', 'conventions', 'protocol', 'protocols', 'specification', 'specifications',
-    'constraint', 'constraints', 'condition', 'conditions', 'regulation', 'regulations',
-    'policy', 'policies', 'guideline', 'guidelines', 'recommendation', 'recommendations',
-    'system', 'systems', 'application', 'applications', 'program', 'programs'
+    "project",
+    "projects",
+    "python",
+    "code",
+    "standard",
+    "standards",
+    "rule",
+    "rules",
+    "requirement",
+    "requirements",
+    "practice",
+    "practices",
+    "convention",
+    "conventions",
+    "protocol",
+    "protocols",
+    "specification",
+    "specifications",
+    "constraint",
+    "constraints",
+    "condition",
+    "conditions",
+    "regulation",
+    "regulations",
+    "policy",
+    "policies",
+    "guideline",
+    "guidelines",
+    "recommendation",
+    "recommendations",
+    "system",
+    "systems",
+    "application",
+    "applications",
+    "program",
+    "programs",
 }
 
-RESERVED_WORDS = {'ForAll', 'Exists', 'AND', 'OR', 'NOT', 'implies', 'IN'}
+RESERVED_WORDS = {"ForAll", "Exists", "AND", "OR", "NOT", "implies", "IN"}
+
 
 def split_camel_snake(s: str) -> list[str]:
     """Split camelCase or snake_case string into words."""
-    parts = s.split('_')
+    parts = s.split("_")
     words = []
     for part in parts:
-        camel_parts = re.findall(r'[A-Z]?[a-z0-9]+|[A-Z]+(?=[A-Z][a-z0-9]|\b)', part)
+        camel_parts = re.findall(r"[A-Z]?[a-z0-9]+|[A-Z]+(?=[A-Z][a-z0-9]|\b)", part)
         if camel_parts:
             words.extend(camel_parts)
         else:
             words.append(part)
     return words
 
+
 def clean_repetitive_name(name: str) -> str:
     """Detect and remove repetitive phrases or excessive length in predicate names."""
     if len(name) <= 50:
         return name
-    
+
     # Try to find repeating subpatterns
     for length in range(4, 40):
         for i in range(len(name) - 2 * length):
-            sub = name[i:i+length]
+            sub = name[i : i + length]
             j = i + length
             count = 1
-            while name[j:j+length] == sub:
+            while name[j : j + length] == sub:
                 count += 1
                 j += length
             if count >= 2:
                 repeated_part = sub * count
                 name = name.replace(repeated_part, sub)
                 return clean_repetitive_name(name)
-                
+
     if len(name) > 50:
         name = name[:47] + "Trunc"
     return name
+
 
 def unify_fol_predicates(formulas: list[str]) -> list[str]:
     """Lexically unify predicate names across formulas to resolve mismatches and enforce PascalCase."""
@@ -471,7 +542,7 @@ def unify_fol_predicates(formulas: list[str]) -> list[str]:
         return formulas
 
     # Extract all predicate names
-    predicate_pattern = r'\b([A-Za-z_][A-Za-z0-9_]*)\s*\('
+    predicate_pattern = r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\("
     predicates = set()
     for f in formulas:
         matches = re.findall(predicate_pattern, f)
@@ -500,7 +571,7 @@ def unify_fol_predicates(formulas: list[str]) -> list[str]:
         for name in sorted(mapping.keys(), key=len, reverse=True):
             canonical = mapping[name]
             if name != canonical:
-                new_f = re.sub(rf'\b{name}\b', canonical, new_f)
+                new_f = re.sub(rf"\b{name}\b", canonical, new_f)
         unified_formulas.append(new_f)
 
     return unified_formulas

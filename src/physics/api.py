@@ -54,7 +54,9 @@ async def run_physics(
             temperature=0.0,
         )
     except Exception:
-        classification = QuestionClassification(["electrostatics", "geometry"], "Numerical")
+        classification = QuestionClassification(
+            ["electrostatics", "geometry"], "Numerical"
+        )
 
     solver_prompt = get_solver_prompt(classification)
 
