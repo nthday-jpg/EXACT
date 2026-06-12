@@ -27,7 +27,9 @@ class PhysicsRunner:
         self._self_corrector = self_corrector
         self._max_attempts = max(1, max_attempts)
 
-    def run(self, tasks: Iterable[PhysicsTask], *, verbose: bool = True) -> List[PhysicsEval]:
+    def run(
+        self, tasks: Iterable[PhysicsTask], *, verbose: bool = True
+    ) -> List[PhysicsEval]:
         task_list = list(tasks)
         iterator = tqdm(task_list, desc="Physics", disable=not verbose)
         return [self._run_one(task) for task in iterator]
@@ -59,7 +61,6 @@ class PhysicsRunner:
             progress.close()
 
         return [result for result in results if result is not None]
-
 
     def _run_one(self, task: PhysicsTask) -> PhysicsEval:
         attempt = 0

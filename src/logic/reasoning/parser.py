@@ -10,9 +10,9 @@ Assumptions:
 from __future__ import annotations
 
 import re
+import threading
 from typing import Dict, Iterable, List, Optional, Tuple
 
-import z3
 from z3 import (
     And,
     BoolSort,
@@ -21,7 +21,6 @@ from z3 import (
     Exists,
     ForAll,
     Function,
-    IntSort,
     IntVal,
     Not,
     Or,
@@ -66,7 +65,9 @@ class Z3Symbols:
         self.preds[key] = pred
         return pred
 
-    def get_func(self, name: str, arity: int, sort: Optional[ExprRef] = None) -> ExprRef:
+    def get_func(
+        self, name: str, arity: int, sort: Optional[ExprRef] = None
+    ) -> ExprRef:
         key = (name, arity)
         if key in self.funcs:
             return self.funcs[key]
@@ -214,7 +215,9 @@ class FolParser:
                 left = left - right
         return left
 
-    def _parse_simple_term(self, stream: TokenStream, prefer_numeric: bool = False) -> ExprRef:
+    def _parse_simple_term(
+        self, stream: TokenStream, prefer_numeric: bool = False
+    ) -> ExprRef:
         tok = stream.next()
         if tok is None:
             raise ValueError("Unexpected end of input")
@@ -239,7 +242,9 @@ class FolParser:
             return IntVal(minutes)
 
         # Parse temporal durations (e.g., Duration4Hours, Duration30Minutes) as minutes
-        duration_match = re.match(r"^Duration(\d+(?:\.\d+)?)(Hours|Minutes|Days)$", tok, re.IGNORECASE)
+        duration_match = re.match(
+            r"^Duration(\d+(?:\.\d+)?)(Hours|Minutes|Days)$", tok, re.IGNORECASE
+        )
         if duration_match:
             value = float(duration_match.group(1))
             unit = duration_match.group(2).lower()
@@ -315,44 +320,89 @@ def parse_formulas(
     for f in formulas:
         # Temporarily replace logical arrows to prevent false matching of '-' or '>'
         f_temp = f.replace("<->", " BICOND ").replace("->", " IMPLIES ")
-        
+
         # 1. Match identifiers on the left of inequality or arithmetic operators
-        left_matches = re.finditer(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*(?:\([^()]*\))?\s*(?:>=|<=|>|<|\+|-)\b", f_temp)
+        left_matches = re.finditer(
+            r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*(?:\([^()]*\))?\s*(?:>=|<=|>|<|\+|-)\b",
+            f_temp,
+        )
         for m in left_matches:
             name = m.group(1)
-            if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
+            if name not in (
+                "ForAll",
+                "Exists",
+                "AND",
+                "OR",
+                "NOT",
+                "IN",
+                "BICOND",
+                "IMPLIES",
+            ):
                 numeric_symbols.add(name)
-                
+
         # 2. Match identifiers on the right of inequality or arithmetic operators
-        right_matches = re.finditer(r"\b(?:>=|<=|>|<|\+|-)\s*([A-Za-z_][A-Za-z0-9_-]*)\b", f_temp)
+        right_matches = re.finditer(
+            r"\b(?:>=|<=|>|<|\+|-)\s*([A-Za-z_][A-Za-z0-9_-]*)\b", f_temp
+        )
         for m in right_matches:
             name = m.group(1)
-            if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
+            if name not in (
+                "ForAll",
+                "Exists",
+                "AND",
+                "OR",
+                "NOT",
+                "IN",
+                "BICOND",
+                "IMPLIES",
+            ):
                 numeric_symbols.add(name)
-                
+
         # 3. Match equality/inequality with numeric or temporal/duration literals on either side
-        eq_matches = re.finditer(r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*(?:\([^()]*\))?\s*(?:=|!=)\s*(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\b", f_temp)
+        eq_matches = re.finditer(
+            r"\b([A-Za-z_][A-Za-z0-9_-]*)\s*(?:\([^()]*\))?\s*(?:=|!=)\s*(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\b",
+            f_temp,
+        )
         for m in eq_matches:
             name = m.group(1)
-            if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
+            if name not in (
+                "ForAll",
+                "Exists",
+                "AND",
+                "OR",
+                "NOT",
+                "IN",
+                "BICOND",
+                "IMPLIES",
+            ):
                 numeric_symbols.add(name)
-                
-        eq_rev_matches = re.finditer(r"\b(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\s*(?:=|!=)\s*([A-Za-z_][A-Za-z0-9_-]*)\b", f_temp)
+
+        eq_rev_matches = re.finditer(
+            r"\b(?:\d+(?:\.\d+)?|Time\d+[A-Za-z]+|Duration\d+[A-Z]+)\s*(?:=|!=)\s*([A-Za-z_][A-Za-z0-9_-]*)\b",
+            f_temp,
+        )
         for m in eq_rev_matches:
             name = m.group(1)
-            if name not in ("ForAll", "Exists", "AND", "OR", "NOT", "IN", "BICOND", "IMPLIES"):
+            if name not in (
+                "ForAll",
+                "Exists",
+                "AND",
+                "OR",
+                "NOT",
+                "IN",
+                "BICOND",
+                "IMPLIES",
+            ):
                 numeric_symbols.add(name)
 
     symbols = Z3Symbols(sort=DeclareSort(sort_name))
     symbols.numeric_symbols = numeric_symbols
-    
+
     parser = FolParser(symbols)
     formula_exprs: List[BoolRef] = [parser.parse(f) for f in formulas]
 
     return symbols, formula_exprs
 
-
-import threading
 
 # Global lock to ensure thread-safe access to Z3 (which is not thread-safe by default)
 _z3_lock = threading.Lock()

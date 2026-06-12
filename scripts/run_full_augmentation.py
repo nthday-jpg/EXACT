@@ -90,8 +90,23 @@ def main():
         canonicalized_originals.append(canonicalizer.canonicalize_sample(s))
     print(f"  -> Canonicalized {len(canonicalized_originals)} unique original samples.")
 
-    # 2. Perform Grouped Train/Val Split (No-Leakage) using structure keys
-    print("\n[2/5] Performing Grouped Story-level Split...")
+    # 2. Perform Grouped Train/Val Split (No-Leakage) using structure keys or existing splits
+    print("\n[2/5] Performing Grouped Story-level Split (Preserving existing splits if possible)...")
+    
+    # Load existing split mapping if available to ensure split stability
+    split_mapping = {}
+    if output_file.exists():
+        try:
+            with open(output_file, "r", encoding="utf-8") as f:
+                existing_data = json.load(f)
+                for item in existing_data:
+                    eid = item.get("example_id", "").replace("_canonical", "")
+                    if "split" in item and eid:
+                        split_mapping[eid] = item["split"]
+            print(f"  -> Loaded {len(split_mapping)} split mappings from existing {output_file.name}")
+        except Exception as e:
+            print(f"  -> Warning: Could not load existing split mapping: {e}")
+
     groups = defaultdict(list)
     for sample in canonicalized_originals:
         key = get_structure_key(sample)
@@ -102,24 +117,38 @@ def main():
     rng = random.Random(42)
     rng.shuffle(unique_keys)
 
-    # 90/10 split
+    # 90/10 split (fallback)
     split_idx = int(len(unique_keys) * 0.9)
     train_keys = set(unique_keys[:split_idx])
     val_keys = set(unique_keys[split_idx:])
 
     train_originals = []
     val_originals = []
+    
     for key in unique_keys:
         samples = groups[key]
-        if key in val_keys:
-            for s in samples:
-                s_copy = s.copy()
-                s_copy["split"] = "val"
-                val_originals.append(s_copy)
+        
+        # Determine split based on existing split mapping
+        split_counts = defaultdict(int)
+        for s in samples:
+            eid = s.get("example_id", "").replace("_canonical", "")
+            if eid in split_mapping:
+                split_counts[split_mapping[eid]] += 1
+                
+        if split_counts.get("val", 0) > split_counts.get("train", 0):
+            group_split = "val"
+        elif split_counts.get("train", 0) > split_counts.get("val", 0):
+            group_split = "train"
         else:
-            for s in samples:
-                s_copy = s.copy()
-                s_copy["split"] = "train"
+            # Fallback to dynamic split if not in mapping
+            group_split = "val" if key in val_keys else "train"
+            
+        for s in samples:
+            s_copy = s.copy()
+            s_copy["split"] = group_split
+            if group_split == "val":
+                val_originals.append(s_copy)
+            else:
                 train_originals.append(s_copy)
 
     print(f"  -> Train original samples: {len(train_originals)}")
@@ -231,6 +260,29 @@ def main():
     final_dataset.extend(hard_negatives)
     print(f"  -> Generated {len(hard_negatives)} valid Hard Negative samples (Tried {tried_count} candidates).")
 
+    # Load synthetic multi-hop dataset if it exists
+    synthetic_file = data_dir / "logic_synthetic_multihop.json"
+    synthetic_count = 0
+    if synthetic_file.exists():
+        print(f"\nLoading synthetic multi-hop logic samples from: {synthetic_file.name}...")
+        with open(synthetic_file, "r", encoding="utf-8") as f:
+            synthetic_data = json.load(f)
+        
+        canonicalized_synthetic = []
+        for s in synthetic_data:
+            s_canon = canonicalizer.canonicalize_sample(s)
+            s_canon["split"] = "train"
+            # Preserve optional fields like CoT and explanation
+            if "cot" in s:
+                s_canon["cot"] = s["cot"]
+            if "explanation" in s:
+                s_canon["explanation"] = s["explanation"]
+            canonicalized_synthetic.append(s_canon)
+            
+        final_dataset.extend(canonicalized_synthetic)
+        synthetic_count = len(canonicalized_synthetic)
+        print(f"  -> Added {synthetic_count} synthetic multi-hop samples to final dataset.")
+
     # Save final dataset
     print(f"\nSaving {len(final_dataset)} total samples to {output_file.name}...")
     with open(output_file, "w", encoding="utf-8") as f:
@@ -245,6 +297,7 @@ def main():
     print(f"Entity Anonymization (Train):   {anonymized_count}")
     print(f"Multi-Premise Permutation(Train):{permutation_count}")
     print(f"Hard Negative (Train):          {len(hard_negatives)}")
+    print(f"Synthetic Multi-Hop (Train):     {synthetic_count}")
     print("-" * 80)
     print(f"Total Combined Output Size:     {len(final_dataset)}")
     print(f"Target Expansion Factor:        {len(final_dataset)/len(original_data):.2f}x")

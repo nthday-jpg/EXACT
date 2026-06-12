@@ -4,7 +4,7 @@ import csv
 import json
 import random
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from src.physics.types import PhysicsTask
 
@@ -49,18 +49,18 @@ def _load_tasks_from_json(path: Path) -> List[PhysicsTask]:
     for record in records:
         if not isinstance(record, dict):
             raise ValueError(f"Expected each record in {path} to be an object")
-        
+
         question = record.get("question")
         if question is None:
             raise ValueError(f"Missing question field in {path}")
-        
+
         correct = _normalize_correct(record)
-        
+
         # Load domains vào metadata nếu tồn tại
         metadata = record.get("metadata", {})
         if not isinstance(metadata, dict):
             metadata = {}
-        
+
         if "domains" in record:
             metadata["domains"] = record["domains"]
 
@@ -70,15 +70,19 @@ def _load_tasks_from_json(path: Path) -> List[PhysicsTask]:
         if "model_answer" in record:
             metadata["model_answer"] = record["model_answer"]
 
-        tasks.append(PhysicsTask(
-            question=question, 
-            correct=correct, 
-            metadata=metadata if metadata else None
-        ))
+        tasks.append(
+            PhysicsTask(
+                question=question,
+                correct=correct,
+                metadata=metadata if metadata else None,
+            )
+        )
     return tasks
 
 
-def load_physics_tasks(input_path: str, *, num_samples: int = -1, seed: int = 42) -> List[PhysicsTask]:
+def load_physics_tasks(
+    input_path: str, *, num_samples: int = -1, seed: int = 42
+) -> List[PhysicsTask]:
     path = Path(input_path)
     if path.suffix.lower() in {".json", ".jsonl"}:
         tasks = _load_tasks_from_json(path)

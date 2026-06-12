@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from tqdm import tqdm
 import asyncio
@@ -71,8 +71,8 @@ async def run_exploration(
                     raw_response="",
                     error=str(exc),
                     tokens=None,
-                        elapsed_s=0.0,
-                        domains=None,
+                    elapsed_s=0.0,
+                    domains=None,
                 )
                 return PhysicsEval(result=result, is_correct=False, reason="exception")
 

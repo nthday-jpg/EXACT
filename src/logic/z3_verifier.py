@@ -7,13 +7,7 @@ from src.logic.reasoning.verifier import (
     TokenStream,
     FolParser,
     parse_formulas,
-    verify_with_z3
+    verify_with_z3,
 )
 
-__all__ = [
-    "Z3Symbols",
-    "TokenStream",
-    "FolParser",
-    "parse_formulas",
-    "verify_with_z3"
-]
+__all__ = ["Z3Symbols", "TokenStream", "FolParser", "parse_formulas", "verify_with_z3"]

@@ -34,7 +34,7 @@ CRITICAL: If a core physics domain applies to a system with multiple non-co-loca
 Use when: Experimental measurements, trial data sets, absolute or relative uncertainties, instrument tolerances, or duplicate measurement values.
 
 ### capacitance_and_energy
-Use when: Parallel-plate configurations, dielectric replacement/materials, charge storage (Q), electrostatic potential energy storage, plate area (S), and separation (d).
+Use when: Parallel-plate configurations, dielectric replacement/materials, electrostatic potential energy storage. Look for variables normalized strictly to base Coulombs (e.g., 'e-6 C', 'e-7 C'), base Farads (e.g., 'e-5 F', 'F'), or area/separations scaled to meters or square meters (e.g., 'm', 'm^2').
 
 ### error_analysis
 Use when: Random error, percentage relative error, standard deviation, range-based uncertainty, or error propagation.
@@ -50,13 +50,13 @@ Use when: Coulomb interactions, electric force, attractive/repulsive forces, or 
 Use when: Electric field intensity (E), flux lines, field distribution, or co-located vertex field calculations.
 
 ### ac_impedance
-Use when: RLC alternating current series circuits, phasor geometry, component voltages (VR, VL, VC), or phase angle calculations.
+Use when: RLC alternating current series circuits, phasor geometry, component voltages, or phase angle calculations. Look for variables normalized to base Ohm units ('ohm') and alternating current frequencies normalized strictly to Hertz ('Hz').
 
 ### resonance
 Use when: Reactance cancellations (XL == XC), maximum AC current states, zero phase angles, or resonant frequency calculations.
 
 ### frequency_scaling
-Use when: System frequency changes, omega transformations, or non-linear adjustments to capacitive/inductive reactance.
+Use when: System frequency shifts, omega transformations, or non-linear adjustments to reactance. Look for multiple sequential frequencies scaled strictly to base Hertz ('Hz').
 
 ### electromagnetism
 Use when: Magnetic flux, flux linkage, inductive EMF, self-inductance (L), solenoids, or magnetic energy density.

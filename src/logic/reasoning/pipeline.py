@@ -1,9 +1,11 @@
 import json
 import re
-import z3
 from z3 import unsat, sat
-import torch
-from src.logic.reasoning.verifier import verify_with_z3, extract_proof_structure, format_z3_model
+from src.logic.reasoning.verifier import (
+    verify_with_z3,
+    extract_proof_structure,
+    format_z3_model,
+)
 from src.llm import LLMClient
 from src.llm.prompts import (
     FILTER_PREMISES_SYSTEM_PROMPT,
@@ -16,23 +18,35 @@ from src.llm.prompts import (
     COT_UNSAT_USER_PROMPT_TEMPLATE,
     COT_SAT_USER_PROMPT_TEMPLATE,
     COT_UNKNOWN_USER_PROMPT_TEMPLATE,
+    STRUCTURED_FOL_PROOF_SYSTEM_PROMPT,
+    STRUCTURED_FOL_PROOF_USER_PROMPT_TEMPLATE,
 )
+
 
 class ReasoningPipeline:
     """
     Pipeline that takes First-Order Logic (FOL) formulas, verifies them mathematically
     using Z3 (via contradiction proof), and generates step-by-step natural language reasoning
     explaining the Z3 result (unsat core or counterexample).
-    
+
     Supports both local execution (via Hugging Face LoRA models) and remote API execution.
     """
-    def __init__(self, use_local: bool = True, model_dir: str = None, llm_client = None, temperature: float = 0.1):
+
+    def __init__(
+        self,
+        use_local: bool = True,
+        model_dir: str = None,
+        llm_client=None,
+        temperature: float = 0.1,
+    ):
         self.use_local = use_local
         self.model_dir = model_dir
         if llm_client is not None:
             self.llm_client = llm_client
         else:
-            self.llm_client = LLMClient(use_local=use_local, model_dir=model_dir, temperature=temperature)
+            self.llm_client = LLMClient(
+                use_local=use_local, model_dir=model_dir, temperature=temperature
+            )
 
     @property
     def tokenizer(self):
@@ -57,14 +71,23 @@ class ReasoningPipeline:
     def load_local_model(self):
         self.llm_client.load_local_model()
 
-    def _generate_text(self, system_prompt: str, user_prompt: str, max_new_tokens: int = 512) -> str:
-        return self.llm_client.generate_text(user_prompt, system_prompt=system_prompt, max_new_tokens=max_new_tokens)
+    def _generate_text(
+        self, system_prompt: str, user_prompt: str, max_new_tokens: int = 512
+    ) -> str:
+        return self.llm_client.generate_text(
+            user_prompt, system_prompt=system_prompt, max_new_tokens=max_new_tokens
+        )
 
-
-
-    def verify(self, premises_fol: list[str], conclusion_fol: str, negate_conclusion: bool = True) -> dict:
+    def verify(
+        self,
+        premises_fol: list[str],
+        conclusion_fol: str,
+        negate_conclusion: bool = True,
+    ) -> dict:
         """Parses FOL formulas, tracks them in Z3 solver, and checks for entailment via contradiction."""
-        return verify_with_z3(premises_fol, conclusion_fol, negate_conclusion=negate_conclusion)
+        return verify_with_z3(
+            premises_fol, conclusion_fol, negate_conclusion=negate_conclusion
+        )
 
     def filter_relevant_premises(
         self,
@@ -98,7 +121,9 @@ class ReasoningPipeline:
         )
 
         try:
-            response = self._generate_text(system_prompt, user_prompt, max_new_tokens=128)
+            response = self._generate_text(
+                system_prompt, user_prompt, max_new_tokens=128
+            )
             match = re.search(r"\[[\d,\s]+\]", response)
             if not match:
                 return premises_nl, premises_fol, list(range(n))
@@ -108,12 +133,18 @@ class ReasoningPipeline:
             if len(indices) < 2:
                 return premises_nl, premises_fol, list(range(n))
             filtered_nl = [premises_nl[i] for i in indices]
-            filtered_fol = [premises_fol[i] for i in indices] if len(premises_fol) == n else premises_fol
+            filtered_fol = (
+                [premises_fol[i] for i in indices]
+                if len(premises_fol) == n
+                else premises_fol
+            )
             return filtered_nl, filtered_fol, indices
         except Exception:
             return premises_nl, premises_fol, list(range(n))
 
-    def generate_reasoning(self, premises_nl: list[str], conclusion_nl: str, verification: dict) -> str:
+    def generate_reasoning(
+        self, premises_nl: list[str], conclusion_nl: str, verification: dict
+    ) -> str:
         """Generates step-by-step reasoning explaining the Z3 verification result."""
         result = verification["result"]
 
@@ -132,12 +163,15 @@ class ReasoningPipeline:
             # Format core premises list
             core_premises_nl = []
             for idx in core_indices:
-                core_premises_nl.append(f"- Premise {idx+1}: {premises_nl[idx]}")
-            core_premises_text = "\n".join(core_premises_nl) if core_premises_nl else "\n".join(f"- {p}" for p in premises_nl)
+                core_premises_nl.append(f"- Premise {idx + 1}: {premises_nl[idx]}")
+            core_premises_text = (
+                "\n".join(core_premises_nl)
+                if core_premises_nl
+                else "\n".join(f"- {p}" for p in premises_nl)
+            )
 
             user_prompt = REASONING_UNSAT_USER_PROMPT_TEMPLATE.format(
-                core_premises_text=core_premises_text,
-                conclusion_nl=conclusion_nl
+                core_premises_text=core_premises_text, conclusion_nl=conclusion_nl
             )
         elif result == sat:
             model_str = format_z3_model(verification["model"])
@@ -145,18 +179,21 @@ class ReasoningPipeline:
             user_prompt = REASONING_SAT_USER_PROMPT_TEMPLATE.format(
                 premises_text=premises_text,
                 conclusion_nl=conclusion_nl,
-                model_str=model_str
+                model_str=model_str,
             )
         else:
             premises_text = "\n".join(f"- {p}" for p in premises_nl)
             user_prompt = REASONING_UNKNOWN_USER_PROMPT_TEMPLATE.format(
-                premises_text=premises_text,
-                conclusion_nl=conclusion_nl
+                premises_text=premises_text, conclusion_nl=conclusion_nl
             )
 
         system_prompt = REASONING_SYSTEM_PROMPT
 
-        return self._generate_text(system_prompt, user_prompt, max_new_tokens=(2048 if not self.use_local else 768))
+        return self._generate_text(
+            system_prompt,
+            user_prompt,
+            max_new_tokens=(2048 if not self.use_local else 768),
+        )
 
     # ------------------------------------------------------------------
     # Structured Chain-of-Thought output
@@ -198,6 +235,8 @@ class ReasoningPipeline:
         premises_nl: list[str],
         conclusion_nl: str,
         verification: dict,
+        premises_fol: list[str] = None,
+        conclusion_fol: str = None,
     ) -> tuple[str, list[str]]:
         """Generate structured Chain-of-Thought reasoning.
 
@@ -211,6 +250,54 @@ class ReasoningPipeline:
             ``cot_steps`` is a parsed list of individual reasoning steps.
         """
         result = verification["result"]
+
+        if result == unsat and premises_fol and conclusion_fol:
+            core_indices = []
+            for var_str in verification.get("unsat_core", []):
+                if var_str.startswith("p_"):
+                    try:
+                        core_indices.append(int(var_str.split("_")[1]) - 1)
+                    except ValueError:
+                        pass
+            core_indices.sort()
+
+            core_premises_nl = [
+                premises_nl[i] for i in core_indices if i < len(premises_nl)
+            ]
+            core_premises_fol = [
+                premises_fol[i] for i in core_indices if i < len(premises_fol)
+            ]
+
+            premises_block = ""
+            for idx, (nl, fol) in enumerate(zip(core_premises_nl, core_premises_fol)):
+                premises_block += f"Premise {idx + 1}:\nNL: {nl}\nFOL: {fol}\n\n"
+
+            user_prompt_fol = STRUCTURED_FOL_PROOF_USER_PROMPT_TEMPLATE.format(
+                premises_block=premises_block.strip(),
+                conclusion_nl=conclusion_nl,
+                conclusion_fol=conclusion_fol,
+            )
+
+            try:
+                raw_fol_resp = self._generate_text(
+                    STRUCTURED_FOL_PROOF_SYSTEM_PROMPT,
+                    user_prompt_fol,
+                    max_new_tokens=512,
+                )
+                cleaned_fol = raw_fol_resp.strip()
+                if cleaned_fol.startswith("```"):
+                    cleaned_fol = re.sub(r"^```(?:json)?\n", "", cleaned_fol)
+                    cleaned_fol = re.sub(r"\n```$", "", cleaned_fol)
+                cot_steps = json.loads(cleaned_fol.strip())
+                if isinstance(cot_steps, list) and len(cot_steps) > 0:
+                    raw_text = self.generate_reasoning(
+                        premises_nl, conclusion_nl, verification
+                    )
+                    return raw_text, cot_steps
+            except Exception as e:
+                print(
+                    f"Warning: Failed to parse structured FOL proof: {str(e)}. Falling back to standard CoT."
+                )
 
         if result == unsat:
             core_indices = []
@@ -249,7 +336,7 @@ class ReasoningPipeline:
             user_prompt = COT_UNSAT_USER_PROMPT_TEMPLATE.format(
                 core_premises_text=core_premises_text,
                 conclusion_nl=conclusion_nl,
-                proof_skeleton_instruction=proof_skeleton_instruction
+                proof_skeleton_instruction=proof_skeleton_instruction,
             )
         elif result == sat:
             model_str = format_z3_model(verification["model"])
@@ -257,17 +344,20 @@ class ReasoningPipeline:
             user_prompt = COT_SAT_USER_PROMPT_TEMPLATE.format(
                 premises_text=premises_text,
                 conclusion_nl=conclusion_nl,
-                model_str=model_str
+                model_str=model_str,
             )
         else:
             premises_text = "\n".join(f"- {p}" for p in premises_nl)
             user_prompt = COT_UNKNOWN_USER_PROMPT_TEMPLATE.format(
-                premises_text=premises_text,
-                conclusion_nl=conclusion_nl
+                premises_text=premises_text, conclusion_nl=conclusion_nl
             )
 
         system_prompt = COT_SYSTEM_PROMPT
 
-        raw_text = self._generate_text(system_prompt, user_prompt, max_new_tokens=(2048 if not self.use_local else 768))
+        raw_text = self._generate_text(
+            system_prompt,
+            user_prompt,
+            max_new_tokens=(2048 if not self.use_local else 768),
+        )
         cot_steps = self._parse_cot_steps(raw_text)
         return raw_text, cot_steps

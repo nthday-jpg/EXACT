@@ -7,6 +7,6 @@ if TYPE_CHECKING:
 
 
 class SelfCorrector(Protocol):
-	def propose_fix(self, result: "PhysicsResult") -> Optional["PhysicsTask"]:
-		"""Return a revised task or None if no correction is available."""
-		raise NotImplementedError
+    def propose_fix(self, result: "PhysicsResult") -> Optional["PhysicsTask"]:
+        """Return a revised task or None if no correction is available."""
+        raise NotImplementedError

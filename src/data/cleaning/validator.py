@@ -22,7 +22,9 @@ def validate_sample_fol(formulas: List[str]) -> Tuple[bool, str]:
         return False, str(e)
 
 
-def validate_dataset(dataset: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+def validate_dataset(
+    dataset: List[Dict[str, Any]],
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     Validate an entire list of unified samples.
     Returns a tuple of (valid_samples, invalid_samples).
@@ -33,7 +35,7 @@ def validate_dataset(dataset: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]
     for sample in dataset:
         nl = sample.get("premises-NL", [])
         fol = sample.get("premises-FOL", [])
-        
+
         # Check that the number of natural language premises matches the number of FOL formulas
         if len(nl) != len(fol):
             bad_sample = sample.copy()
@@ -55,4 +57,3 @@ def validate_dataset(dataset: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]
             invalid_samples.append(bad_sample)
 
     return valid_samples, invalid_samples
-

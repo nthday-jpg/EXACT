@@ -3,7 +3,7 @@ from src.logic.reasoning.verifier import (
     TokenStream,
     FolParser,
     parse_formulas,
-    verify_with_z3
+    verify_with_z3,
 )
 from src.logic.reasoning.pipeline import ReasoningPipeline
 
@@ -13,5 +13,5 @@ __all__ = [
     "FolParser",
     "parse_formulas",
     "verify_with_z3",
-    "ReasoningPipeline"
+    "ReasoningPipeline",
 ]

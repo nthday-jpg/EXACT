@@ -11,6 +11,7 @@ from src.physics.router import QuestionClassification, classify_question
 from src.physics.runner import PhysicsRunner
 from src.physics.solver import PhysicsSolver
 from src.physics.types import PhysicsEval, PhysicsTask
+from src.physics.preprocessing import preprocess
 
 if TYPE_CHECKING:
     from src.agents.self_correct.interface import SelfCorrector
@@ -21,6 +22,7 @@ async def run_physics(
     *,
     model_name: str,
     api_key: Optional[str],
+    base_url: Optional[str] = None,
     router_model_name: Optional[str] = None,
     evaluator: Optional[PhysicsEvaluator] = None,
     output_path: Optional[str] = None,
@@ -37,6 +39,7 @@ async def run_physics(
     3. Solve with assembled policy prompt
     4. Evaluate result
     """
+    task.question = preprocess(task.question)
     router_model = router_model_name or model_name
     system_prompt = _load_solver_instructions()
 
@@ -47,16 +50,20 @@ async def run_physics(
             task.question,
             model_name=router_model,
             api_key=api_key,
+            base_url=base_url,
             temperature=0.0,
         )
     except Exception:
-        classification = QuestionClassification(["electrostatics", "geometry"], "Numerical")
+        classification = QuestionClassification(
+            ["electrostatics", "geometry"], "Numerical"
+        )
 
     solver_prompt = get_solver_prompt(classification)
 
     solver = PhysicsSolver(
         model_name=model_name,
         api_key=api_key,
+        base_url=base_url,
         system_prompt=system_prompt,
         solver_prompt=solver_prompt,
         temperature=temperature,
@@ -83,7 +90,6 @@ async def run_physics(
             "question": evaluation.result.task.question,
             "correct": evaluation.result.task.correct,
             "domains": classification.domains,
-            "question_type": classification.question_type,
             "model_answer": evaluation.result.model_answer,
             "raw_response": evaluation.result.raw_response,
             "error": evaluation.result.error,

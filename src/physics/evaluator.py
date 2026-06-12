@@ -15,13 +15,18 @@ class PhysicsEvaluator:
             reason = _reason_from_error(result.error) or "missing_answer"
             return PhysicsEval(result=result, is_correct=False, reason=reason)
 
-        reason = _reason_from_error(result.error) or _reason_from_nan(result.model_answer)
+        reason = _reason_from_error(result.error) or _reason_from_nan(
+            result.model_answer
+        )
         if reason:
             return PhysicsEval(result=result, is_correct=False, reason=reason)
 
         try:
             is_correct = evaluate_physics_answer(
-                result.task.question, result.model_answer, model_raw_output=result.raw_response, correct_answer=result.task.correct
+                result.task.question,
+                result.model_answer,
+                model_raw_output=result.raw_response,
+                correct_answer=result.task.correct,
             )
         except Exception as exc:
             result.error = str(exc)

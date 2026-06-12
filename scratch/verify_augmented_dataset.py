@@ -1,72 +1,62 @@
 import json
-import random
+from pathlib import Path
 
-merged_path = r"d:\mduy\source\repos\EXACT\data\processed\merged_valid.json"
-
-with open(merged_path, "r", encoding="utf-8") as f:
-    data = json.load(f)
-
-print("=" * 80)
-print("AUGMENTED DATASET VERIFICATION")
-print("=" * 80)
-print(f"Total samples: {len(data)}")
-
-original_count = 0
-letters_count = 0
-names_count = 0
-other_aug_count = 0
-
-mismatch_samples = []
-
-for idx, sample in enumerate(data):
-    source = sample.get("dataset_source", "")
-    if "augmented-letters" in source:
-        letters_count += 1
-    elif "augmented-names" in source:
-        names_count += 1
-    elif "augmented" in source:
-        other_aug_count += 1
-    else:
-        original_count += 1
+def main():
+    augmented_path = Path("d:/mduy/source/repos/EXACT/data/processed/logic_merged_valid_augmented.json")
+    print(f"Loading {augmented_path}...")
+    with open(augmented_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    
+    print(f"Total samples loaded: {len(data)}")
+    
+    # Check splits
+    splits = {}
+    for item in data:
+        s = item.get("split", "unknown")
+        splits[s] = splits.get(s, 0) + 1
+    print("Splits count:", splits)
+    
+    # Check if there are synthetic samples and verify they have CoT
+    synthetic_count = 0
+    synthetic_with_cot = 0
+    synthetic_with_expl = 0
+    non_synthetic_with_cot = 0
+    
+    for item in data:
+        # Check if it has CoT
+        has_cot = "cot" in item
+        has_expl = "explanation" in item
         
-    nl_len = len(sample.get("premises-NL", []))
-    fol_len = len(sample.get("premises-FOL", []))
-    if nl_len != fol_len:
-        mismatch_samples.append((idx, sample.get("example_id"), nl_len, fol_len))
+        # Synthetic samples typically have higher depth or particular ID/source pattern
+        # Our generator assigned logic_synthetic_multihop source or we can detect via some field
+        # Let's see if we have story_id starting with 'synth_logic_'
+        story_id = str(item.get("story_id", ""))
+        if story_id.startswith("synth_logic_"):
+            synthetic_count += 1
+            if has_cot:
+                synthetic_with_cot += 1
+            if has_expl:
+                synthetic_with_expl += 1
+        else:
+            if has_cot:
+                non_synthetic_with_cot += 1
 
-print(f"Original samples: {original_count}")
-print(f"Augmented (Letters) samples: {letters_count}")
-print(f"Augmented (Names) samples: {names_count}")
-print(f"Other Augmented samples: {other_aug_count}")
-print(f"Total Augmented samples: {letters_count + names_count + other_aug_count}")
+    print(f"Synthetic samples (story_id starts with 'synth_logic_'): {synthetic_count}")
+    print(f"Synthetic with cot: {synthetic_with_cot}")
+    print(f"Synthetic with explanation: {synthetic_with_expl}")
+    print(f"Non-synthetic with cot: {non_synthetic_with_cot}")
+    
+    # Verify no leaks: ensure that story_id in split="val" never appears in split="train"
+    train_stories = {item.get("story_id") for item in data if item.get("split") == "train" if item.get("story_id")}
+    val_stories = {item.get("story_id") for item in data if item.get("split") == "val" if item.get("story_id")}
+    overlap = train_stories.intersection(val_stories)
+    print(f"Train story count: {len(train_stories)}")
+    print(f"Val story count: {len(val_stories)}")
+    print(f"Overlap between train and val story_ids: {len(overlap)}")
+    if overlap:
+        print(f"WARNING: Leakage detected on story_ids: {overlap}")
+    else:
+        print("SUCCESS: Zero story-level leakage between train and val!")
 
-print(f"\nPremise count alignment checks:")
-if not mismatch_samples:
-    print("  [OK] 100% of samples have perfectly aligned NL and FOL premise lengths!")
-else:
-    print(f"  [WARNING] Found {len(mismatch_samples)} samples with mismatched premise counts!")
-    for idx, eid, nl_l, fol_l in mismatch_samples[:5]:
-        print(f"    - Sample index {idx} (ID: {eid}): NL={nl_l}, FOL={fol_l}")
-
-# Randomly sample 3 augmented samples and print them
-print("\n" + "-" * 40)
-print("RANDOM AUGMENTED SAMPLES DEMO")
-print("-" * 40)
-augmented_indices = [i for i, s in enumerate(data) if "augmented" in s.get("dataset_source", "")]
-if augmented_indices:
-    sampled_indices = random.sample(augmented_indices, min(3, len(augmented_indices)))
-    for idx in sampled_indices:
-        sample = data[idx]
-        print(f"\nSample Index {idx} (ID: {sample.get('example_id')})")
-        print(f"Dataset Source: {sample.get('dataset_source')}")
-        print("NL Premises:")
-        for nl in sample.get("premises-NL", []):
-            print(f"  - {nl}")
-        print("FOL Premises:")
-        for fol in sample.get("premises-FOL", []):
-            print(f"  - {fol}")
-        print(f"Question: {sample.get('question')}")
-        print(f"Answer: {sample.get('answer')}")
-else:
-    print("No augmented samples found in the dataset to demo.")
-print("=" * 80)
+if __name__ == "__main__":
+    main()
