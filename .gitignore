@@ -12,9 +12,8 @@ wheels/
 .env
 
 # Large model fine-tuning results and checkpoints
-results/*
-!results/evaluation_logic_200.json
 runs/
 model_cache/
 offline_packages/
 results_physics/
+results_fol_and_router/
