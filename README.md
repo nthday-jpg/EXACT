@@ -48,25 +48,9 @@ graph TD
     PhysOutput --> APIResponse
 ```
 
----
-
-## 📂 Repository Layout & File Directory
-
-Click direct links to inspect specific components:
-
-- [pyproject.toml](pyproject.toml) — Manages Python dependencies (e.g., `z3-solver`, `sympy`, `transformers`, `torch`) via `uv`.
-- [.env](.env) — Local environment configuration (model definitions, Hugging Face and Weights & Biases API keys).
-- [src/logic/pipeline.py](src/logic/pipeline.py) — End-to-end logical orchestrator `LogicalReasoningPipeline`.
-- [src/logic/translation](src/logic/translation) — Compiles natural language statements into logical representations using glossary-constrained translation.
-- [src/logic/reasoning](src/logic/reasoning) — Hosts premise filtering, Z3 verification, and proof tree traversal.
-- [src/physics/api.py](src/physics/api.py) — Entry point to invoke sync, async, and batch physics solving.
-- [src/physics/solver.py](src/physics/solver.py) — Generates Python formulas from physics problems and executes them.
-- [src/physics/runner.py](src/physics/runner.py) — Handles the physics execution flow, pipeline retries, and optional self-correction protocols.
-- [src/llm/llm_client.py](src/llm/llm_client.py) — Model client to load base models (e.g., `Qwen/Qwen3-8B`) and attach local LoRA adapters.
-- [src/llm/prompts.py](file:///d:/mduy/source/repos/EXACT/src/llm/prompts.py) — Centralized configuration file isolating system instructions from operational logic.
-- [scripts/run_local_eval.py](file:///d:/mduy/source/repos/EXACT/scripts/run_local_eval.py) — Evaluation launcher script that runs sequential testing to prevent VRAM overflow.
 
 ---
+
 
 ## 🧠 Core Framework Features
 
@@ -88,7 +72,7 @@ The Physics Module compiles numerical problems into executable Python calculatio
 
 ## 📊 Dataset Reference & Specifications
 
-The EXACT framework is validated against two major dataset categories outlined in [context.md](file:///d:/mduy/source/repos/EXACT/context.md):
+The EXACT framework is validated against two major dataset categories outlined in the project context:
 
 ### Dataset Type 1: Logic-Based Educational Queries
 Contains **464 records** with **913 questions** designed to evaluate logical reasoning under university academic, grading, and scholarship regulations.
@@ -116,7 +100,7 @@ uv sync
 ```
 
 ### Step 2: Configure Keys
-Create a local `.env` file in the root directory (based on the system variables in [.env](file:///d:/mduy/source/repos/EXACT/.env)):
+Create a local `.env` file in the root directory (based on the system variables in the `.env` template):
 ```env
 HF_API_KEY=your_hugging_face_token
 LOGIC_COMPILER_MODEL=Qwen/Qwen3-8B:featherless-ai
@@ -128,61 +112,94 @@ WANDB_API_KEY=your_wandb_token
 
 ---
 
-## 🚀 Execution & Evaluation
+## 🚀 Execution & Verification
 
-### Running Offline GPU Evaluation
-To execute sequential benchmark runs on local datasets (e.g. 200 samples) without triggering VRAM memory overflow, launch:
-```bash
-uv run scripts/run_local_eval.py
+To verify the system end-to-end, you can execute the integration tests:
+
+1. **Local Integration Smoke Test**: Verifies the FastAPI prediction server locally, checking output formatting schemas and reasoning outputs.
+2. **Remote Verification Test**: Validates the fully deployed remote API and model server endpoints live on Modal.
+
+---
+
+## 📬 API Submission Schema & Endpoints
+
+For the EXACT 2026 challenge evaluation, the API Server exposes a unified prediction endpoint:
+
+### 1. Unified Prediction Endpoint (`POST /predict`)
+
+Accepts a single query request and returns a JSON list containing exactly one prediction result.
+
+#### Request Payload (`PredictRequest`):
+```json
+{
+  "query_id": "TEST_T1_0001",
+  "type": "type1",
+  "query": "Is Student A eligible for graduation?",
+  "premises": [
+    "A student who has completed at least 120 credits is eligible for graduation.",
+    "Student A has completed 125 credits."
+  ],
+  "options": ["Yes", "No", "Uncertain"]
+}
 ```
 
-### Synchronous Logic Pipeline Execution Example
-```python
-from src.logic.pipeline import LogicalReasoningPipeline
-from src.llm.llm_client import LLMClient
-
-# 1. Initialize LLM client and end-to-end logic pipeline
-llm_client = LLMClient()
-pipeline = LogicalReasoningPipeline(use_local=True, llm_client=llm_client)
-
-# 2. Define educational rules and target conclusion
-premises = [
-    "If a curriculum has practical exercises and is well-structured, it enhances student engagement.",
-    "The faculty prioritizes curriculum development, so the curriculum is well-structured.",
-    "The curriculum has practical exercises."
+#### Response Payload (`List[PredictResponseItem]`):
+##### Type 1 (Logical Query) Response:
+```json
+[
+  {
+    "query_id": "TEST_T1_0001",
+    "answer": "Yes",
+    "unit": "",
+    "explanation": "Since the first premise establishes that a student with at least 120 credits is eligible for graduation, and the second premise confirms that Student A has completed 125 credits, it follows that Student A meets the requirement for graduation...",
+    "premises_used": [0, 1],
+    "reasoning": {
+      "type": "fol",
+      "steps": [
+        "Rule: ForAll(x, (Credits(x) >= 120 -> Eligible(x)))",
+        "Fact: Credits(a) = 125",
+        "Conclusion: Eligible(a)"
+      ]
+    }
+  }
 ]
-conclusion = "The curriculum enhances student engagement."
+```
 
-# 3. Compile, verify, and explain
-result = pipeline.run_pipeline(premises, conclusion)
-
-print("Answer:", result["answer"])          # Output: "Yes"
-print("Confidence:", result["confidence"])  # Output: 1.0 (Guaranteed via Z3 solver)
-print("CoT explanation:", result["cot"])    # Human-readable step-by-step reasoning
+##### Type 2 (Physics Query) Response:
+```json
+[
+  {
+    "query_id": "TEST_T2_0001",
+    "answer": "100",
+    "unit": "ohm",
+    "explanation": "Series resistor network detected. Resistive element summation and total impedance aggregation rules apply. Sum the individual resistances to compute the total series resistance.",
+    "premises_used": [],
+    "reasoning": {
+      "type": "cot",
+      "steps": [
+        "Two resistors R1 and R2 connected in series",
+        "Series connection implies additive resistance",
+        "Sum the resistances R1 and R2"
+      ]
+    }
+  }
+]
 ```
 
 ---
 
-## 📬 API Submission Schema
+## 🛠️ Modal Serverless Deployment
 
-For the challenge evaluation, the endpoint accepts queries and returns the following JSON schema:
+EXACT is built to run on serverless cloud architecture using **Modal** for zero idle infrastructure costs.
 
-```json
-{
-  "answer": "B",
-  "explanation": "Premise 3 confirms the curriculum is well-structured. Together with exercises in premise 5, premise 1 is satisfied, leading to enhanced engagement...",
-  "fol": "ForAll(c, (well_structured(c) ∧ has_exercises(c)) → enhances_engagement(c))",
-  "cot": [
-    "Step 1: Identify circuit topology or premises.",
-    "Step 2: Apply the compiled Z3 logic solver.",
-    "Step 3: Traversed proof tree results in a guaranteed entailment."
-  ],
-  "premises": [
-    "If a curriculum is well-structured and has exercises, it enhances student engagement."
-  ],
-  "confidence": 1.00
-}
-```
+### 1. Model Server Deployment (GPU L4)
+Serves the `Qwen/Qwen3-8B` base model and fine-tuned PEFT adapters on an NVIDIA L4 GPU.
+* The vLLM models endpoint (`GET /v1/models`) exposes the base model verification IDs to satisfy the challenge guidelines.
+
+### 2. API Server Deployment (CPU)
+Serves the FastAPI prediction endpoint (`POST /predict`) on a warm 1.0 CPU / 2GB RAM container to eliminate cold-start latency.
+
+---
 
 ### Evaluation Weighting Matrix
 | Criterion | Focus | Objective |
