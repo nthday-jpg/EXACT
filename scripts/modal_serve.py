@@ -15,8 +15,8 @@ image = (
         "uvicorn",
         "pydantic"
     )
-    .add_local_dir("d:/mduy/source/repos/EXACT/results_physics", remote_path="/adapters/physics")
-    .add_local_dir("d:/mduy/source/repos/EXACT/results_fol_and_router", remote_path="/adapters/fol_router")
+    .add_local_dir("d:/mduy/source/repos/results_physics", remote_path="/adapters/physics")
+    .add_local_dir("d:/mduy/source/repos/results_fol_and_router", remote_path="/adapters/fol_router")
 )
 
 @app.cls(
@@ -25,7 +25,8 @@ image = (
     cpu=4,
     memory=32768,       # 32 GB system RAM to ensure fast loading
     timeout=600,
-    scaledown_window=120, # Shut down after 2 minutes of inactivity to save cost
+    scaledown_window=60, # Shut down after 60 seconds of inactivity to save cost
+    min_containers=0,   # Scales down to 0 when idle to save cost
     secrets=[modal.Secret.from_dotenv()],
 )
 class ExactModel:

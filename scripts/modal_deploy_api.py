@@ -31,7 +31,7 @@ image = (
     cpu=1.0,
     memory=2048,
     secrets=[modal.Secret.from_dotenv()],
-    min_containers=1,  # Keeps 1 container warm at all times to eliminate cold start latency
+    min_containers=0,  # Scales down to 0 when idle to save cost
 )
 @modal.asgi_app()
 def api_server():
