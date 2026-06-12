@@ -1,0 +1,2 @@
+https://cqktgju--exact-api-server-api-server.modal.run/predict
+https://cqktgju--exact-qwen3-8b-lora-exactmodel-api-server.modal.run/v1/models
