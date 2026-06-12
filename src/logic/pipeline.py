@@ -15,11 +15,65 @@ from src.llm.prompts import (
 def parse_mcq_options(text: str) -> dict[str, str]:
     """Parse options A, B, C, D from the text if present."""
     options = {}
-    pattern = r"(?:\s+|^)([A-D])[\.\)]\s+(.*?)(?=\s+[A-D][\.\)]\s+|$)"
-    matches = re.findall(pattern, text, re.DOTALL)
+    
+    # 1. Robust regex pattern
+    pattern = r"(?:\s+|^)(?:[\-\*]\s+)?(?:\(|\[|Option\s+)?([A-G])(?:\)|\]|\.|\:)?\s+(.*?)(?=\s+(?:[\-\*]\s+)?(?:\(|\[|Option\s+)?[A-G](?:\)|\]|\.|\:)?\s+|$)"
+    matches = re.findall(pattern, text, re.DOTALL | re.IGNORECASE)
     for opt_char, opt_text in matches:
-        options[opt_char] = opt_text.strip()
+        options[opt_char.upper()] = opt_text.strip()
+    
+    if len(options) >= 2:
+        return options
+        
+    # 2. Line-by-line fallback
+    options = {}
+    lines = text.splitlines()
+    current_key = None
+    current_text = []
+    for line in lines:
+        m = re.match(r"^\s*(?:Option\s+)?(?:\(?|\[?)([A-G])(?:\)?|\]?)[\.\)\:\-]\s*(.*)$", line, re.IGNORECASE)
+        if m:
+            if current_key:
+                options[current_key] = "\n".join(current_text).strip()
+            current_key = m.group(1).upper()
+            current_text = [m.group(2).strip()]
+        else:
+            if current_key:
+                current_text.append(line.strip())
+    if current_key:
+        options[current_key] = "\n".join(current_text).strip()
+        
     return options
+
+
+def extract_options_via_llm(text: str, llm_client) -> dict[str, str]:
+    """Fallback to extract MCQ options using the LLM when regex fails."""
+    prompt = (
+        "Analyze the following multiple-choice question and extract the text for options A, B, C, D (and any others if present).\n\n"
+        f"Question:\n{text}\n\n"
+        "Return the extracted options as a STRICT JSON object mapping the uppercase option letter to its text description.\n"
+        "Example output: {\"A\": \"Option A text\", \"B\": \"Option B text\"}\n"
+        "If no options are found, return {}."
+    )
+    try:
+        response = llm_client.generate_text(
+            prompt,
+            system_prompt="You are a precise parsing assistant. Return ONLY a valid JSON object. Do not include any other text or markdown block.",
+            max_new_tokens=256
+        ).strip()
+        # Parse JSON
+        cleaned = response.strip()
+        if cleaned.startswith("```"):
+            cleaned = re.sub(r"^```(?:json)?\n", "", cleaned)
+            cleaned = re.sub(r"\n```$", "", cleaned)
+        import json
+        parsed = json.loads(cleaned.strip())
+        if isinstance(parsed, dict):
+            return {str(k).upper(): str(v).strip() for k, v in parsed.items()}
+    except Exception as e:
+        print(f"Error extracting options via LLM: {e}")
+    return {}
+
 
 
 def _compute_confidence(verification: dict, total_premises: int = 0) -> float:
@@ -215,7 +269,7 @@ class LogicalReasoningPipeline:
         )
 
     def run_pipeline(
-        self, premises_nl: list[str], conclusion_nl: str, question_type: str = None
+        self, premises_nl: list[str], conclusion_nl: str, question_type: str = None, options_list: list[str] = None
     ) -> dict:
         # Propagate models if loaded
         if self.translation_pipeline.model:
@@ -223,11 +277,37 @@ class LogicalReasoningPipeline:
             self.reasoning_pipeline.model = self.translation_pipeline.model
 
         # Auto-detect question type if not specified
-        if not question_type or question_type == "auto":
-            question_type = detect_question_type(conclusion_nl)
+        if options_list is not None and len(options_list) > 0:
+            is_yes_no = all(opt.lower() in ("yes", "no", "uncertain") for opt in options_list)
+            if is_yes_no:
+                question_type = "yes_no"
+            else:
+                question_type = "single_choice"
+        else:
+            if not question_type or question_type == "auto":
+                question_type = detect_question_type(conclusion_nl)
+                # Override to open_ended if no options provided
+                if question_type in ("single_choice", "multiple_choice"):
+                    question_type = "open_ended"
+
+        # Check if options_list contains just keys (e.g. ["A", "B", "C", "D"])
+        has_only_keys = False
+        if options_list is not None and len(options_list) > 0:
+            has_only_keys = all(len(opt.strip().rstrip(".")) == 1 for opt in options_list)
 
         # Detect multiple-choice options if MCQ type is selected or auto-detected
-        options = parse_mcq_options(conclusion_nl)
+        if options_list is not None and len(options_list) > 0 and question_type != "yes_no" and not has_only_keys:
+            options = {chr(65 + i): opt for i, opt in enumerate(options_list)}
+        else:
+            options = parse_mcq_options(conclusion_nl)
+            # Fallback to LLM extraction if we expected options but couldn't parse them via regex
+            if (not options or len(options) < 2) and question_type != "yes_no" and (has_only_keys or (options_list is not None and len(options_list) > 0)):
+                print("Regex option parsing failed/insufficient. Trying LLM extraction...")
+                options = extract_options_via_llm(conclusion_nl, self.llm_client)
+            
+            # Fallback if parsing failed but options_list is provided
+            if not options and options_list is not None and len(options_list) > 0 and question_type != "yes_no":
+                options = {chr(65 + i): opt for i, opt in enumerate(options_list)}
 
         if question_type in ("single_choice", "multiple_choice") or (
             len(options) >= 2 and not question_type

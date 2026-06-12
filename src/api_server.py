@@ -187,29 +187,16 @@ async def predict(request: PredictRequest):
             )
 
         try:
-            # 1. Adapt options into query if query doesn't list A, B, C, D and options list is non-standard
-            query_formatted = request.query
-            is_yes_no = all(
-                opt.lower() in ("yes", "no", "uncertain") for opt in request.options
-            )
-            has_abcd_in_query = any(
-                f"\n{letter}." in request.query for letter in ("A", "B", "C", "D")
-            )
-
-            if request.options and not is_yes_no and not has_abcd_in_query:
-                query_formatted = (
-                    request.query
-                    + "\n"
-                    + "\n".join(
-                        f"{chr(65 + i)}. {opt}" for i, opt in enumerate(request.options)
-                    )
-                )
-
             # 2. Run the Logical Reasoning Pipeline
             # We run this in a threadpool to prevent blocking the async loop
             loop = asyncio.get_running_loop()
             result = await loop.run_in_executor(
-                None, logic_pipeline.run_pipeline, request.premises, query_formatted
+                None,
+                logic_pipeline.run_pipeline,
+                request.premises,
+                request.query,
+                None,
+                request.options
             )
 
             # 3. Format the final output
