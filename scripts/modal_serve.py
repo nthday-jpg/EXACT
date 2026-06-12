@@ -94,6 +94,7 @@ class ExactModel:
             return {
                 "object": "list",
                 "data": [
+                    {"id": "Qwen/Qwen3-8B", "object": "model", "created": 1700000000, "owned_by": "vllm"},
                     {"id": "physics", "object": "model", "created": 1700000000, "owned_by": "exact"},
                     {"id": "fol_router", "object": "model", "created": 1700000000, "owned_by": "exact"}
                 ]
