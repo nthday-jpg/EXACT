@@ -28,11 +28,6 @@ GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1/openai/"
 SOLVER_MODEL = "Qwen/Qwen3-235B-A22B-Instruct-2507:together"
 
 GEMINI_API_KEYS = [
-    "AQ.Ab8RN6Ic74WmovZu-rOT1CE02mCY_Fbxot_Eh5LfNbzrfZEWmQ"
-    "AQ.Ab8RN6J7zaxvaPU6AgQE6tohF1y93ZDk-oRUBZ7th9xFBaeChQ",
-    "AQ.Ab8RN6JKWxNxxPX77F_nTgff1x9AOevW9sKDB0S8ztC-JLdj0Q",
-    "AIzaSyDF93IAP5PdR7rkpukTTKT97O82zoG8T58",
-    "AIzaSyBugdkMPpmeCgvrn9eXta_WH4CLJZy01V0",
 ]
 
 GEMINI_MODELS = [
