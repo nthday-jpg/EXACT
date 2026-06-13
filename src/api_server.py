@@ -323,6 +323,7 @@ async def predict(request: PredictRequest):
                 else:
                     unit_str = str(unit_val) if unit_val is not None else ""
 
+                unit_str = unit_str.replace("μ", "u").replace("µ", "u").replace("Ω", "ohm").replace("Ohm", "ohm")
                 if unit_str == "-":
                     unit_str = ""
 
