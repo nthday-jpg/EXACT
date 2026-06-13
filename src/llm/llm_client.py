@@ -238,21 +238,7 @@ class LLMClient:
         if sys_prompt:
             messages.append({"role": "system", "content": sys_prompt})
         messages.append({"role": "user", "content": prompt})
-        create_kwargs: dict[str, Any] = {
-            "model": self.model_name,
-            "messages": messages,
-            "temperature": self.temperature,
-            "max_tokens": limit_tokens,
-            "stop": ["<|im_end|>"],
-        }
-        try:
-            response = self.client.chat.completions.create(**create_kwargs)
-        except Exception as e:
-            print(f"Error occurred while generating response: {e}")
-            raise RuntimeError(f"Generation failed: {e}")
-        total_tokens = response.usage.total_tokens if response.usage else 0
-        input_tokens = response.usage.prompt_tokens if response.usage else 0
-        output_tokens = response.usage.completion_tokens if response.usage else 0
+
 
         if self.tokenizer is not None:
             # Use local chat template for exact prompt formatting, then hit raw completions

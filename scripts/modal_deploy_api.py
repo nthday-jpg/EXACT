@@ -19,11 +19,12 @@ image = (
         "openai",
         "torch",
         "transformers",
-        "google-genai"
+        "google-genai",
+        "cowsay"
     )
-    .add_local_dir("d:/mduy/source/repos/EXACT/src", remote_path="/app/src")
-    .add_local_dir("d:/mduy/source/repos/EXACT/data", remote_path="/app/data")
-    .add_local_file("d:/mduy/source/repos/EXACT/.env", remote_path="/app/.env")
+    .add_local_dir("src", remote_path="/app/src")
+    .add_local_dir("data", remote_path="/app/data")
+    .add_local_file(".env", remote_path="/app/.env")
 )
 
 @app.function(
@@ -31,7 +32,7 @@ image = (
     cpu=1.0,
     memory=2048,
     secrets=[modal.Secret.from_dotenv()],
-    min_containers=0,  # Scales down to 0 when idle to save cost
+    min_containers=4,  # Keep 1 container warm for testing
 )
 @modal.asgi_app()
 def api_server():

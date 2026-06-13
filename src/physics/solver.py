@@ -28,7 +28,7 @@ class PhysicsSolver:
         self._system_prompt = system_prompt
         self._solver_prompt = solver_prompt or ""
         self._temperature = temperature
-        self._max_tokens = max_tokens or 1024
+        self._max_tokens = max_tokens or 4096
         self._enable_thinking = enable_thinking
 
     def solve(self, task: PhysicsTask) -> PhysicsResult:

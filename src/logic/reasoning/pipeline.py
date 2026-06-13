@@ -122,7 +122,7 @@ class ReasoningPipeline:
 
         try:
             response = self._generate_text(
-                system_prompt, user_prompt, max_new_tokens=128
+                system_prompt, user_prompt, max_new_tokens=512
             )
             match = re.search(r"\[[\d,\s]+\]", response)
             if not match:
@@ -279,25 +279,35 @@ class ReasoningPipeline:
             )
 
             try:
-                raw_fol_resp = self._generate_text(
-                    STRUCTURED_FOL_PROOF_SYSTEM_PROMPT,
-                    user_prompt_fol,
-                    max_new_tokens=512,
-                )
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                    future_fol = executor.submit(
+                        self._generate_text,
+                        STRUCTURED_FOL_PROOF_SYSTEM_PROMPT,
+                        user_prompt_fol,
+                        1024,
+                    )
+                    future_reasoning = executor.submit(
+                        self.generate_reasoning,
+                        premises_nl,
+                        conclusion_nl,
+                        verification,
+                    )
+                    raw_fol_resp = future_fol.result()
+                    raw_text = future_reasoning.result()
+
                 cleaned_fol = raw_fol_resp.strip()
                 if cleaned_fol.startswith("```"):
                     cleaned_fol = re.sub(r"^```(?:json)?\n", "", cleaned_fol)
                     cleaned_fol = re.sub(r"\n```$", "", cleaned_fol)
                 cot_steps = json.loads(cleaned_fol.strip())
                 if isinstance(cot_steps, list) and len(cot_steps) > 0:
-                    raw_text = self.generate_reasoning(
-                        premises_nl, conclusion_nl, verification
-                    )
                     return raw_text, cot_steps
             except Exception as e:
                 print(
                     f"Warning: Failed to parse structured FOL proof: {str(e)}. Falling back to standard CoT."
                 )
+
 
         if result == unsat:
             core_indices = []

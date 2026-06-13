@@ -3,6 +3,17 @@ import modal
 
 app = modal.App("exact-qwen3-8b-lora")
 
+def download_model():
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    import torch
+    print("Pre-downloading Qwen/Qwen3-8B to cache in Docker image...")
+    AutoTokenizer.from_pretrained("Qwen/Qwen3-8B", trust_remote_code=True)
+    AutoModelForCausalLM.from_pretrained(
+        "Qwen/Qwen3-8B",
+        torch_dtype=torch.bfloat16,
+        trust_remote_code=True
+    )
+
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .pip_install(
@@ -15,9 +26,11 @@ image = (
         "uvicorn",
         "pydantic"
     )
+    .run_function(download_model)
     .add_local_dir("d:/mduy/source/repos/results_physics", remote_path="/adapters/physics")
     .add_local_dir("d:/mduy/source/repos/results_fol_and_router", remote_path="/adapters/fol_router")
 )
+
 
 @app.cls(
     image=image,
@@ -25,8 +38,8 @@ image = (
     cpu=4,
     memory=32768,       # 32 GB system RAM to ensure fast loading
     timeout=600,
-    scaledown_window=60, # Shut down after 60 seconds of inactivity to save cost
-    min_containers=0,   # Scales down to 0 when idle to save cost
+    scaledown_window=180, # Shut down after 60 seconds of inactivity to save cost
+    min_containers=1,   # Keep 1 container warm to support concurrent batch testing
     secrets=[modal.Secret.from_dotenv()],
 )
 class ExactModel:
@@ -107,7 +120,7 @@ class ExactModel:
             model_name = data.get("model", "fol_router")
             messages = data.get("messages", [])
             temperature = data.get("temperature", 0.0)
-            max_tokens = data.get("max_tokens", 512)
+            max_tokens = data.get("max_tokens", 4096)
             stop_words = data.get("stop", ["<|im_end|>", "<|endoftext|>"])
             if isinstance(stop_words, str):
                 stop_words = [stop_words]
@@ -177,7 +190,7 @@ class ExactModel:
             model_name = data.get("model", "fol_router")
             prompt = data.get("prompt", "")
             temperature = data.get("temperature", 0.0)
-            max_tokens = data.get("max_tokens", 512)
+            max_tokens = data.get("max_tokens", 4096)
             stop_words = data.get("stop", ["<|im_end|>", "<|endoftext|>"])
             if isinstance(stop_words, str):
                 stop_words = [stop_words]

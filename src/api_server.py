@@ -3,6 +3,15 @@ from __future__ import annotations
 
 import os
 import sys
+
+# Reconfigure stdout/stderr to use UTF-8 to prevent CP1252 UnicodeEncodeError on Windows
+if sys.platform.startswith("win"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import time
 import json
 import asyncio
@@ -10,6 +19,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 import uvicorn
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -171,7 +181,20 @@ def extract_premises_used(
     return sorted(list(set(premises_used)))
 
 
-@app.post("/predict", response_model=List[PredictResponseItem])
+class UTF8JSONResponse(JSONResponse):
+    media_type = "application/json"
+
+    def render(self, content: Any) -> bytes:
+        return json.dumps(
+            content,
+            ensure_ascii=False,
+            allow_nan=False,
+            indent=None,
+            separators=(",", ":"),
+        ).encode("utf-8")
+
+
+@app.post("/predict", response_model=List[PredictResponseItem], response_class=UTF8JSONResponse)
 async def predict(request: PredictRequest):
     """
     Unified prediction endpoint that routes the request to Type 1 (logic) or Type 2 (physics) pipelines.
@@ -254,7 +277,7 @@ async def predict(request: PredictRequest):
                 f"[{request.query_id}] Type 1 processed in {elapsed:.2f}s. Answer: {answer}"
             )
 
-            return [
+            return UTF8JSONResponse(content=[
                 PredictResponseItem(
                     query_id=request.query_id,
                     answer=answer,
@@ -262,15 +285,15 @@ async def predict(request: PredictRequest):
                     explanation=explanation,
                     premises_used=premises_used,
                     reasoning=reasoning,
-                )
-            ]
+                ).model_dump()
+            ])
 
         except Exception as e:
             print(f"[{request.query_id}] Error in Type 1 pipeline: {str(e)}")
             import traceback
 
             traceback.print_exc()
-            return [
+            return UTF8JSONResponse(content=[
                 PredictResponseItem(
                     query_id=request.query_id,
                     answer="Uncertain"
@@ -280,8 +303,8 @@ async def predict(request: PredictRequest):
                     explanation=f"Error occurred during logical reasoning pipeline execution: {str(e)}",
                     premises_used=[],
                     reasoning=None,
-                )
-            ]
+                ).model_dump()
+            ])
 
     elif request.type == "type2":
         try:
@@ -379,7 +402,7 @@ async def predict(request: PredictRequest):
                 f"[{request.query_id}] Type 2 processed in {elapsed:.2f}s. Answer: {ans_str} {unit_str}"
             )
 
-            return [
+            return UTF8JSONResponse(content=[
                 PredictResponseItem(
                     query_id=request.query_id,
                     answer=ans_str,
@@ -387,15 +410,15 @@ async def predict(request: PredictRequest):
                     explanation=explanation,
                     premises_used=[],
                     reasoning=reasoning,
-                )
-            ]
+                ).model_dump()
+            ])
 
         except Exception as e:
             print(f"[{request.query_id}] Error in Type 2 pipeline: {str(e)}")
             import traceback
 
             traceback.print_exc()
-            return [
+            return UTF8JSONResponse(content=[
                 PredictResponseItem(
                     query_id=request.query_id,
                     answer="0",
@@ -403,8 +426,8 @@ async def predict(request: PredictRequest):
                     explanation=f"Error occurred during physics pipeline execution: {str(e)}",
                     premises_used=[],
                     reasoning=None,
-                )
-            ]
+                ).model_dump()
+            ])
 
     else:
         raise HTTPException(

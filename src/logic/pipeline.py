@@ -168,6 +168,75 @@ def detect_question_type(conclusion_nl: str) -> str:
     return "yes_no"
 
 
+def check_meta_premise_uncertain(premises, query):
+    # Normalize strings for comparison (remove punctuation, lower case, normalize greek/unicode characters)
+    def normalize(text):
+        text = text.lower().strip()
+        text = text.replace("μ", "u").replace("µ", "u")  # Normalize both micro and greek mu
+        text = re.sub(r'[^\w\s]', '', text)
+        return " ".join(text.split())
+
+    normalized_query = normalize(query)
+    
+    # We also want to remove common question words from the start of the query
+    # e.g., "does", "is", "are", "do", "can", "will", "was", "were", "has", "have", "should", "would", "whether"
+    query_words = normalized_query.split()
+    question_starters = {"does", "is", "are", "do", "can", "will", "was", "were", "has", "have", "should", "would", "whether", "if"}
+    if query_words and query_words[0] in question_starters:
+        query_words = query_words[1:]
+    normalized_query_core = " ".join(query_words)
+
+    # Let's define the patterns for meta-premises
+    meta_patterns = [
+        r"no\s+premise\s+states\s+whether\s+(.*)",
+        r"it\s+is\s+not\s+specified\s+whether\s+(.*)",
+        r"no\s+information\s+is\s+given\s+about\s+(.*)",
+        r"there\s+is\s+no\s+information\s+about\s+(.*)",
+        r"nothing\s+is\s+known\s+about\s+(.*)",
+        r"it\s+is\s+unknown\s+whether\s+(.*)",
+        r"no\s+premise\s+mentions\s+(.*)",
+        r"no\s+statement\s+specifies\s+(.*)",
+        r"it\s+is\s+not\s+known\s+whether\s+(.*)",
+        r"no\s+information\s+about\s+(.*)",
+        r"no\s+premise\s+indicates\s+whether\s+(.*)",
+        r"we\s+do\s+not\s+know\s+whether\s+(.*)",
+        r"it\s+is\s+not\s+clear\s+whether\s+(.*)"
+    ]
+
+    for idx, prem in enumerate(premises):
+        prem_norm = prem.lower().strip()
+        prem_norm = prem_norm.replace("μ", "u").replace("µ", "u")
+        for pattern in meta_patterns:
+            match = re.match(pattern, prem_norm)
+            if match:
+                # Extract the core statement from the premise
+                core_statement = match.group(1).strip()
+                normalized_core = normalize(core_statement)
+                
+                # Check if query core is in the normalized core, or vice versa, or if they are highly similar
+                if normalized_core in normalized_query or normalized_query_core in normalized_core:
+                    return True, idx
+                
+                # Let's also do a word-set overlap comparison for robustness
+                words_core = set(normalized_core.split())
+                words_query = set(normalized_query_core.split())
+                # If they share a significant amount of content words (excluding stopwords/pronouns)
+                stop_words = {"a", "an", "the", "of", "to", "in", "for", "with", "on", "at", "by", "from", "about"}
+                words_core_clean = words_core - stop_words
+                words_query_clean = words_query - stop_words
+                if words_core_clean and words_query_clean:
+                    intersection = words_core_clean.intersection(words_query_clean)
+                    # If all content words in query are in the core_statement, or vice versa
+                    if intersection == words_query_clean or intersection == words_core_clean:
+                        return True, idx
+                    # Alternatively, if high overlap percentage
+                    overlap_ratio = len(intersection) / max(len(words_core_clean), len(words_query_clean))
+                    if overlap_ratio >= 0.7:
+                        return True, idx
+                        
+    return False, None
+
+
 class LogicalReasoningPipeline:
     """
     Backward-compatible wrapper for the End-to-End Logical Reasoning Pipeline.
@@ -289,6 +358,45 @@ class LogicalReasoningPipeline:
                 # Override to open_ended if no options provided
                 if question_type in ("single_choice", "multiple_choice"):
                     question_type = "open_ended"
+
+        # Check for meta-logical premise about missing information ONLY for yes_no queries
+        if question_type == "yes_no":
+            is_meta_uncertain, meta_idx = check_meta_premise_uncertain(premises_nl, conclusion_nl)
+            if is_meta_uncertain:
+                print(f"[run_pipeline] Meta-logical premise detected at index {meta_idx}. Returning Uncertain.")
+                ans_opt = "Uncertain"
+                if options_list:
+                    matched = None
+                    for opt in options_list:
+                        if opt.lower().strip() in ("uncertain", "unknown", "no conclusion can be drawn"):
+                            matched = opt
+                            break
+                    if matched:
+                        ans_opt = matched
+                    else:
+                        ans_opt = options_list[0]
+                
+                explanation = f"Premise {meta_idx + 1} ('{premises_nl[meta_idx]}') explicitly states that no information is provided to determine this query."
+                cot_steps = [
+                    f"Query: {conclusion_nl}",
+                    f"Premise {meta_idx + 1}: {premises_nl[meta_idx]}",
+                    "Conclusion: The query cannot be determined from the given premises (Uncertain)."
+                ]
+                verification = {
+                    "result": z3.sat,
+                    "unsat_core": ["p_1"],
+                    "model": None
+                }
+                return {
+                    "answer": ans_opt,
+                    "confidence": 1.0,
+                    "premises_fol": [premises_nl[meta_idx]],
+                    "premises_nl": [premises_nl[meta_idx]],
+                    "conclusion_fol": "",
+                    "verification": verification,
+                    "reasoning": explanation,
+                    "cot": cot_steps,
+                }
 
         # Check if options_list contains just keys (e.g. ["A", "B", "C", "D"])
         has_only_keys = False
@@ -435,7 +543,7 @@ class LogicalReasoningPipeline:
                         sem_resp = self.llm_client.generate_text(
                             sem_prompt,
                             system_prompt="You are a precise logical reasoning assistant. Respond with ONLY the chosen letters or 'Unknown'. Do not add any explanation or other text.",
-                            max_new_tokens=15,
+                            max_new_tokens=512,
                         ).strip()
 
                         sem_clean = sem_resp.strip("., ")
@@ -508,7 +616,7 @@ class LogicalReasoningPipeline:
                         )
                         try:
                             best_opt = self.llm_client.generate_text(
-                                prompt, max_new_tokens=5
+                                prompt, max_new_tokens=512
                             ).strip()
                             match = re.search(r"\b([A-D])\b", best_opt)
                             if match:
@@ -555,7 +663,7 @@ class LogicalReasoningPipeline:
                         )
                         try:
                             best_opt = self.llm_client.generate_text(
-                                prompt, max_new_tokens=5
+                                prompt, max_new_tokens=512
                             ).strip()
                             match = re.search(r"\b([A-D])\b", best_opt)
                             if match:
@@ -594,7 +702,7 @@ class LogicalReasoningPipeline:
                         sem_resp = self.llm_client.generate_text(
                             sem_prompt,
                             system_prompt="You are a precise logical reasoning assistant. Respond with ONLY the chosen letter (A, B, C, D) or 'Unknown'. Do not add any explanation or other text.",
-                            max_new_tokens=10,
+                            max_new_tokens=512,
                         ).strip()
 
                         sem_clean = sem_resp.strip("., ")
@@ -855,7 +963,7 @@ class LogicalReasoningPipeline:
                         sem_resp = self.llm_client.generate_text(
                             sem_prompt,
                             system_prompt=SEMANTIC_YESNO_SYSTEM_PROMPT,
-                            max_new_tokens=10,
+                            max_new_tokens=512,
                         ).strip()
                         # Accept only clean Yes/No/Uncertain from LLM
                         sem_lower = sem_resp.lower().strip("., ")
