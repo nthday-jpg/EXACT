@@ -54,10 +54,10 @@ To pass validation successfully, FOL formulas must conform to the following arch
 
 ## 💻 CLI Usage
 
-You can run the pipeline directly using the executable package syntax:
+You can run the pipeline directly using the executable module syntax:
 
 ```bash
-python -m src.data \
+python -m src.data.cleaning.cli \
   --input data/processed/merged_invalid.json \
   --output-valid data/processed/merged_valid.json \
   --output-invalid data/processed/merged_invalid.json \

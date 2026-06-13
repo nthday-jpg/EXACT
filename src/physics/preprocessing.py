@@ -26,7 +26,7 @@ def preprocess(text: str) -> str:
         r"(?<![a-zA-Z])"
         r"(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*"
         r"(\\[mM]u|μ|µ|mu|u|[TGMkdcmunp])?"
-        r"([A-Z][a-zA-Z]*|m|s|g|Ω)"
+        r"([A-Z][a-zA-Z]*|m|s|g|Ω|ohm|ohms)"
         r"(?:\^?([+-]?\d+))?\b"
     )
 

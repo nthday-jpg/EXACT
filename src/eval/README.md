@@ -24,7 +24,7 @@ Standard mathematical evaluation scripts drop grading accuracy dramatically when
 
 ## 🗺️ Architecture & Evaluation Flow
 
-The execution pathway for `evaluate_physics_answer(model, correct)` runs through a fallback cascade:
+The execution pathway for `evaluate_physics_answer(...)` runs through a fallback cascade:
 
 1. **Data Normalization**: Structures raw inputs into rigid `_Item` domain data structures while retaining the layout format of the raw string input.
 2. **Numerical Evaluation Logic**: If both answers are numeric, it attempts significant-figure alignment based on the correct answer template. If that fails, it falls back to a tight 2% relative error envelope.
@@ -33,10 +33,15 @@ The execution pathway for `evaluate_physics_answer(model, correct)` runs through
 
 ---
 
-## 🛠️ Functional Breakdown
+### 1. `evaluate_physics_answer(question: str, model_answer: Any, model_raw_output: Optional[str], correct_answer: Any, *, llm_model: Optional[str] = None) -> bool`
+The entry point for the physics evaluator. It compares the `model_answer` against the `correct_answer` using a fallback cascade of rule-based logic (significant figures, Pint dimensional checks, SymPy symbolic equivalence) and model-assisted semantic fallback.
 
-### 1. `evaluate_physics_answer(model: dict, correct: dict) -> bool`
-The entry point. Accepts dictionaries containing `ans` and `unit` values, normalizes them into atomic tracking components (`_Item` objects), and verifies structural equality.
+Parameters:
+- `question`: The text of the physics question.
+- `model_answer`: The parsed answer dictionary or list from the solver (typically containing `ans` and `unit` keys).
+- `model_raw_output`: The raw text response from the model, used as a context fallback if parsing fails.
+- `correct_answer`: The ground truth answer dictionary or list containing `ans` and `unit` keys.
+- `llm_model`: Optional model name to override the default LLM (e.g. Gemini) used for the semantic fallback check.
 
 ### 2. `_get_sig_figs(val_str: str) -> int` & `_round_to_sig_figs(...)`
 Extracts precision context directly from the format of the correct answer string. For example:
