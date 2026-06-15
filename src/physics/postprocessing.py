@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from decimal import Decimal
 from typing import Any, Dict, Optional, Tuple
 
 
@@ -22,7 +23,16 @@ _PREFIX_EXPONENTS = {
     prefix: exp for exp, prefix in _ENGINEERING_PREFIXES.items() if prefix
 }
 
-_SCI_PATTERN = re.compile(r"^([+-]?(?:\d+\.\d+|\d+))(?:e([+-]?\d+))$", re.IGNORECASE)
+# Whitelist of known base units to prevent incorrect prefix parsing
+BASE_UNITS = {
+    "m", "g", "s", "A", "V", "F", "N", "J", "W", "Pa", "C",
+    "T", "H", "Hz", "ohm", "mol", "cd", "rad", "sr", "K",
+    "Wb", "lm", "lx", "Bq", "Gy", "Sv", "kat", "eV", "Da",
+}
+
+_SCI_PATTERN = re.compile(
+    r"^([+-]?(?:\d+(?:\.\d*)?|\.\d+))[eE]([+-]?\d+)$"
+)
 _SIMPLE_UNIT_PATTERN = re.compile(r"^([A-Za-z]+)(?:\^(\d+))?$")
 
 
@@ -33,6 +43,11 @@ def postprocess_answer(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     ans = payload.get("ans")
     unit = payload.get("unit")
+
+    # Handle unit broadcasting: single unit with multiple values
+    if isinstance(ans, list) and isinstance(unit, list):
+        if len(unit) == 1 and len(ans) > 1:
+            unit = unit * len(ans)
 
     if isinstance(ans, list):
         if isinstance(unit, list):
@@ -57,6 +72,19 @@ def postprocess_answer(payload: Dict[str, Any]) -> Dict[str, Any]:
     return {**payload, "ans": new_ans, "unit": new_unit}
 
 
+def _score_candidate(coeff: Decimal) -> Tuple[int, Decimal]:
+    """Score a coefficient for prefix selection.
+    
+    Prefer coefficients in range [1, 1000), with values near 100 being best.
+    """
+    coeff = abs(coeff)
+    
+    if 1 <= coeff < 1000:
+        return (0, abs(coeff - 100))
+    
+    return (1, coeff)
+
+
 def _convert_value_unit(value: Any, unit: Any) -> Tuple[Any, Any]:
     unit_text = str(unit or "")
     parsed = _parse_simple_unit(unit_text)
@@ -72,26 +100,54 @@ def _convert_value_unit(value: Any, unit: Any) -> Tuple[Any, Any]:
         return value, unit
 
     coeff, exp10 = sci
+    
+    # Handle zero values early to avoid ambiguous prefix selection
+    if coeff == 0:
+        return "0", unit
+    
     if power <= 0:
         return value, unit
 
-    if exp10 % power != 0:
-        return value, unit
+    # Filter allowed prefixes based on base unit
+    # c (centi) and d (deci) are only used with meters in physics
+    allowed_exponents = list(_ENGINEERING_PREFIXES.keys())
+    if base_unit.lower() != "m":
+        # Exclude -1 (d/deci) and -2 (c/centi) for non-meter units
+        allowed_exponents = [exp for exp in allowed_exponents if exp not in (-1, -2)]
 
-    prefix_exp = min(
-        _ENGINEERING_PREFIXES.keys(),
-        key=lambda exp: abs(exp10 - exp * power),
-    )
-    prefix_out = _ENGINEERING_PREFIXES.get(prefix_exp)
+    # Use coefficient-based selection instead of exponent-distance
+    # This produces more natural units, especially for squared/cubed quantities
+    # Use Decimal to avoid float precision issues
+    coeff_decimal = Decimal(str(coeff))
+    
+    best_prefix_exp = None
+    best_score = None
+
+    for prefix_exp in allowed_exponents:
+        shift = exp10 - prefix_exp * power
+        coeff_new = coeff_decimal * (Decimal(10) ** shift)
+        
+        score = _score_candidate(coeff_new)
+        
+        if best_score is None or score < best_score:
+            best_score = score
+            best_prefix_exp = prefix_exp
+
+    if best_prefix_exp is None:
+        return value, unit
+    
+    prefix_out = _ENGINEERING_PREFIXES.get(best_prefix_exp)
     if prefix_out is None:
         return value, unit
 
-    coeff = coeff * (10 ** (exp10 - prefix_exp * power))
+    # Calculate final coefficient using Decimal for precision
+    shift = exp10 - best_prefix_exp * power
+    coeff_final = coeff_decimal * (Decimal(10) ** shift)
 
     unit_out = f"{prefix_out}{base_unit}"
     if power != 1:
         unit_out = f"{unit_out}^{power}"
-    return _format_coeff(coeff), unit_out
+    return _format_coeff(coeff_final), unit_out
 
 
 def _parse_simple_unit(unit: str) -> Optional[Tuple[str, str, int]]:
@@ -104,13 +160,19 @@ def _parse_simple_unit(unit: str) -> Optional[Tuple[str, str, int]]:
     if not unit_body:
         return None
 
+    # Use whitelist to avoid incorrect prefix parsing (e.g., "mol" -> "m" + "ol")
     prefix = ""
     base_unit = unit_body
+    
     if len(unit_body) > 1:
-        maybe_prefix = unit_body[0]
-        if maybe_prefix in _PREFIX_EXPONENTS:
-            prefix = maybe_prefix
-            base_unit = unit_body[1:]
+        # Try prefixes in order of length (longest first)
+        for candidate_prefix in sorted(_PREFIX_EXPONENTS, key=len, reverse=True):
+            if unit_body.startswith(candidate_prefix):
+                candidate_base = unit_body[len(candidate_prefix):]
+                if candidate_base in BASE_UNITS:
+                    prefix = candidate_prefix
+                    base_unit = candidate_base
+                    break
 
     return prefix, base_unit, power
 
@@ -138,13 +200,27 @@ def _parse_scientific_value(value: Any) -> Optional[Tuple[float, int]]:
     return coeff, exp
 
 
-def _format_coeff(value: float) -> str:
+def _format_coeff(value: Decimal) -> str:
+    """Format a Decimal coefficient, preserving precision.
+    
+    Uses scientific notation for extreme magnitudes to avoid
+    extremely long strings of zeros.
+    """
     if value == 0:
         return "0"
-    text = f"{value:.15g}"
-    if "e" in text or "E" in text:
-        text = f"{value:.15f}"
-    # Only strip trailing zeros and the decimal point if there's a decimal part.
+    
+    # Check magnitude to decide formatting
+    magnitude = value.adjusted()
+    
+    # Use scientific notation for very large or very small magnitudes
+    if magnitude > 15 or magnitude < -15:
+        return f"{value.normalize():E}"
+    
+    # Use fixed-point notation for reasonable magnitudes
+    text = format(value.normalize(), "f")
+    
+    # Strip trailing zeros and decimal point if present
     if "." in text:
         text = text.rstrip("0").rstrip(".")
+    
     return text
