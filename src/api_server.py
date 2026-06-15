@@ -42,7 +42,6 @@ from src.llm.llm_client import LLMClient
 from src.logic.pipeline import LogicalReasoningPipeline
 from src.physics.api import run_physics
 from src.physics.types import PhysicsTask
-from src.physics.evaluator import PhysicsEvaluator
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -62,12 +61,11 @@ if "router.huggingface.co" in VLLM_BASE_URL and MODEL_NAME == "fol_router":
 
 # Global instances of logic pipeline and physics helper
 logic_pipeline: Optional[LogicalReasoningPipeline] = None
-physics_evaluator: Optional[PhysicsEvaluator] = None
 
 
 @app.on_event("startup")
 def startup_event():
-    global logic_pipeline, physics_evaluator
+    global logic_pipeline
     print("=" * 60)
     print("STARTING EXACT 2026 API SERVER")
     print(f"Model Name    : {MODEL_NAME}")
@@ -79,11 +77,10 @@ def startup_event():
         model_name=MODEL_NAME,
         api_key=HF_API_KEY,
         base_url=VLLM_BASE_URL,
-        temperature=0.3,
+        temperature=0.1,
         use_local=False,
     )
     logic_pipeline = LogicalReasoningPipeline(use_local=False, llm_client=client)
-    physics_evaluator = PhysicsEvaluator()
     print("Pipelines successfully initialized.")
 
 
@@ -277,7 +274,7 @@ async def predict(request: PredictRequest):
                 f"[{request.query_id}] Type 1 processed in {elapsed:.2f}s. Answer: {answer}"
             )
 
-            return UTF8JSONResponse(content=[
+            resp_items = [
                 PredictResponseItem(
                     query_id=request.query_id,
                     answer=answer,
@@ -285,15 +282,17 @@ async def predict(request: PredictRequest):
                     explanation=explanation,
                     premises_used=premises_used,
                     reasoning=reasoning,
-                ).model_dump()
-            ])
+                ).model_dump(mode="json")
+            ]
+            print(f"[{request.query_id}] Response payload: {json.dumps(resp_items, ensure_ascii=False)}")
+            return UTF8JSONResponse(content=resp_items)
 
         except Exception as e:
             print(f"[{request.query_id}] Error in Type 1 pipeline: {str(e)}")
             import traceback
 
             traceback.print_exc()
-            return UTF8JSONResponse(content=[
+            resp_items = [
                 PredictResponseItem(
                     query_id=request.query_id,
                     answer="Uncertain"
@@ -303,8 +302,10 @@ async def predict(request: PredictRequest):
                     explanation=f"Error occurred during logical reasoning pipeline execution: {str(e)}",
                     premises_used=[],
                     reasoning=None,
-                ).model_dump()
-            ])
+                ).model_dump(mode="json")
+            ]
+            print(f"[{request.query_id}] Response payload (fallback): {json.dumps(resp_items, ensure_ascii=False)}")
+            return UTF8JSONResponse(content=resp_items)
 
     elif request.type == "type2":
         try:
@@ -324,7 +325,6 @@ async def predict(request: PredictRequest):
                 router_model_name=router_model,
                 api_key=HF_API_KEY,
                 base_url=VLLM_BASE_URL,
-                evaluator=physics_evaluator,
             )
 
             result = eval_res.result
@@ -402,7 +402,7 @@ async def predict(request: PredictRequest):
                 f"[{request.query_id}] Type 2 processed in {elapsed:.2f}s. Answer: {ans_str} {unit_str}"
             )
 
-            return UTF8JSONResponse(content=[
+            resp_items = [
                 PredictResponseItem(
                     query_id=request.query_id,
                     answer=ans_str,
@@ -411,14 +411,16 @@ async def predict(request: PredictRequest):
                     premises_used=[],
                     reasoning=reasoning,
                 ).model_dump()
-            ])
+            ]
+            print(f"[{request.query_id}] Response payload: {json.dumps(resp_items, ensure_ascii=False)}")
+            return UTF8JSONResponse(content=resp_items)
 
         except Exception as e:
             print(f"[{request.query_id}] Error in Type 2 pipeline: {str(e)}")
             import traceback
 
             traceback.print_exc()
-            return UTF8JSONResponse(content=[
+            resp_items = [
                 PredictResponseItem(
                     query_id=request.query_id,
                     answer="0",
@@ -427,7 +429,9 @@ async def predict(request: PredictRequest):
                     premises_used=[],
                     reasoning=None,
                 ).model_dump()
-            ])
+            ]
+            print(f"[{request.query_id}] Response payload (fallback): {json.dumps(resp_items, ensure_ascii=False)}")
+            return UTF8JSONResponse(content=resp_items)
 
     else:
         raise HTTPException(

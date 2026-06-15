@@ -24,8 +24,8 @@ def run_smoke_test():
     )
     
     # Wait for the server to start up and log initialization
-    print("Waiting 30 seconds for pipelines to initialize...")
-    time.sleep(30)
+    print("Waiting 45 seconds for pipelines to initialize...")
+    time.sleep(45)
     
     predict_url = "http://127.0.0.1:8080/predict"
     

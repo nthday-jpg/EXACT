@@ -56,20 +56,22 @@ graph TD
 
 ---
 
-## 3. 📂 Modular Package Architecture (`src/data/`)
+## 3. 📂 Modular Package Architecture (`src/data/cleaning/`)
 
-We fully modularized the validation and repair workflow into a clean, reusable Python package under `src/data/`. This separates responsibilities into single-purpose modules, providing extremely clean APIs and clear command-line operations:
+We fully modularized the validation and repair workflow into a clean, reusable Python submodule under `src/data/cleaning/`. This separates responsibilities into single-purpose modules, providing extremely clean APIs and clear command-line operations:
 
 ```
-src/data/
-├── __init__.py        # Public API exports (standardizer, validator, repairer, pipeline)
-├── __main__.py        # Executable hook enabling `python -m src.data` terminal calls
-├── cli.py             # Highly readable CLI parser, handling inputs, outputs, and formatting
-├── formatter.py       # Helper functions for logic formula token standardization and auto-formatting
+src/data/cleaning/
+├── __init__.py        # Public exports for the cleaning submodule
+├── cli.py             # CLI parser to run the pipeline via python -m src.data.cleaning.cli
+├── formatter.py       # Helper functions for logic formula token standardization and formatting
 ├── validator.py       # Z3-based FOL parsing, solver safety checking, and dataset partitioning
 ├── repairer.py        # Conversational LLM repair, deep Z3 rule corrections, and diagnostics
 ├── pipeline.py        # Orchestration layer and the exhaustive iterative repair loop
 ├── prompts.py         # Self-contained repair, deep SMT repair, and diagnostic prompt templates
+├── clean_val_labels.py # Verification and label correction using the Gemini API
+├── logical_dataset_repair_report.md # Technical documentation report
+├── repair_strategies.md # Automated diagnostics and repair recommendations report
 └── README.md          # User manual documenting FOL grammar rules and CLI/API usage
 ```
 
@@ -94,45 +96,31 @@ is_valid, error = validate_sample_fol(["Student(Ha)", "Student(Ha, Vinh)"])  # R
 
 ---
 
-## 4. 🏆 Standalone Test Suite & CLI Execution
+## 4. 💻 CLI Execution & Integration Testing
 
-To guarantee package stability and prevent regression, we built a comprehensive standalone test suite in **[tests/test_repair_pipeline.py](file:///d:/mduy/source/repos/EXACT/tests/test_repair_pipeline.py)**. 
+To guarantee pipeline functionality and prevent regressions, you can execute the validation/repair loop via the CLI, and verify end-to-end integration using the smoke test suite.
 
-### Standalone Test Execution
-
-We run tests using the virtual environment's Python interpreter:
+### CLI Pipeline Execution
+Run the dataset pipeline from the repository root:
 ```bash
-.venv\Scripts\python.exe tests/test_repair_pipeline.py
+python -m src.data.cleaning.cli \
+  --input data/logic_based.json \
+  --output-valid data/processed/logic_merged_valid.json \
+  --output-invalid data/processed/logic_merged_invalid.json \
+  --retries 3
 ```
 
-### Test Suite Output
-```
-================================================================================
-RUNNING LOGICAL REPAIR PIPELINE TESTS
-================================================================================
-Running test_standardize_fol_formula...
-  [PASSED]
-Running test_validate_sample_fol...
-  [PASSED]
-Running test_validate_dataset...
-  [PASSED]
-Running test_repair_sample_success...
-    [Standard Repair] Triggering turn-based feedback repair...
-      - [SUCCESS] Standard Repair succeeded at turn 1!
-  [PASSED]
-Running test_repair_sample_failure...
-    [Standard Repair] Triggering turn-based feedback repair...
-      - Failed to parse JSON response: Expecting value: line 1 column 1 (char 0)
-      - Turn 1: LLM did not return a valid JSON object.
-    [Deep Repair] Standard repair failed. Triggering deep SMT parser repair...
-      - Failed to parse JSON response: Expecting value: line 1 column 1 (char 0)
-    [Fallback Diagnostics] Repair failed. Generating technical root cause analysis...
-      - Failed to parse JSON response: Expecting value: line 1 column 1 (char 0)
-  [PASSED]
+### End-to-End Integration Testing
+The system's integration can be verified using the local smoke test suite located at **[tests/smoke_test_api.py](file:///d:/mduy/source/repos/EXACT/tests/smoke_test_api.py)**.
 
-================================================================================
-ALL REPAIR PIPELINE TESTS PASSED!
-================================================================================
+This test:
+1. Launches the prediction server in a background subprocess.
+2. Performs logic-based (Type 1) and physics-based (Type 2) query predictions against `/predict`.
+3. Verifies response formats, exact answers, unit scales, and premise tracking structures.
+
+Execute the smoke tests with:
+```bash
+python tests/smoke_test_api.py
 ```
 
 ---
@@ -151,16 +139,16 @@ Through our multi-pass automated repair loop, we successfully validated and resc
 
 ## 6. 💡 Summary of Artifacts and Modules Created
 
-1.  **[formatter.py](file:///d:/mduy/source/repos/EXACT/src/data/formatter.py)**: Auto-formatting helper module.
-2.  **[validator.py](file:///d:/mduy/source/repos/EXACT/src/data/validator.py)**: Z3 validation and dataset split partitioning.
-3.  **[repairer.py](file:///d:/mduy/source/repos/EXACT/src/data/repairer.py)**: Multi-turn self-correction LLM engine and diagnostics generator.
-4.  **[pipeline.py](file:///d:/mduy/source/repos/EXACT/src/data/pipeline.py)**: Exhaustive iterative loading/orchestration loop.
-5.  **[prompts.py](file:///d:/mduy/source/repos/EXACT/src/data/prompts.py)**: Modularized prompts inside the package.
-6.  **[cli.py](file:///d:/mduy/source/repos/EXACT/src/data/cli.py)**: Command-line interface driver.
-7.  **[__main__.py](file:///d:/mduy/source/repos/EXACT/src/data/__main__.py)**: Package runner entrypoint.
-8.  **[__init__.py](file:///d:/mduy/source/repos/EXACT/src/data/__init__.py)**: Package API exports.
-9.  **[test_repair_pipeline.py](file:///d:/mduy/source/repos/EXACT/tests/test_repair_pipeline.py)**: Completed test suite script.
-10. **[README.md](file:///d:/mduy/source/repos/EXACT/src/data/README.md)**: User manual guide.
-11. **[logical_dataset_repair_report.md](file:///d:/mduy/source/repos/EXACT/logical_dataset_repair_report.md)**: This comprehensive, in-depth documentation report.
+1.  **[formatter.py](file:///d:/mduy/source/repos/EXACT/src/data/cleaning/formatter.py)**: Auto-formatting helper module.
+2.  **[validator.py](file:///d:/mduy/source/repos/EXACT/src/data/cleaning/validator.py)**: Z3 validation and dataset split partitioning.
+3.  **[repairer.py](file:///d:/mduy/source/repos/EXACT/src/data/cleaning/repairer.py)**: Multi-turn self-correction LLM engine and diagnostics generator.
+4.  **[pipeline.py](file:///d:/mduy/source/repos/EXACT/src/data/cleaning/pipeline.py)**: Exhaustive iterative loading/orchestration loop.
+5.  **[prompts.py](file:///d:/mduy/source/repos/EXACT/src/data/cleaning/prompts.py)**: Modularized prompts inside the package.
+6.  **[cli.py](file:///d:/mduy/source/repos/EXACT/src/data/cleaning/cli.py)**: Command-line interface driver.
+7.  **[clean_val_labels.py](file:///d:/mduy/source/repos/EXACT/src/data/cleaning/clean_val_labels.py)**: Verification and label correction using the Gemini API.
+8.  **[__init__.py](file:///d:/mduy/source/repos/EXACT/src/data/cleaning/__init__.py)**: Submodule API exports.
+9.  **[smoke_test_api.py](file:///d:/mduy/source/repos/EXACT/tests/smoke_test_api.py)**: Local prediction server and pipeline integration smoke test.
+10. **[README.md](file:///d:/mduy/source/repos/EXACT/src/data/cleaning/README.md)**: User manual guide.
+11. **[logical_dataset_repair_report.md](file:///d:/mduy/source/repos/EXACT/src/data/cleaning/logical_dataset_repair_report.md)**: This comprehensive, in-depth documentation report.
 
 This modular structure establishes a perfect, self-sustaining pipeline that will automatically clean and validate any future logical datasets added to the EXACT project!

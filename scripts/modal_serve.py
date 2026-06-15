@@ -35,11 +35,11 @@ image = (
 @app.cls(
     image=image,
     gpu="L4",
-    cpu=4,
-    memory=32768,       # 32 GB system RAM to ensure fast loading
+    cpu=2.0,
+    memory=16384,       # 16 GB system RAM (sufficient since device_map="auto" loads directly to GPU)
     timeout=600,
-    scaledown_window=180, # Shut down after 60 seconds of inactivity to save cost
-    min_containers=1,   # Keep 1 container warm to support concurrent batch testing
+    scaledown_window=60, # Shut down after 60 seconds of inactivity to save cost
+    min_containers=0,   # Keep 1 container warm to support concurrent batch testing
     secrets=[modal.Secret.from_dotenv()],
 )
 class ExactModel:

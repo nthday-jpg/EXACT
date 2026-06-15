@@ -69,7 +69,7 @@ m,meter,m
 eV,electron volt,eV
 p,pico (prefix),p
 n,nano (prefix),n
-u,micro (prefix; ASCII for mu),μ
+u,micro (prefix; ASCII for mu),
 k,kilo (prefix),k
 M,mega (prefix),M
 G,giga (prefix),G

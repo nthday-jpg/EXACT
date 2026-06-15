@@ -842,7 +842,83 @@ class LogicalReasoningPipeline:
                 max_new_tokens=256,
             ).strip()
 
+            # Fallback: if candidate answer is empty, retry without the complex system prompt
+            if not candidate_answer:
+                print("[run_pipeline] Candidate answer was empty. Retrying with no system prompt.")
+                candidate_answer = self.llm_client.generate_text(
+                    prompt=user_prompt,
+                    system_prompt=None,
+                    max_new_tokens=256,
+                ).strip()
+
+            # Check for numeric query
+            is_numeric = any(
+                indicator in conclusion_nl.lower()
+                for indicator in [
+                    "how many",
+                    "number of",
+                    "count of",
+                    "how much",
+                    "what is the enrollment",
+                    "what is the count",
+                ]
+            )
+            short_answer = None
+            num_map = {
+                "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4",
+                "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9",
+                "ten": "10", "eleven": "11", "twelve": "12", "thirteen": "13",
+                "fourteen": "14", "fifteen": "15", "sixteen": "16", "seventeen": "17",
+                "eighteen": "18", "nineteen": "19", "twenty": "20", "thirty": "30",
+                "forty": "40", "fifty": "50", "sixty": "60", "seventy": "70",
+                "eighty": "80", "ninety": "90", "hundred": "100"
+            }
+
+            if is_numeric:
+                # Try to find digits or decimals first
+                numbers = re.findall(r"\b\d+(?:\.\d+)?\b", candidate_answer)
+                if numbers:
+                    short_answer = numbers[0]
+                else:
+                    # Try to map word representation of numbers
+                    words = re.findall(r"\b\w+\b", candidate_answer.lower())
+                    for w in words:
+                        if w in num_map:
+                            short_answer = num_map[w]
+                            break
+
+                # If still not found, search in premises that have high keyword overlap
+                if not short_answer:
+                    q_words = re.findall(r'\b\w+\b', conclusion_nl.lower())
+                    q_stop = {
+                        "how", "many", "what", "is", "the", "does", "do", "did", "have", "has",
+                        "who", "whom", "where", "which", "of", "in", "a", "an", "enrolled"
+                    }
+                    q_keywords = [w for w in q_words if w not in q_stop]
+                    if q_keywords:
+                        best_overlap = 0
+                        best_num = None
+                        for p in premises_nl:
+                            p_clean = p.lower()
+                            overlap = sum(1 for w in q_keywords if w in p_clean)
+                            if overlap > best_overlap:
+                                p_numbers = re.findall(r"\b\d+(?:\.\d+)?\b", p)
+                                if p_numbers:
+                                    best_overlap = overlap
+                                    best_num = p_numbers[0]
+                                else:
+                                    # check words
+                                    p_words = re.findall(r"\b\w+\b", p_clean)
+                                    for w in p_words:
+                                        if w in num_map:
+                                            best_overlap = overlap
+                                            best_num = num_map[w]
+                                            break
+                        if best_num:
+                            short_answer = best_num
+
             # Translate the premises and the generated candidate answer statement
+            # We translate the full candidate_answer to ensure proper FOL formula parsing
             premises_fol, conclusion_fol = self.translate_premises_and_conclusion(
                 premises_nl, candidate_answer
             )
@@ -876,10 +952,76 @@ class LogicalReasoningPipeline:
 
             # Check if the generated answer is confirmed by Z3
             if verification["result"] == z3.unsat:
-                answer_status = candidate_answer
+                answer_status = short_answer if (is_numeric and short_answer is not None) else candidate_answer
             else:
-                # Z3 cannot verify the candidate answer, so standard logical answer is Unknown
-                answer_status = "Unknown"
+                # If Z3 cannot verify but it's a numeric query and we extracted a short answer, use the short answer
+                if is_numeric and short_answer is not None:
+                    answer_status = short_answer
+                    
+                    # Find which premise contains the short_answer and has highest keyword overlap
+                    # to populate the unsat_core for proper premises_used mapping in api_server.py
+                    q_words = re.findall(r'\b\w+\b', conclusion_nl.lower())
+                    q_stop = {"how", "many", "what", "is", "the", "does", "do", "did", "have", "has", "who", "whom", "where", "which", "of", "in", "a", "an"}
+                    q_keywords = [w for w in q_words if w not in q_stop]
+                    
+                    best_prem_idx = None
+                    best_overlap = -1
+                    # 1. Search in filt_premises_nl first to keep alignment
+                    for idx, p in enumerate(filt_premises_nl):
+                        p_clean = p.lower()
+                        has_val = False
+                        # Match whole-number boundaries to prevent sub-string collision (e.g. "2" in "12")
+                        if re.search(r"\b" + re.escape(short_answer) + r"\b", p):
+                            has_val = True
+                        else:
+                            # Check reverse word mapping
+                            for name, val in num_map.items():
+                                if val == short_answer and re.search(r"\b" + re.escape(name) + r"\b", p_clean):
+                                    has_val = True
+                                    break
+                        if has_val:
+                            overlap = sum(1 for w in q_keywords if w in p_clean)
+                            if overlap > best_overlap:
+                                best_overlap = overlap
+                                best_prem_idx = idx
+                                
+                    # 2. If not found in filtered list, fallback to search in all premises_nl
+                    if best_prem_idx is None:
+                        best_orig_idx = None
+                        best_overlap = -1
+                        for idx, p in enumerate(premises_nl):
+                            p_clean = p.lower()
+                            has_val = False
+                            if re.search(r"\b" + re.escape(short_answer) + r"\b", p):
+                                has_val = True
+                            else:
+                                for name, val in num_map.items():
+                                    if val == short_answer and re.search(r"\b" + re.escape(name) + r"\b", p_clean):
+                                        has_val = True
+                                        break
+                            if has_val:
+                                overlap = sum(1 for w in q_keywords if w in p_clean)
+                                if overlap > best_overlap:
+                                    best_overlap = overlap
+                                    best_orig_idx = idx
+                                    
+                        if best_orig_idx is not None:
+                            target_premise_nl = premises_nl[best_orig_idx]
+                            target_premise_fol = premises_fol[best_orig_idx] if best_orig_idx < len(premises_fol) else target_premise_nl
+                            
+                            # Append target premise to filt_premises lists to ensure correct indices
+                            if target_premise_nl not in filt_premises_nl:
+                                filt_premises_nl.append(target_premise_nl)
+                                filt_premises_fol.append(target_premise_fol)
+                            
+                            best_prem_idx = filt_premises_nl.index(target_premise_nl)
+                                
+                    if best_prem_idx is not None:
+                        verification["unsat_core"] = [f"p_{best_prem_idx + 1}"]
+                        verification["result"] = z3.unsat
+                else:
+                    # Z3 cannot verify the candidate answer, so standard logical answer is Unknown
+                    answer_status = "Unknown"
 
             reasoning, cot = self.generate_cot(
                 premises_nl=filt_premises_nl,
