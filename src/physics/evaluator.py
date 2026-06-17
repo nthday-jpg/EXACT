@@ -8,6 +8,9 @@ from src.physics.types import PhysicsEval, PhysicsResult
 
 
 class PhysicsEvaluator:
+    def __init__(self, llm_model: bool = True):
+        self.llm_model = llm_model
+
     def evaluate(self, result: PhysicsResult) -> PhysicsEval:
         if not result.task.correct:
             return PhysicsEval(result=result, is_correct=None, reason="missing_correct")
@@ -27,6 +30,7 @@ class PhysicsEvaluator:
                 result.model_answer,
                 model_raw_output=result.raw_response,
                 correct_answer=result.task.correct,
+                llm_model=self.llm_model,
             )
         except Exception as exc:
             result.error = str(exc)

@@ -56,7 +56,7 @@ def evaluate_physics_answer(
     model_raw_output: Optional[str],
     correct_answer: Any,
     *,
-    llm_model: Optional[str] = None,
+    llm_model: bool = False
 ) -> bool:
     """Core evaluation pipeline entry point."""
     if model_answer is None or correct_answer is None:
@@ -319,7 +319,7 @@ def _compare_item_sets(
     model_items: List[_Item],
     correct_items: List[_Item],
     model_raw_output: Optional[str] = None,
-    llm_model: Optional[str] = None,
+    llm_model: bool = False
 ) -> bool:
     """Compares the evaluation answer arrays with matching safeguards."""
     remaining = model_items[:]
@@ -368,7 +368,7 @@ def _llm_or_text_match(
     model_text: str,
     correct_text: str,
     model_raw_output: Optional[str] = None,
-    llm_model: Optional[str] = None,
+    llm_model: bool = False
 ) -> bool:
     """Final fallback checking for qualitative plain text equivalencies."""
     norm_model = _normalize_text(model_text)
@@ -403,12 +403,14 @@ def _llm_or_text_match(
         or clean_correct in clean_model
     ):
         return True
-
+    
+    if not llm_model:
+        return False
     try:
         from src.llm.llm_client import LLMClient
 
         api_key = os.getenv("PHYSICS_EVAL_LLM_KEY", "")
-        llm_model = llm_model or os.getenv("PHYSICS_EVAL_LLM_MODEL", "gemini-3.5-flash")
+        llm_name = os.getenv("PHYSICS_EVAL_LLM_MODEL", "gpt-4-0613")
         system_prompt = (
             "You are a strict physics evaluation assistant. Your task is to determine if a 'Model Answer' "
             "is semantically equivalent to the 'Correct Answer' for the given question.\n\n"
@@ -435,7 +437,7 @@ def _llm_or_text_match(
         )
 
         client = LLMClient(
-            model_name=llm_model, api_key=api_key, system_prompt=system_prompt
+            model_name=llm_name, api_key=api_key, system_prompt=system_prompt
         )
         user_prompt = (
             f"Question asked to the model: {question}\n"
