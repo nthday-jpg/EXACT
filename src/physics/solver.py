@@ -83,15 +83,20 @@ class PhysicsSolver:
                 tokens=None,
                 elapsed_s=time.time() - start,
                 domains=None,
+                trace=None,
             )
 
         # 2. EXECUTION PHASE (Math/Code logic)
         model_answer = None
         error = None
         try:
-            ans, unit = execute_llm_code(content)
-            if ans is not None:
-                model_answer = postprocess_answer({"ans": ans, "unit": unit})
+            execution_result = execute_llm_code(content)
+            trace = execution_result.solution.to_dict() if execution_result.solution else None
+            if execution_result.answers is not None:
+                model_answer = postprocess_answer({
+                    "ans": execution_result.answers[0],
+                    "unit": execution_result.units[0] if execution_result.units else ""
+                })
         except Exception as exc:
             # We catch these because they are logic failures, not system failures
             error = str(exc)
@@ -105,6 +110,7 @@ class PhysicsSolver:
             tokens=tokens,
             elapsed_s=elapsed,
             domains=None,
+            trace=trace,
         )
 
 

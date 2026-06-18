@@ -16,9 +16,10 @@ class PhysicsResult:
     task: PhysicsTask
     model_answer: Optional[Dict[str, Any]]
     raw_response: str
+    trace: Optional[Dict[str, Any]]
     error: Optional[str]
     tokens: Optional[Dict[str, Any]]
-    elapsed_s: float
+    elapsed_s: Optional[float]
     domains: Optional[List[str]] = None
 
 
