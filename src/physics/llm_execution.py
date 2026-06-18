@@ -20,7 +20,6 @@ class SolutionStep:
     substitution: str
     result: Any
     unit: str = ""
-    description: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -30,7 +29,6 @@ class SolutionStep:
             "substitution": self.substitution,
             "result": str(self.result),
             "unit": self.unit,
-            "description": self.description,
         }
 
 
@@ -131,8 +129,10 @@ def _substitute(formula: str, values: Dict[str, Any]) -> str:
             name = str(s)
             if name in values:
                 val = values[name]
-                val_str = f"({val})" if isinstance(val, (int, float)) and val < 0 else str(val)
-                subs[s] = sp.Symbol(val_str)
+                try:
+                    subs[s] = sp.sympify(val)
+                except Exception:
+                    subs[s] = val
 
         return str(expr.subs(subs)) if subs else formula
 
@@ -180,8 +180,8 @@ def _extract_trace(code: str, vars: Dict[str, Any]) -> WorkedSolution:
         if k not in reserved and not k.startswith("_")
     }
 
-    units = vars.get("units") or vars.get("unit") or {}
-    desc = vars.get("descriptions") or vars.get("description") or {}
+    raw_units = vars.get("units") or vars.get("unit") or {}
+    units = raw_units if isinstance(raw_units, dict) else {}
 
     given, formulas = _analyze(code)
 
@@ -208,21 +208,29 @@ def _extract_trace(code: str, vars: Dict[str, Any]) -> WorkedSolution:
                 sol.variables
             ),
             result=sol.variables[name],
-            unit=units.get(name, ""),
-            description=desc.get(name, ""),
+            unit=str(units.get(name, "")),
         )
 
         sol.steps.append(step)
         step_id += 1
 
     sol.answer = vars.get("ans")
-    sol.unit = vars.get("unit")
+    
+    ans_unit = vars.get("unit")
+    if ans_unit is None:
+        sol.unit = [""]
+    elif isinstance(ans_unit, list):
+        sol.unit = [str(u) for u in ans_unit]
+    elif isinstance(ans_unit, dict):
+        sol.unit = [str(v) for v in ans_unit.values()]
+    else:
+        sol.unit = [str(ans_unit)]
 
     return sol
 
 
 # =========================
-# Public API (ONLY FUNCTION YOU NEED)
+# Public API
 # =========================
 
 def execute_llm_code(
@@ -233,23 +241,30 @@ def execute_llm_code(
     """
     Execute LLM-generated physics code and return structured trace.
     """
+    content = model_content.strip()
 
-    model_json = json.loads(model_content)
+    try:
+        model_json = json.loads(content)
+    except (json.JSONDecodeError, TypeError):
+        return ExecutionResult(None, None, WorkedSolution())
+
     code = model_json.get("python_code")
 
     if not code:
         return ExecutionResult(None, None, WorkedSolution())
 
-    local_vars: Dict[str, Any] = {}
+    exec_globals: Dict[str, Any] = {"sp": sp, "sympy": sp}
 
-    exec(code, {"sp": sp, "sympy": sp}, local_vars)
+    try:
+        exec(code, exec_globals)
+    except Exception:
+        return ExecutionResult(None, None, WorkedSolution())
 
-    trace = _extract_trace(code, local_vars)
+    trace = _extract_trace(code, exec_globals)
+    final_unit = trace.unit if trace.unit else [""]
 
     return ExecutionResult(
-        answers=_format_answers(local_vars.get("ans"), precision),
-        units=local_vars.get("unit") or [""] ,
+        answers=_format_answers(exec_globals.get("ans"), precision),
+        units=final_unit,
         solution=trace,
     )
-
-
