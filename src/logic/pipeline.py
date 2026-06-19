@@ -1,4 +1,6 @@
+import os
 import re
+import time
 import z3
 from src.logic.translation.pipeline import NLToFOLPipeline
 from src.logic.reasoning.pipeline import ReasoningPipeline
@@ -11,21 +13,15 @@ from src.llm.prompts import (
     SEMANTIC_YESNO_USER_PROMPT_TEMPLATE,
 )
 
+REMOTE_OPTION_EXTRACTION_MAX_TOKENS = 128
+REMOTE_SEMANTIC_FALLBACK_MAX_TOKENS = 64
+REMOTE_TIE_BREAK_MAX_TOKENS = 64
+REMOTE_OPEN_ENDED_MAX_TOKENS = 128
+
 
 def parse_mcq_options(text: str) -> dict[str, str]:
     """Parse options A, B, C, D from the text if present."""
-    options = {}
-    
-    # 1. Robust regex pattern
-    pattern = r"(?:\s+|^)(?:[\-\*]\s+)?(?:\(|\[|Option\s+)?([A-G])(?:\)|\]|\.|\:)?\s+(.*?)(?=\s+(?:[\-\*]\s+)?(?:\(|\[|Option\s+)?[A-G](?:\)|\]|\.|\:)?\s+|$)"
-    matches = re.findall(pattern, text, re.DOTALL | re.IGNORECASE)
-    for opt_char, opt_text in matches:
-        options[opt_char.upper()] = opt_text.strip()
-    
-    if len(options) >= 2:
-        return options
-        
-    # 2. Line-by-line fallback
+    # 1. Line-by-line parsing handles the common multi-line EXACT format reliably.
     options = {}
     lines = text.splitlines()
     current_key = None
@@ -42,7 +38,17 @@ def parse_mcq_options(text: str) -> dict[str, str]:
                 current_text.append(line.strip())
     if current_key:
         options[current_key] = "\n".join(current_text).strip()
-        
+
+    if len(options) >= 2:
+        return options
+
+    # 2. Inline fallback for single-line questions with embedded options.
+    options = {}
+    pattern = r"(?:^|\s)(?:[\-\*]\s+)?(?:\(|\[|Option\s+)?([A-G])(?:\)|\]|\.|\:)\s+(.*?)(?=(?:\s+(?:[\-\*]\s+)?(?:\(|\[|Option\s+)?[A-G](?:\)|\]|\.|\:)\s+)|$)"
+    matches = re.findall(pattern, text, re.DOTALL | re.IGNORECASE)
+    for opt_char, opt_text in matches:
+        options[opt_char.upper()] = opt_text.strip()
+
     return options
 
 
@@ -59,7 +65,7 @@ def extract_options_via_llm(text: str, llm_client) -> dict[str, str]:
         response = llm_client.generate_text(
             prompt,
             system_prompt="You are a precise parsing assistant. Return ONLY a valid JSON object. Do not include any other text or markdown block.",
-            max_new_tokens=256
+            max_new_tokens=REMOTE_OPTION_EXTRACTION_MAX_TOKENS
         ).strip()
         # Parse JSON
         cleaned = response.strip()
@@ -188,19 +194,19 @@ def check_meta_premise_uncertain(premises, query):
 
     # Let's define the patterns for meta-premises
     meta_patterns = [
-        r"no\s+premise\s+states\s+whether\s+(.*)",
-        r"it\s+is\s+not\s+specified\s+whether\s+(.*)",
+        r"no\s+premise\s+states\s+(?:whether|that)\s+(.*)",
+        r"it\s+is\s+not\s+specified\s+(?:whether|that)\s+(.*)",
         r"no\s+information\s+is\s+given\s+about\s+(.*)",
         r"there\s+is\s+no\s+information\s+about\s+(.*)",
         r"nothing\s+is\s+known\s+about\s+(.*)",
-        r"it\s+is\s+unknown\s+whether\s+(.*)",
+        r"it\s+is\s+unknown\s+(?:whether|that)\s+(.*)",
         r"no\s+premise\s+mentions\s+(.*)",
         r"no\s+statement\s+specifies\s+(.*)",
-        r"it\s+is\s+not\s+known\s+whether\s+(.*)",
+        r"it\s+is\s+not\s+known\s+(?:whether|that)\s+(.*)",
         r"no\s+information\s+about\s+(.*)",
-        r"no\s+premise\s+indicates\s+whether\s+(.*)",
-        r"we\s+do\s+not\s+know\s+whether\s+(.*)",
-        r"it\s+is\s+not\s+clear\s+whether\s+(.*)"
+        r"no\s+premise\s+indicates\s+(?:whether|that)\s+(.*)",
+        r"we\s+do\s+not\s+know\s+(?:whether|that)\s+(.*)",
+        r"it\s+is\s+not\s+clear\s+(?:whether|that)\s+(.*)"
     ]
 
     for idx, prem in enumerate(premises):
@@ -230,11 +236,53 @@ def check_meta_premise_uncertain(premises, query):
                     if intersection == words_query_clean or intersection == words_core_clean:
                         return True, idx
                     # Alternatively, if high overlap percentage
-                    overlap_ratio = len(intersection) / max(len(words_core_clean), len(words_query_clean))
+                    overlap_ratio = len(intersection) / min(len(words_core_clean), len(words_query_clean))
                     if overlap_ratio >= 0.7:
                         return True, idx
                         
     return False, None
+
+
+def detect_yes_no_subtype(conclusion_nl: str) -> str:
+    """Split yes/no questions into support-query vs fact-query."""
+    text = conclusion_nl.strip().lower()
+
+    support_starts = (
+        "do the premises",
+        "do these premises",
+        "do the statements",
+        "do these statements",
+        "do the facts",
+        "do these facts",
+        "based on the premises",
+        "based on these premises",
+    )
+    support_markers = (
+        "prove that",
+        "establish that",
+        "show that",
+        "support that",
+        "support the conclusion",
+        "demonstrate that",
+    )
+    sufficiency_markers = (
+        "guarantee",
+        "guarantees",
+        "guaranteed",
+        "satisfy every requirement",
+        "satisfies every requirement",
+        "meet every requirement",
+        "meets every requirement",
+        "all requirements for",
+    )
+
+    if text.startswith(support_starts):
+        return "support_query"
+    if "premises" in text and any(marker in text for marker in support_markers):
+        return "support_query"
+    if any(marker in text for marker in sufficiency_markers):
+        return "support_query"
+    return "fact_query"
 
 
 class LogicalReasoningPipeline:
@@ -337,6 +385,172 @@ class LogicalReasoningPipeline:
             premises_nl, conclusion_nl, verification, premises_fol, conclusion_fol
         )
 
+    def _timing_enabled(self) -> bool:
+        return os.getenv("EXACT_TIMING", "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+
+    def _record_timing(
+        self, timings: dict[str, float | int], name: str, elapsed_seconds: float
+    ) -> None:
+        timings[f"{name}_seconds"] = round(
+            float(timings.get(f"{name}_seconds", 0.0)) + elapsed_seconds, 6
+        )
+        timings[f"{name}_count"] = int(timings.get(f"{name}_count", 0)) + 1
+
+    def _timed_call(
+        self, timings: dict[str, float | int], name: str, func, *args, **kwargs
+    ):
+        started_at = time.perf_counter()
+        try:
+            return func(*args, **kwargs)
+        finally:
+            self._record_timing(timings, name, time.perf_counter() - started_at)
+
+    def _finalize_result(self, result: dict, timings: dict[str, float | int]) -> dict:
+        if timings:
+            result["_timings"] = timings
+            if self._timing_enabled():
+                print(
+                    "[run_pipeline] Stage timings: "
+                    + ", ".join(
+                        f"{key}={value}"
+                        for key, value in sorted(timings.items())
+                    )
+                )
+        return result
+
+    def _is_finetuned_model(self) -> bool:
+        if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
+            model_name_lower = self.llm_client.model_name.lower()
+            return any(
+                marker in model_name_lower
+                for marker in (
+                    "exact-qwen",
+                    "lora",
+                    "finetune",
+                    "fol_router",
+                    "physics",
+                )
+            )
+        return False
+
+    def _map_premises_to_original_indices(
+        self, selected_premises_nl: list[str], original_premises_nl: list[str]
+    ) -> list[int]:
+        indices = []
+        for premise in selected_premises_nl:
+            if premise in original_premises_nl:
+                indices.append(original_premises_nl.index(premise))
+        return sorted(list(dict.fromkeys(indices)))
+
+    def _extract_indices_from_verification(
+        self,
+        verification: dict,
+        premises_nl: list[str],
+        original_premises_nl: list[str],
+    ) -> list[int]:
+        mapped = []
+        for var_str in verification.get("unsat_core", []):
+            if not str(var_str).startswith("p_"):
+                continue
+            try:
+                idx_1based = int(str(var_str).split("_")[1])
+            except (TypeError, ValueError, IndexError):
+                continue
+            if 1 <= idx_1based <= len(premises_nl):
+                premise_text = premises_nl[idx_1based - 1]
+                if premise_text in original_premises_nl:
+                    mapped.append(original_premises_nl.index(premise_text))
+        return sorted(list(dict.fromkeys(mapped)))
+
+    def _filter_premises_for_attribution(
+        self,
+        premises_nl: list[str],
+        target_nl: str,
+        premises_fol: list[str],
+    ) -> tuple[list[str], list[str], list[int]]:
+        try:
+            return self.reasoning_pipeline.filter_relevant_premises(
+                premises_nl, target_nl, premises_fol
+            )
+        except Exception:
+            return premises_nl, premises_fol, list(range(len(premises_nl)))
+
+    def _minimize_entailing_indices(
+        self,
+        premises_fol: list[str],
+        conclusion_fol: str,
+        candidate_indices: list[int],
+    ) -> list[int]:
+        if not candidate_indices or not conclusion_fol:
+            return []
+
+        working = sorted(list(dict.fromkeys(candidate_indices)))
+        changed = True
+        while changed and len(working) > 1:
+            changed = False
+            for idx in list(working):
+                trial = [i for i in working if i != idx]
+                if not trial:
+                    continue
+                verification = self.reasoning_pipeline.verify(
+                    [premises_fol[i] for i in trial],
+                    conclusion_fol,
+                    negate_conclusion=True,
+                )
+                if verification.get("result") == z3.unsat:
+                    working = trial
+                    changed = True
+                    break
+        return working
+
+    def _build_attribution(
+        self,
+        premises_nl: list[str],
+        premises_fol: list[str],
+        target_nl: str,
+        *,
+        conclusion_fol: str | None = None,
+        require_proof: bool = False,
+    ) -> tuple[list[int], list[str], list[str], dict | None]:
+        attr_nl, attr_fol, attr_indices = self._filter_premises_for_attribution(
+            premises_nl, target_nl, premises_fol
+        )
+
+        if not attr_indices:
+            attr_indices = list(range(len(premises_nl)))
+            attr_nl = premises_nl
+            attr_fol = premises_fol
+
+        attr_verification = None
+        if require_proof and conclusion_fol:
+            candidate_indices = list(attr_indices)
+            candidate_verification = self.reasoning_pipeline.verify(
+                [premises_fol[i] for i in candidate_indices],
+                conclusion_fol,
+                negate_conclusion=True,
+            )
+            if candidate_verification.get("result") != z3.unsat:
+                candidate_indices = list(range(len(premises_nl)))
+
+            attr_indices = self._minimize_entailing_indices(
+                premises_fol, conclusion_fol, candidate_indices
+            )
+            if not attr_indices:
+                attr_indices = candidate_indices
+
+            attr_nl = [premises_nl[i] for i in attr_indices]
+            attr_fol = [premises_fol[i] for i in attr_indices]
+            attr_verification = self.reasoning_pipeline.verify(
+                attr_fol, conclusion_fol, negate_conclusion=True
+            )
+
+        return attr_indices, attr_nl, attr_fol, attr_verification
+
     def run_pipeline(
         self, premises_nl: list[str], conclusion_nl: str, question_type: str = None, options_list: list[str] = None
     ) -> dict:
@@ -344,6 +558,7 @@ class LogicalReasoningPipeline:
         if self.translation_pipeline.model:
             self.reasoning_pipeline.tokenizer = self.translation_pipeline.tokenizer
             self.reasoning_pipeline.model = self.translation_pipeline.model
+        timings: dict[str, float | int] = {}
 
         # Auto-detect question type if not specified
         if options_list is not None and len(options_list) > 0:
@@ -359,9 +574,19 @@ class LogicalReasoningPipeline:
                 if question_type in ("single_choice", "multiple_choice"):
                     question_type = "open_ended"
 
+        yes_no_subtype = (
+            detect_yes_no_subtype(conclusion_nl) if question_type == "yes_no" else None
+        )
+
         # Check for meta-logical premise about missing information ONLY for yes_no queries
-        if question_type == "yes_no":
-            is_meta_uncertain, meta_idx = check_meta_premise_uncertain(premises_nl, conclusion_nl)
+        if question_type == "yes_no" and yes_no_subtype == "fact_query":
+            is_meta_uncertain, meta_idx = self._timed_call(
+                timings,
+                "option_parsing",
+                check_meta_premise_uncertain,
+                premises_nl,
+                conclusion_nl,
+            )
             if is_meta_uncertain:
                 print(f"[run_pipeline] Meta-logical premise detected at index {meta_idx}. Returning Uncertain.")
                 ans_opt = "Uncertain"
@@ -387,16 +612,17 @@ class LogicalReasoningPipeline:
                     "unsat_core": ["p_1"],
                     "model": None
                 }
-                return {
+                return self._finalize_result({
                     "answer": ans_opt,
                     "confidence": 1.0,
                     "premises_fol": [premises_nl[meta_idx]],
                     "premises_nl": [premises_nl[meta_idx]],
+                    "premises_used": [meta_idx],
                     "conclusion_fol": "",
                     "verification": verification,
                     "reasoning": explanation,
                     "cot": cot_steps,
-                }
+                }, timings)
 
         # Check if options_list contains just keys (e.g. ["A", "B", "C", "D"])
         has_only_keys = False
@@ -404,6 +630,7 @@ class LogicalReasoningPipeline:
             has_only_keys = all(len(opt.strip().rstrip(".")) == 1 for opt in options_list)
 
         # Detect multiple-choice options if MCQ type is selected or auto-detected
+        option_parse_started = time.perf_counter()
         if options_list is not None and len(options_list) > 0 and question_type != "yes_no" and not has_only_keys:
             options = {chr(65 + i): opt for i, opt in enumerate(options_list)}
         else:
@@ -411,11 +638,18 @@ class LogicalReasoningPipeline:
             # Fallback to LLM extraction if we expected options but couldn't parse them via regex
             if (not options or len(options) < 2) and question_type != "yes_no" and (has_only_keys or (options_list is not None and len(options_list) > 0)):
                 print("Regex option parsing failed/insufficient. Trying LLM extraction...")
-                options = extract_options_via_llm(conclusion_nl, self.llm_client)
+                options = self._timed_call(
+                    timings,
+                    "option_parsing",
+                    extract_options_via_llm,
+                    conclusion_nl,
+                    self.llm_client,
+                )
             
             # Fallback if parsing failed but options_list is provided
             if not options and options_list is not None and len(options_list) > 0 and question_type != "yes_no":
                 options = {chr(65 + i): opt for i, opt in enumerate(options_list)}
+        self._record_timing(timings, "option_parsing", time.perf_counter() - option_parse_started)
 
         if question_type in ("single_choice", "multiple_choice") or (
             len(options) >= 2 and not question_type
@@ -425,7 +659,12 @@ class LogicalReasoningPipeline:
 
             # 1. Attempt unified combined translation for all premises and options together
             combined_nl = premises_nl + [options[k] for k in opt_keys]
-            all_fol = self.translation_pipeline.translate_list(combined_nl)
+            all_fol = self._timed_call(
+                timings,
+                "translation",
+                self.translation_pipeline.translate_list,
+                combined_nl,
+            )
 
             if len(all_fol) == len(combined_nl):
                 premises_fol = all_fol[: len(premises_nl)]
@@ -439,7 +678,12 @@ class LogicalReasoningPipeline:
                 )
                 premises_fol = []
                 for p in premises_nl:
-                    res = self.translation_pipeline.translate_list([p])
+                    res = self._timed_call(
+                        timings,
+                        "translation",
+                        self.translation_pipeline.translate_list,
+                        [p],
+                    )
                     premises_fol.append(res[0] if res else "")
 
                 glossary_str = self.translation_pipeline.extract_glossary_from_fol(
@@ -448,11 +692,20 @@ class LogicalReasoningPipeline:
                 options_fol = {}
                 for k in opt_keys:
                     try:
-                        res = self.translation_pipeline.translate_list(
-                            [options[k]], glossary_str=glossary_str
+                        res = self._timed_call(
+                            timings,
+                            "translation",
+                            self.translation_pipeline.translate_list,
+                            [options[k]],
+                            glossary_str=glossary_str,
                         )
                     except TypeError:
-                        res = self.translation_pipeline.translate_list([options[k]])
+                        res = self._timed_call(
+                            timings,
+                            "translation",
+                            self.translation_pipeline.translate_list,
+                            [options[k]],
+                        )
                     options_fol[k] = res[0] if res else ""
 
             # 3. Final Lexical Predicate Unification over the entire set to ensure absolute consistency
@@ -468,27 +721,9 @@ class LogicalReasoningPipeline:
                     unified_fol_list[offset] if offset < len(unified_fol_list) else ""
                 )
 
-            is_finetuned = False
-            if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
-                model_name_lower = self.llm_client.model_name.lower()
-                if (
-                    "exact-qwen" in model_name_lower
-                    or "lora" in model_name_lower
-                    or "finetune" in model_name_lower
-                    or "fol_router" in model_name_lower
-                    or "physics" in model_name_lower
-                ):
-                    is_finetuned = True
-
-            if is_finetuned:
-                filt_premises_nl, filt_premises_fol = premises_nl, premises_fol
-            else:
-                # Filter premises to those most relevant to the question
-                filt_premises_nl, filt_premises_fol, _ = (
-                    self.reasoning_pipeline.filter_relevant_premises(
-                        premises_nl, conclusion_nl, premises_fol
-                    )
-                )
+            # Use the full premise set for the actual proof search.
+            # Attribution is minimized separately after the winning option is chosen.
+            filt_premises_nl, filt_premises_fol = premises_nl, premises_fol
 
             # Evaluate ALL options
             unsat_candidates: list[
@@ -502,16 +737,26 @@ class LogicalReasoningPipeline:
                     continue
                 try:
                     # 1. Check if the option is entailed (negate_conclusion=True)
-                    verification = self.reasoning_pipeline.verify(
-                        filt_premises_fol, opt_fol, negate_conclusion=True
+                    verification = self._timed_call(
+                        timings,
+                        "per_option_verification",
+                        self.reasoning_pipeline.verify,
+                        filt_premises_fol,
+                        opt_fol,
+                        negate_conclusion=True,
                     )
                     if verification.get("result") == z3.unsat:
                         core_size = len(verification.get("unsat_core", []))
                         unsat_candidates.append((k, verification, core_size))
                     elif verification.get("result") == z3.sat:
                         # 2. Check if the option contradicts the premises (negate_conclusion=False)
-                        verif_contra = self.reasoning_pipeline.verify(
-                            filt_premises_fol, opt_fol, negate_conclusion=False
+                        verif_contra = self._timed_call(
+                            timings,
+                            "per_option_verification",
+                            self.reasoning_pipeline.verify,
+                            filt_premises_fol,
+                            opt_fol,
+                            negate_conclusion=False,
                         )
                         if verif_contra.get("result") != z3.unsat:
                             # It is consistent!
@@ -540,10 +785,13 @@ class LogicalReasoningPipeline:
                             f"Question:\n{conclusion_nl}\n\n"
                             f"Select all correct options. If none of the options logically follows from the premises or if there is insufficient information, respond with ONLY the word 'Unknown'. Otherwise, respond with a list of capital letters (e.g. A, B) of your choices."
                         )
-                        sem_resp = self.llm_client.generate_text(
+                        sem_resp = self._timed_call(
+                            timings,
+                            "semantic_fallback",
+                            self.llm_client.generate_text,
                             sem_prompt,
                             system_prompt="You are a precise logical reasoning assistant. Respond with ONLY the chosen letters or 'Unknown'. Do not add any explanation or other text.",
-                            max_new_tokens=512,
+                            max_new_tokens=REMOTE_SEMANTIC_FALLBACK_MAX_TOKENS,
                         ).strip()
 
                         sem_clean = sem_resp.strip("., ")
@@ -564,7 +812,10 @@ class LogicalReasoningPipeline:
                             opt_fol = options_fol.get(opt, "")
                             if opt_fol:
                                 try:
-                                    ver = self.reasoning_pipeline.verify(
+                                    ver = self._timed_call(
+                                        timings,
+                                        "per_option_verification",
+                                        self.reasoning_pipeline.verify,
                                         filt_premises_fol,
                                         opt_fol,
                                         negate_conclusion=True,
@@ -594,52 +845,12 @@ class LogicalReasoningPipeline:
                 # Single Choice: pick the best option
                 if unsat_candidates:
                     if len(unsat_candidates) > 1:
-                        # Hybrid choice: LLM selects the best option among mathematically verified candidates
-                        choices_list = []
-                        for k, ver, core_sz in unsat_candidates:
-                            prem_count = max(0, core_sz - 1)
-                            choices_list.append(
-                                f"{k}. {options[k]} (Proven using {prem_count} premise{'s' if prem_count != 1 else ''})"
-                            )
-                        choices_str = "\n".join(choices_list)
-                        prompt = (
-                            "You are a logical reasoning assistant.\n"
-                            "Given the premises and the question:\n\n"
-                            "Premises:\n"
-                            + "\n".join(f"- {p}" for p in premises_nl)
-                            + "\n\n"
-                            f"Question: {conclusion_nl}\n\n"
-                            f"Our formal symbolic prover has verified that the following options are mathematically valid conclusions:\n"
-                            f"{choices_str}\n\n"
-                            f"Select the single most appropriate and intended conclusion from the verified options above.\n"
-                            f"Respond with ONLY the capital letter (A, B, C, or D) of your choice."
-                        )
-                        try:
-                            best_opt = self.llm_client.generate_text(
-                                prompt, max_new_tokens=512
-                            ).strip()
-                            match = re.search(r"\b([A-D])\b", best_opt)
-                            if match:
-                                selected_key = match.group(1)
-                                matched = [
-                                    c for c in unsat_candidates if c[0] == selected_key
-                                ]
-                                if matched:
-                                    correct_options = [matched[0][0]]
-                                    correct_verifications = [matched[0][1]]
-                                else:
-                                    # Fallback to tightest proof
-                                    unsat_candidates.sort(key=lambda x: x[2])
-                                    correct_options = [unsat_candidates[0][0]]
-                                    correct_verifications = [unsat_candidates[0][1]]
-                            else:
-                                unsat_candidates.sort(key=lambda x: x[2])
-                                correct_options = [unsat_candidates[0][0]]
-                                correct_verifications = [unsat_candidates[0][1]]
-                        except Exception:
-                            unsat_candidates.sort(key=lambda x: x[2])
-                            correct_options = [unsat_candidates[0][0]]
-                            correct_verifications = [unsat_candidates[0][1]]
+                        # Prefer the option supported by the richest proof chain.
+                        # This avoids an extra LLM round-trip and tends to favor the intended
+                        # derived conclusion over a trivial directly stated fact.
+                        unsat_candidates.sort(key=lambda x: (-x[2], x[0]))
+                        correct_options = [unsat_candidates[0][0]]
+                        correct_verifications = [unsat_candidates[0][1]]
                     else:
                         correct_options = [unsat_candidates[0][0]]
                         correct_verifications = [unsat_candidates[0][1]]
@@ -662,8 +873,12 @@ class LogicalReasoningPipeline:
                             f"Respond with ONLY the capital letter (A, B, C, or D) of your choice."
                         )
                         try:
-                            best_opt = self.llm_client.generate_text(
-                                prompt, max_new_tokens=512
+                            best_opt = self._timed_call(
+                                timings,
+                                "tie_break",
+                                self.llm_client.generate_text,
+                                prompt,
+                                max_new_tokens=REMOTE_TIE_BREAK_MAX_TOKENS,
                             ).strip()
                             match = re.search(r"\b([A-D])\b", best_opt)
                             if match:
@@ -699,10 +914,13 @@ class LogicalReasoningPipeline:
                             f"Question:\n{conclusion_nl}\n\n"
                             f"Select the single best answer. If none of the options A, B, C, or D logically follows from the premises or if there is insufficient information, respond with ONLY the word 'Unknown'. Otherwise, respond with ONLY the capital letter (A, B, C, or D) of your choice."
                         )
-                        sem_resp = self.llm_client.generate_text(
+                        sem_resp = self._timed_call(
+                            timings,
+                            "semantic_fallback",
+                            self.llm_client.generate_text,
                             sem_prompt,
                             system_prompt="You are a precise logical reasoning assistant. Respond with ONLY the chosen letter (A, B, C, D) or 'Unknown'. Do not add any explanation or other text.",
-                            max_new_tokens=512,
+                            max_new_tokens=REMOTE_SEMANTIC_FALLBACK_MAX_TOKENS,
                         ).strip()
 
                         sem_clean = sem_resp.strip("., ")
@@ -722,8 +940,13 @@ class LogicalReasoningPipeline:
                         opt_fol = options_fol.get(correct_options[0], "")
                         if opt_fol:
                             try:
-                                ver = self.reasoning_pipeline.verify(
-                                    filt_premises_fol, opt_fol, negate_conclusion=True
+                                ver = self._timed_call(
+                                    timings,
+                                    "per_option_verification",
+                                    self.reasoning_pipeline.verify,
+                                    filt_premises_fol,
+                                    opt_fol,
+                                    negate_conclusion=True,
                                 )
                                 correct_verifications.append(ver)
                             except Exception:
@@ -750,6 +973,9 @@ class LogicalReasoningPipeline:
                 ]
 
             best_verification = correct_verifications[0]
+            premises_used = []
+            reasoning_premises_nl = filt_premises_nl
+            reasoning_premises_fol = filt_premises_fol
 
             # Generate combined reasoning/CoT
             if len(correct_options) > 1:
@@ -782,12 +1008,52 @@ class LogicalReasoningPipeline:
                     "proof": combined_proof,
                     "model": best_verification.get("model"),
                 }
+                if correct_options and all(opt != "Unknown" for opt in correct_options):
+                    used_union = set()
+                    for opt, verification in zip(correct_options, correct_verifications):
+                        target_text = options.get(opt, opt)
+                        target_fol = options_fol.get(opt, "")
+                        require_proof = verification.get("result") == z3.unsat
+                        used_i, _, _, _ = self._timed_call(
+                            timings,
+                            "attribution",
+                            self._build_attribution,
+                            premises_nl,
+                            premises_fol,
+                            target_text,
+                            conclusion_fol=target_fol,
+                            require_proof=require_proof,
+                        )
+                        used_union.update(used_i)
+                    premises_used = sorted(used_union)
+                    reasoning_premises_nl = [premises_nl[i] for i in premises_used]
+                    reasoning_premises_fol = [premises_fol[i] for i in premises_used]
             else:
                 opt = correct_options[0]
                 conclusion_nl_cot = (
                     f"Option {opt}: {options[opt]}" if opt in options else opt
                 )
                 combined_verification = best_verification
+                if opt != "Unknown":
+                    target_fol = options_fol.get(opt, "")
+                    require_proof = best_verification.get("result") == z3.unsat
+                    (
+                        premises_used,
+                        reasoning_premises_nl,
+                        reasoning_premises_fol,
+                        attribution_verification,
+                    ) = self._timed_call(
+                        timings,
+                        "attribution",
+                        self._build_attribution,
+                        premises_nl,
+                        premises_fol,
+                        options.get(opt, opt),
+                        conclusion_fol=target_fol,
+                        require_proof=require_proof,
+                    )
+                    if attribution_verification is not None:
+                        combined_verification = attribution_verification
 
             # For conclusion_fol, we can represent it as AND of the options if multiple, else single
             if len(correct_options) > 1:
@@ -801,13 +1067,51 @@ class LogicalReasoningPipeline:
                     correct_options[0], correct_options[0]
                 )
 
-            reasoning, cot = self.generate_cot(
-                premises_nl=filt_premises_nl,
-                conclusion_nl=conclusion_nl_cot,
-                verification=combined_verification,
-                premises_fol=filt_premises_fol,
-                conclusion_fol=conclusion_fol_str,
-            )
+            # If the selected correct option(s) are positive (not "Unknown") but were not proven by Z3 (meaning they came from fallback)
+            # we override the verification object to avoid generating a counterexample explanation.
+            is_any_unknown = any(opt == "Unknown" for opt in correct_options)
+            is_all_unsat = all(v.get("result") == z3.unsat for v in correct_verifications)
+
+            if not is_any_unknown and not is_all_unsat:
+                explanation_verification = {
+                    "result": z3.unsat,
+                    "unsat_core": [],
+                    "proof": None,
+                    "model": None,
+                }
+            else:
+                explanation_verification = combined_verification
+
+            if (
+                len(correct_options) == 1
+                and correct_options[0] != "Unknown"
+                and combined_verification.get("result") == z3.unsat
+            ):
+                opt = correct_options[0]
+                selected_text = options.get(opt, opt)
+                cited = [
+                    f"Premise {idx + 1}: {premises_nl[idx]}" for idx in premises_used
+                ]
+                if cited:
+                    reasoning = (
+                        f"Option {opt} is logically supported by the cited premises.\n\n"
+                        + "\n".join(f"- {line}" for line in cited)
+                        + f"\n\nTherefore, {selected_text}."
+                    )
+                else:
+                    reasoning = f"Option {opt} is logically supported by the premises. Therefore, {selected_text}."
+                cot = cited + [f"Conclusion: {selected_text}"]
+            else:
+                reasoning, cot = self._timed_call(
+                    timings,
+                    "explanation_generation",
+                    self.generate_cot,
+                    premises_nl=reasoning_premises_nl,
+                    conclusion_nl=conclusion_nl_cot,
+                    verification=explanation_verification,
+                    premises_fol=reasoning_premises_fol,
+                    conclusion_fol=conclusion_fol_str,
+                )
 
             answer_val = (
                 correct_options
@@ -815,18 +1119,19 @@ class LogicalReasoningPipeline:
                 else correct_options[0]
             )
 
-            return {
+            return self._finalize_result({
                 "answer": answer_val,
                 "confidence": _compute_confidence(
                     best_verification, total_premises=len(filt_premises_fol)
                 ),
-                "premises_fol": filt_premises_fol,
-                "premises_nl": filt_premises_nl,
+                "premises_fol": reasoning_premises_fol,
+                "premises_nl": reasoning_premises_nl,
+                "premises_used": premises_used,
                 "conclusion_fol": conclusion_fol_str,
                 "verification": combined_verification,
                 "reasoning": reasoning,
                 "cot": cot,
-            }
+            }, timings)
 
         elif question_type == "open_ended":
             # Open-Ended Flow: Generate candidate answer using LLM, then verify
@@ -836,19 +1141,25 @@ class LogicalReasoningPipeline:
             user_prompt = OPEN_ENDED_USER_PROMPT_TEMPLATE.format(
                 premises_text=premises_text, question_nl=conclusion_nl
             )
-            candidate_answer = self.llm_client.generate_text(
+            candidate_answer = self._timed_call(
+                timings,
+                "semantic_fallback",
+                self.llm_client.generate_text,
                 prompt=user_prompt,
                 system_prompt=OPEN_ENDED_SYSTEM_PROMPT,
-                max_new_tokens=256,
+                max_new_tokens=REMOTE_OPEN_ENDED_MAX_TOKENS,
             ).strip()
 
             # Fallback: if candidate answer is empty, retry without the complex system prompt
             if not candidate_answer:
                 print("[run_pipeline] Candidate answer was empty. Retrying with no system prompt.")
-                candidate_answer = self.llm_client.generate_text(
+                candidate_answer = self._timed_call(
+                    timings,
+                    "semantic_fallback",
+                    self.llm_client.generate_text,
                     prompt=user_prompt,
                     system_prompt=None,
-                    max_new_tokens=256,
+                    max_new_tokens=REMOTE_OPEN_ENDED_MAX_TOKENS,
                 ).strip()
 
             # Check for numeric query
@@ -919,8 +1230,12 @@ class LogicalReasoningPipeline:
 
             # Translate the premises and the generated candidate answer statement
             # We translate the full candidate_answer to ensure proper FOL formula parsing
-            premises_fol, conclusion_fol = self.translate_premises_and_conclusion(
-                premises_nl, candidate_answer
+            premises_fol, conclusion_fol = self._timed_call(
+                timings,
+                "translation",
+                self.translate_premises_and_conclusion,
+                premises_nl,
+                candidate_answer,
             )
 
             is_finetuned = False
@@ -939,15 +1254,23 @@ class LogicalReasoningPipeline:
                 filt_premises_nl, filt_premises_fol = premises_nl, premises_fol
             else:
                 # Filter premises to those most relevant
-                filt_premises_nl, filt_premises_fol, _ = (
-                    self.reasoning_pipeline.filter_relevant_premises(
-                        premises_nl, candidate_answer, premises_fol
-                    )
+                filt_premises_nl, filt_premises_fol, _ = self._timed_call(
+                    timings,
+                    "attribution",
+                    self.reasoning_pipeline.filter_relevant_premises,
+                    premises_nl,
+                    candidate_answer,
+                    premises_fol,
                 )
 
             # Verify entailment of candidate answer with Z3
-            verification = self.reasoning_pipeline.verify(
-                filt_premises_fol, conclusion_fol, negate_conclusion=True
+            verification = self._timed_call(
+                timings,
+                "verification",
+                self.reasoning_pipeline.verify,
+                filt_premises_fol,
+                conclusion_fol,
+                negate_conclusion=True,
             )
 
             # Check if the generated answer is confirmed by Z3
@@ -1023,7 +1346,10 @@ class LogicalReasoningPipeline:
                     # Z3 cannot verify the candidate answer, so standard logical answer is Unknown
                     answer_status = "Unknown"
 
-            reasoning, cot = self.generate_cot(
+            reasoning, cot = self._timed_call(
+                timings,
+                "explanation_generation",
+                self.generate_cot,
                 premises_nl=filt_premises_nl,
                 conclusion_nl=candidate_answer,
                 verification=verification,
@@ -1031,109 +1357,270 @@ class LogicalReasoningPipeline:
                 conclusion_fol=conclusion_fol,
             )
 
-            return {
+            premises_used = self._extract_indices_from_verification(
+                verification, filt_premises_nl, premises_nl
+            )
+            if not premises_used and answer_status != "Unknown":
+                premises_used = self._map_premises_to_original_indices(
+                    filt_premises_nl, premises_nl
+                )
+
+            return self._finalize_result({
                 "answer": answer_status,
                 "confidence": _compute_confidence(
                     verification, total_premises=len(filt_premises_fol)
                 ),
                 "premises_fol": filt_premises_fol,
                 "premises_nl": filt_premises_nl,
+                "premises_used": premises_used,
                 "conclusion_fol": conclusion_fol,
                 "verification": verification,
                 "reasoning": reasoning,
                 "cot": cot,
-            }
+            }, timings)
 
         else:
-            # Yes/No or Statement Flow: Dual satisfiability check (both entailed or negated entailed)
-            premises_fol, conclusion_fol = self.translate_premises_and_conclusion(
-                premises_nl, conclusion_nl
+            # Yes/No or Statement Flow
+            premises_fol, conclusion_fol = self._timed_call(
+                timings,
+                "translation",
+                self.translate_premises_and_conclusion,
+                premises_nl,
+                conclusion_nl,
             )
 
-            is_finetuned = False
-            if hasattr(self.llm_client, "model_name") and self.llm_client.model_name:
-                model_name_lower = self.llm_client.model_name.lower()
-                if (
-                    "exact-qwen" in model_name_lower
-                    or "lora" in model_name_lower
-                    or "finetune" in model_name_lower
-                    or "fol_router" in model_name_lower
-                    or "physics" in model_name_lower
-                ):
-                    is_finetuned = True
+            original_conclusion_nl = conclusion_nl
+            original_conclusion_fol = conclusion_fol
+            filt_premises_nl, filt_premises_fol = premises_nl, premises_fol
 
-            if is_finetuned:
-                filt_premises_nl, filt_premises_fol = premises_nl, premises_fol
-            else:
-                # Filter premises to those most relevant to the conclusion
-                filt_premises_nl, filt_premises_fol, _ = (
-                    self.reasoning_pipeline.filter_relevant_premises(
-                        premises_nl, conclusion_nl, premises_fol
-                    )
-                )
-
-            # Check if conclusion is entailed
-            verification = self.reasoning_pipeline.verify(
-                filt_premises_fol, conclusion_fol, negate_conclusion=True
+            verification = self._timed_call(
+                timings,
+                "verification",
+                self.reasoning_pipeline.verify,
+                premises_fol,
+                conclusion_fol,
+                negate_conclusion=True,
             )
             answer = "Uncertain"
+            is_z3_decisive = False
+            is_fallback_used = False
+            reasoning_conclusion_nl = original_conclusion_nl
+            reasoning_conclusion_fol = original_conclusion_fol
+            reasoning_premises_nl = premises_nl
+            reasoning_premises_fol = premises_fol
+            premises_used = []
 
-            if verification["result"] == z3.unsat:
-                # Conclusion is logically entailed
-                answer = "Yes"
-            else:
-                # Check if negation of conclusion is entailed
-                try:
-                    verification_neg = self.reasoning_pipeline.verify(
-                        filt_premises_fol, conclusion_fol, negate_conclusion=False
+            if yes_no_subtype == "support_query":
+                if verification.get("result") == z3.unsat:
+                    answer = "Yes"
+                    is_z3_decisive = True
+                    (
+                        premises_used,
+                        reasoning_premises_nl,
+                        reasoning_premises_fol,
+                        attribution_verification,
+                    ) = self._timed_call(
+                        timings,
+                        "attribution",
+                        self._build_attribution,
+                        premises_nl,
+                        premises_fol,
+                        original_conclusion_nl,
+                        conclusion_fol=original_conclusion_fol,
+                        require_proof=True,
                     )
-                    if verification_neg["result"] == z3.unsat:
-                        verification = verification_neg
-                        conclusion_nl = f"NOT ({conclusion_nl})"
-                        conclusion_fol = f"NOT ({conclusion_fol})"
-                        answer = "No"
-                except Exception:
-                    pass
-
-                # Semantic LLM fallback: Z3 cannot determine entailment — ask the LLM directly
-                if answer == "Uncertain":
+                    if attribution_verification is not None:
+                        verification = attribution_verification
+                else:
+                    answer = "No"
+                    is_z3_decisive = True
+                    (
+                        premises_used,
+                        reasoning_premises_nl,
+                        reasoning_premises_fol,
+                        _,
+                    ) = self._timed_call(
+                        timings,
+                        "attribution",
+                        self._build_attribution,
+                        premises_nl,
+                        premises_fol,
+                        original_conclusion_nl,
+                        require_proof=False,
+                    )
+            else:
+                if verification.get("result") == z3.unsat:
+                    answer = "Yes"
+                    is_z3_decisive = True
+                    (
+                        premises_used,
+                        reasoning_premises_nl,
+                        reasoning_premises_fol,
+                        attribution_verification,
+                    ) = self._timed_call(
+                        timings,
+                        "attribution",
+                        self._build_attribution,
+                        premises_nl,
+                        premises_fol,
+                        original_conclusion_nl,
+                        conclusion_fol=original_conclusion_fol,
+                        require_proof=True,
+                    )
+                    if attribution_verification is not None:
+                        verification = attribution_verification
+                elif verification.get("result") == z3.sat:
                     try:
-                        premises_text = "\n".join(f"- {p}" for p in filt_premises_nl)
-                        sem_prompt = SEMANTIC_YESNO_USER_PROMPT_TEMPLATE.format(
-                            premises_text=premises_text, conclusion_nl=conclusion_nl
+                        verification_neg = self._timed_call(
+                            timings,
+                            "verification",
+                            self.reasoning_pipeline.verify,
+                            premises_fol,
+                            original_conclusion_fol,
+                            negate_conclusion=False,
                         )
-                        sem_resp = self.llm_client.generate_text(
-                            sem_prompt,
-                            system_prompt=SEMANTIC_YESNO_SYSTEM_PROMPT,
-                            max_new_tokens=512,
-                        ).strip()
-                        # Accept only clean Yes/No/Uncertain from LLM
-                        sem_lower = sem_resp.lower().strip("., ")
-                        if sem_lower.startswith("yes"):
-                            answer = "Yes"
-                        elif sem_lower.startswith("no"):
+                        if verification_neg.get("result") == z3.unsat:
                             answer = "No"
-                        # else keep Uncertain
+                            is_z3_decisive = True
+                            reasoning_conclusion_nl = f"NOT ({original_conclusion_nl})"
+                            reasoning_conclusion_fol = f"NOT ({original_conclusion_fol})"
+                            (
+                                premises_used,
+                                reasoning_premises_nl,
+                                reasoning_premises_fol,
+                                attribution_verification,
+                            ) = self._timed_call(
+                                timings,
+                                "attribution",
+                                self._build_attribution,
+                                premises_nl,
+                                premises_fol,
+                                original_conclusion_nl,
+                                conclusion_fol=reasoning_conclusion_fol,
+                                require_proof=True,
+                            )
+                            verification = (
+                                attribution_verification
+                                if attribution_verification is not None
+                                else verification_neg
+                            )
+                        elif verification_neg.get("result") == z3.sat:
+                            answer = "Uncertain"
+                            is_z3_decisive = True
                     except Exception:
                         pass
 
-            reasoning, cot = self.generate_cot(
-                premises_nl=filt_premises_nl,
-                conclusion_nl=conclusion_nl,
-                verification=verification,
-                premises_fol=filt_premises_fol,
-                conclusion_fol=conclusion_fol,
+                if not premises_used and is_z3_decisive:
+                    (
+                        premises_used,
+                        reasoning_premises_nl,
+                        reasoning_premises_fol,
+                        _,
+                    ) = self._timed_call(
+                        timings,
+                        "attribution",
+                        self._build_attribution,
+                        premises_nl,
+                        premises_fol,
+                        original_conclusion_nl,
+                        require_proof=False,
+                    )
+
+            if not is_z3_decisive and yes_no_subtype == "fact_query":
+                try:
+                    attr_prompt_premises_nl, _, _ = self._timed_call(
+                        timings,
+                        "attribution",
+                        self._filter_premises_for_attribution,
+                        premises_nl,
+                        original_conclusion_nl,
+                        premises_fol,
+                    )
+                    premises_text = "\n".join(f"- {p}" for p in attr_prompt_premises_nl)
+                    sem_prompt = SEMANTIC_YESNO_USER_PROMPT_TEMPLATE.format(
+                        premises_text=premises_text, conclusion_nl=original_conclusion_nl
+                    )
+                    sem_resp = self._timed_call(
+                        timings,
+                        "semantic_fallback",
+                        self.llm_client.generate_text,
+                        sem_prompt,
+                        system_prompt=SEMANTIC_YESNO_SYSTEM_PROMPT,
+                        max_new_tokens=REMOTE_SEMANTIC_FALLBACK_MAX_TOKENS,
+                    ).strip()
+                    # Accept only clean Yes/No/Uncertain from LLM
+                    sem_lower = sem_resp.lower().strip("., ")
+                    if sem_lower.startswith("yes"):
+                        answer = "Yes"
+                        is_fallback_used = True
+                    elif sem_lower.startswith("no"):
+                        answer = "No"
+                        is_fallback_used = True
+                except Exception:
+                    pass
+
+                (
+                    premises_used,
+                    reasoning_premises_nl,
+                    reasoning_premises_fol,
+                    _,
+                ) = self._timed_call(
+                    timings,
+                    "attribution",
+                    self._build_attribution,
+                    premises_nl,
+                    premises_fol,
+                    original_conclusion_nl,
+                    require_proof=False,
+                )
+
+            # If answer is positive but determined by semantic fallback,
+            # override verification to a dummy positive state so generate_cot
+            # explains it positively instead of as a counterexample
+            if is_fallback_used and answer in ("Yes", "No"):
+                explanation_verification = {
+                    "result": z3.unsat,
+                    "unsat_core": [],
+                    "proof": None,
+                    "model": None,
+                }
+            else:
+                explanation_verification = verification
+
+            if not premises_used:
+                premises_used = self._map_premises_to_original_indices(
+                    reasoning_premises_nl, premises_nl
+                )
+
+            if yes_no_subtype == "support_query" and answer == "No" and verification.get("result") == z3.unknown:
+                explanation_verification = {
+                    "result": z3.sat,
+                    "unsat_core": [],
+                    "proof": None,
+                    "model": None,
+                }
+
+            reasoning, cot = self._timed_call(
+                timings,
+                "explanation_generation",
+                self.generate_cot,
+                premises_nl=reasoning_premises_nl,
+                conclusion_nl=reasoning_conclusion_nl,
+                verification=explanation_verification,
+                premises_fol=reasoning_premises_fol,
+                conclusion_fol=reasoning_conclusion_fol,
             )
 
-            return {
+            return self._finalize_result({
                 "answer": answer,
                 "confidence": _compute_confidence(
-                    verification, total_premises=len(filt_premises_fol)
+                    verification, total_premises=len(reasoning_premises_fol)
                 ),
-                "premises_fol": filt_premises_fol,
-                "premises_nl": filt_premises_nl,
-                "conclusion_fol": conclusion_fol,
+                "premises_fol": reasoning_premises_fol,
+                "premises_nl": reasoning_premises_nl,
+                "premises_used": premises_used,
+                "conclusion_fol": reasoning_conclusion_fol,
                 "verification": verification,
                 "reasoning": reasoning,
                 "cot": cot,
-            }
+            }, timings)
