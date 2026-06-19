@@ -125,14 +125,15 @@ class LLMClient:
             # Load tokenizer locally to enable perfect local chat template formatting for remote completions
             from transformers import AutoTokenizer
 
-            try:
-                self.tokenizer = AutoTokenizer.from_pretrained(
-                    self.model_dir, trust_remote_code=True
-                )
-                if self.tokenizer.pad_token is None:
-                    self.tokenizer.pad_token = self.tokenizer.eos_token
-            except Exception as e:
-                print(f"Warning: Could not load local tokenizer for remote client: {e}")
+            if self.model_dir and os.path.isdir(self.model_dir):
+                try:
+                    self.tokenizer = AutoTokenizer.from_pretrained(
+                        self.model_dir, trust_remote_code=True
+                    )
+                    if self.tokenizer.pad_token is None:
+                        self.tokenizer.pad_token = self.tokenizer.eos_token
+                except Exception as e:
+                    print(f"Warning: Could not load local tokenizer for remote client: {e}")
         else:
             self.api_key = api_key or ""
             self.client = None
@@ -278,9 +279,9 @@ class LLMClient:
             input_tokens = response.usage.prompt_tokens if response.usage else 0
             output_tokens = response.usage.completion_tokens if response.usage else 0
 
-        msg = response.choices[0].message
-        content = msg.content if msg and msg.content else ""
-        finish_reason = response.choices[0].finish_reason
+            msg = response.choices[0].message
+            content = msg.content if msg and msg.content else ""
+            finish_reason = response.choices[0].finish_reason
 
         if finish_reason == "length" and content:
             print("Warning: Response was truncated by max_tokens.")
@@ -289,11 +290,15 @@ class LLMClient:
             raise RuntimeError(f"Empty content. finish_reason={finish_reason}")
 
         # Strip thinking blocks from the content if present
-        if "<think>" in content:
+        content_lower = content.lower()
+        if "think" in content_lower and ("<" in content_lower or ">" in content_lower):
             import re
-
             content = re.sub(
-                r"<think>.*?</think>", "", content, flags=re.DOTALL
+                r"<\s*think\s*>.*?<\s*/\s*think\s*>", "", content, flags=re.DOTALL | re.IGNORECASE
+            ).strip()
+            # Also handle truncated thinking block without closing tag
+            content = re.sub(
+                r"<\s*think\s*>.*", "", content, flags=re.DOTALL | re.IGNORECASE
             ).strip()
 
         return {
