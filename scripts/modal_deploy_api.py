@@ -32,7 +32,7 @@ image = (
     cpu=1.0,
     memory=1024,
     secrets=[modal.Secret.from_dotenv()],
-    min_containers=0,  # Keep 1 container warm for testing
+    min_containers=0,  # Allow scale-to-zero to minimize idle cost during smoke testing
 )
 @modal.asgi_app()
 def api_server():

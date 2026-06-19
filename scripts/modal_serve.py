@@ -39,7 +39,7 @@ image = (
     memory=16384,       # 16 GB system RAM (sufficient since device_map="auto" loads directly to GPU)
     timeout=600,
     scaledown_window=60, # Shut down after 60 seconds of inactivity to save cost
-    min_containers=0,   # Keep 1 container warm to support concurrent batch testing
+    min_containers=0,   # Allow scale-to-zero to minimize idle cost during smoke testing
     secrets=[modal.Secret.from_dotenv()],
 )
 class ExactModel:
