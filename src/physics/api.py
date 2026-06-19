@@ -12,7 +12,7 @@ from src.physics.runner import PhysicsRunner
 from src.physics.solver import PhysicsSolver
 from src.physics.types import PhysicsEval, PhysicsTask
 from src.physics.preprocessing import preprocess
-
+from src.physics.explainer import explain_physics_question
 if TYPE_CHECKING:
     from src.agents.self_correct.interface import SelfCorrector
 
@@ -55,7 +55,7 @@ async def run_physics(
         )
     except Exception:
         classification = QuestionClassification(
-            ["electrostatics", "geometry"], "Numerical"
+            [],
         )
 
     solver_prompt = get_solver_prompt(classification)
@@ -84,6 +84,22 @@ async def run_physics(
     except Exception:
         pass
     evaluation.result.elapsed_s = time.time() - start
+
+    try:
+        evaluation.result.explanation = explain_physics_question(
+            question=task.question,
+            trace=evaluation.result.trace or {},
+            model_name=model_name,
+            api_key=api_key,
+            base_url=base_url,
+            temperature=temperature,
+            max_tokens=512,
+            enable_thinking=enable_thinking,
+        )
+
+    except Exception:
+        print("Failed to generate explanation, setting to None.")
+        evaluation.result.explanation = None
 
     if output_path:
         record = {

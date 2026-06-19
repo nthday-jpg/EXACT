@@ -73,6 +73,7 @@ async def run_exploration(
                     tokens=None,
                     elapsed_s=0.0,
                     domains=None,
+                    trace=None,
                 )
                 return PhysicsEval(result=result, is_correct=False, reason="exception")
 
