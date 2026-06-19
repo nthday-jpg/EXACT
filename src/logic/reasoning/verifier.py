@@ -23,6 +23,7 @@ from src.logic.reasoning.parser import (
     FolParser,
     parse_formulas,
     try_parse_fol,
+    z3_lock,
 )
 
 # Export all symbols for backward compatibility
@@ -39,9 +40,6 @@ __all__ = [
 
 # Disable Z3 proof globally to ensure process stability (bug in Z3 4.16.0.0 proof generation on complex FOL)
 z3.set_param("proof", False)
-
-# Global lock to ensure thread-safe access to Z3 (which is not thread-safe by default)
-_z3_lock = threading.Lock()
 
 
 def verify_with_z3(
@@ -63,7 +61,7 @@ def verify_with_z3(
             - "unsat_core": List of string tracking variables (e.g. ['p_1', 'neg_conclusion'])
             - "model": z3.Model containing the counterexample if sat, else None
     """
-    with _z3_lock:
+    with z3_lock:
         negated_conclusion_fol = (
             f"NOT ({conclusion_fol})" if negate_conclusion else conclusion_fol
         )

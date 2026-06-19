@@ -405,7 +405,7 @@ def parse_formulas(
 
 
 # Global lock to ensure thread-safe access to Z3 (which is not thread-safe by default)
-_z3_lock = threading.Lock()
+z3_lock = threading.Lock()
 
 
 def try_parse_fol(formula: str) -> tuple[bool, str]:
@@ -418,7 +418,7 @@ def try_parse_fol(formula: str) -> tuple[bool, str]:
     Used by the translation repair loop to validate each generated formula
     before committing it, without running a full solver check.
     """
-    with _z3_lock:
+    with z3_lock:
         try:
             parse_formulas([formula])
             return True, ""

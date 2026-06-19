@@ -1,3 +1,4 @@
+import os
 import json
 import re
 from z3 import unsat, sat
@@ -21,6 +22,11 @@ from src.llm.prompts import (
     STRUCTURED_FOL_PROOF_SYSTEM_PROMPT,
     STRUCTURED_FOL_PROOF_USER_PROMPT_TEMPLATE,
 )
+
+REMOTE_FILTER_MAX_TOKENS = 128
+REMOTE_REASONING_MAX_TOKENS = 1024
+REMOTE_COT_MAX_TOKENS = 1024
+REMOTE_STRUCTURED_PROOF_MAX_TOKENS = 512
 
 
 class ReasoningPipeline:
@@ -122,7 +128,7 @@ class ReasoningPipeline:
 
         try:
             response = self._generate_text(
-                system_prompt, user_prompt, max_new_tokens=512
+                system_prompt, user_prompt, max_new_tokens=REMOTE_FILTER_MAX_TOKENS
             )
             match = re.search(r"\[[\d,\s]+\]", response)
             if not match:
@@ -192,7 +198,9 @@ class ReasoningPipeline:
         return self._generate_text(
             system_prompt,
             user_prompt,
-            max_new_tokens=(2048 if not self.use_local else 768),
+            max_new_tokens=(
+                REMOTE_REASONING_MAX_TOKENS if not self.use_local else 768
+            ),
         )
 
     # ------------------------------------------------------------------
@@ -251,7 +259,14 @@ class ReasoningPipeline:
         """
         result = verification["result"]
 
-        if result == unsat and premises_fol and conclusion_fol:
+        use_structured_proof = os.getenv("EXACT_USE_STRUCTURED_FOL_PROOF", "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+
+        if result == unsat and premises_fol and conclusion_fol and use_structured_proof:
             core_indices = []
             for var_str in verification.get("unsat_core", []):
                 if var_str.startswith("p_"):
@@ -285,7 +300,7 @@ class ReasoningPipeline:
                         self._generate_text,
                         STRUCTURED_FOL_PROOF_SYSTEM_PROMPT,
                         user_prompt_fol,
-                        1024,
+                        REMOTE_STRUCTURED_PROOF_MAX_TOKENS,
                     )
                     future_reasoning = executor.submit(
                         self.generate_reasoning,
@@ -300,12 +315,31 @@ class ReasoningPipeline:
                 if cleaned_fol.startswith("```"):
                     cleaned_fol = re.sub(r"^```(?:json)?\n", "", cleaned_fol)
                     cleaned_fol = re.sub(r"\n```$", "", cleaned_fol)
-                cot_steps = json.loads(cleaned_fol.strip())
+                try:
+                    cot_steps = json.loads(cleaned_fol.strip())
+                except Exception:
+                    # Fallback to regex-based/line-by-line extraction of JSON list string elements
+                    cot_steps = []
+                    matches = re.findall(r'"((?:[^"\\]|\\.)*)"', cleaned_fol)
+                    for match in matches:
+                        match_clean = match.replace('\\"', '"').replace('\\n', '\n').strip()
+                        if any(match_clean.startswith(prefix) for prefix in ["Rule:", "Fact:", "Conclusion:"]) or "satisfied" in match_clean or "=>" in match_clean:
+                            cot_steps.append(match_clean)
+                    
+                    if not cot_steps:
+                        for line in cleaned_fol.splitlines():
+                            line_stripped = line.strip().strip(',[]"\'')
+                            if any(line_stripped.startswith(prefix) for prefix in ["Rule:", "Fact:", "Conclusion:"]) or "satisfied" in line_stripped or "=>" in line_stripped:
+                                cot_steps.append(line_stripped)
+                                
+                    if not cot_steps:
+                        raise ValueError("No valid proof steps could be extracted from model response.")
+                
                 if isinstance(cot_steps, list) and len(cot_steps) > 0:
                     return raw_text, cot_steps
             except Exception as e:
                 print(
-                    f"Warning: Failed to parse structured FOL proof: {str(e)}. Falling back to standard CoT."
+                    f"Note: Failed to parse structured FOL proof: {str(e)}. Falling back to standard CoT."
                 )
 
 
@@ -367,7 +401,7 @@ class ReasoningPipeline:
         raw_text = self._generate_text(
             system_prompt,
             user_prompt,
-            max_new_tokens=(2048 if not self.use_local else 768),
+            max_new_tokens=(REMOTE_COT_MAX_TOKENS if not self.use_local else 768),
         )
         cot_steps = self._parse_cot_steps(raw_text)
         return raw_text, cot_steps
