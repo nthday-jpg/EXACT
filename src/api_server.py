@@ -61,6 +61,16 @@ if "router.huggingface.co" in VLLM_BASE_URL and MODEL_NAME == "fol_router":
 
 # Global instances of logic pipeline and physics helper
 logic_pipeline: Optional[LogicalReasoningPipeline] = None
+TYPE1_TIMEOUT_SECONDS = 58.0
+
+
+def _timing_enabled() -> bool:
+    return os.getenv("EXACT_TIMING", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
 
 
 @app.on_event("startup")
@@ -199,6 +209,10 @@ async def predict(request: PredictRequest):
     """
     start_time = time.time()
     print(f"\n[{request.query_id}] Received {request.type} request...")
+    try:
+        print(f"[{request.query_id}] Request payload: {json.dumps(request.model_dump(), ensure_ascii=False)}")
+    except Exception as e:
+        print(f"[{request.query_id}] Error logging request payload: {e}")
 
     if request.type == "type1":
         if not logic_pipeline:
@@ -209,40 +223,48 @@ async def predict(request: PredictRequest):
         try:
             # 2. Run the Logical Reasoning Pipeline
             # We run this in a threadpool to prevent blocking the async loop
+            # and wrap it in asyncio.wait_for to enforce a strict Type 1 timeout
+            # that still stays below the evaluator's 60-second client timeout.
             loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(
-                None,
-                logic_pipeline.run_pipeline,
-                request.premises,
-                request.query,
-                None,
-                request.options
-            )
+            try:
+                result = await asyncio.wait_for(
+                    loop.run_in_executor(
+                        None,
+                        logic_pipeline.run_pipeline,
+                        request.premises,
+                        request.query,
+                        None,
+                        request.options
+                    ),
+                    timeout=TYPE1_TIMEOUT_SECONDS
+                )
+            except asyncio.TimeoutError:
+                print(f"[{request.query_id}] Type 1 pipeline timed out after {TYPE1_TIMEOUT_SECONDS:.0f} seconds. Returning fallback.")
+                answer = "Uncertain" if "Uncertain" in request.options else (request.options[0] if request.options else "Unknown")
+                resp_items = [
+                    PredictResponseItem(
+                        query_id=request.query_id,
+                        answer=answer,
+                        unit="",
+                        explanation=f"Logical reasoning execution timed out after {TYPE1_TIMEOUT_SECONDS:.0f} seconds.",
+                        premises_used=[],
+                        reasoning=None,
+                    ).model_dump(mode="json")
+                ]
+                print(f"[{request.query_id}] Response payload (timeout fallback): {json.dumps(resp_items, ensure_ascii=False)}")
+                return UTF8JSONResponse(content=resp_items)
 
             # 3. Format the final output
             answer = map_pipeline_answer_to_options(
                 result.get("answer"), request.options
             )
 
-            # Extracted filtered premises list (returned by our modified logic pipeline)
-            filt_premises_nl = result.get("premises_nl", [])
-            premises_used = extract_premises_used(
-                result.get("verification", {}), filt_premises_nl, request.premises
-            )
-
-            # Robust fallback: if Z3 verification fails to find a proof but the answer is a valid specific choice/conclusion,
-            # return the indices of the filtered premises that the model selected and reasoned about.
-            if (
-                answer not in ("Uncertain", "Unknown", "No conclusion can be drawn", "")
-                and not premises_used
-            ):
-                premises_used = []
-                for p in filt_premises_nl:
-                    if p in request.premises:
-                        premises_used.append(request.premises.index(p))
-                # If still empty, default to all premises
-                if not premises_used:
-                    premises_used = list(range(len(request.premises)))
+            premises_used = result.get("premises_used")
+            if not isinstance(premises_used, list):
+                filt_premises_nl = result.get("premises_nl", [])
+                premises_used = extract_premises_used(
+                    result.get("verification", {}), filt_premises_nl, request.premises
+                )
 
             explanation = result.get("reasoning") or ""
             if not explanation.strip():
@@ -273,6 +295,11 @@ async def predict(request: PredictRequest):
             print(
                 f"[{request.query_id}] Type 1 processed in {elapsed:.2f}s. Answer: {answer}"
             )
+            if _timing_enabled() and isinstance(result.get("_timings"), dict):
+                print(
+                    f"[{request.query_id}] Type 1 stage timings: "
+                    f"{json.dumps(result['_timings'], ensure_ascii=False, sort_keys=True)}"
+                )
 
             resp_items = [
                 PredictResponseItem(
@@ -319,13 +346,31 @@ async def predict(request: PredictRequest):
             physics_model = "physics" if is_multilora else MODEL_NAME
             router_model = "fol_router" if is_multilora else MODEL_NAME
 
-            eval_res = await run_physics(
-                task,
-                model_name=physics_model,
-                router_model_name=router_model,
-                api_key=HF_API_KEY,
-                base_url=VLLM_BASE_URL,
-            )
+            try:
+                eval_res = await asyncio.wait_for(
+                    run_physics(
+                        task,
+                        model_name=physics_model,
+                        router_model_name=router_model,
+                        api_key=HF_API_KEY,
+                        base_url=VLLM_BASE_URL,
+                    ),
+                    timeout=55.0
+                )
+            except asyncio.TimeoutError:
+                print(f"[{request.query_id}] Type 2 pipeline timed out after 55 seconds. Returning fallback.")
+                resp_items = [
+                    PredictResponseItem(
+                        query_id=request.query_id,
+                        answer="0",
+                        unit="",
+                        explanation="Physics reasoning execution timed out after 55 seconds.",
+                        premises_used=[],
+                        reasoning=None,
+                    ).model_dump()
+                ]
+                print(f"[{request.query_id}] Response payload (timeout fallback): {json.dumps(resp_items, ensure_ascii=False)}")
+                return UTF8JSONResponse(content=resp_items)
 
             result = eval_res.result
 
