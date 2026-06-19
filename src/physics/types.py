@@ -20,6 +20,7 @@ class PhysicsResult:
     error: Optional[str]
     tokens: Optional[Dict[str, Any]]
     elapsed_s: Optional[float]
+    explanation: Optional[str] = None
     domains: Optional[List[str]] = None
 
 
