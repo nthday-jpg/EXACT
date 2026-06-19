@@ -19,6 +19,11 @@ from src.llm.prompts import (
     COMBINED_GLOSSARY_AND_TRANSLATION_USER_PROMPT_TEMPLATE,
 )
 
+REMOTE_GLOSSARY_MAX_TOKENS = 512
+REMOTE_TRANSLATION_MAX_TOKENS = 2048
+REMOTE_COMBINED_TRANSLATION_MAX_TOKENS = 3072
+REMOTE_REPAIR_MAX_TOKENS = 128
+
 
 class NLToFOLPipeline:
     """
@@ -88,7 +93,7 @@ class NLToFOLPipeline:
 
         try:
             response = self._generate_text(
-                system_prompt, user_prompt, max_new_tokens=1024
+                system_prompt, user_prompt, max_new_tokens=REMOTE_GLOSSARY_MAX_TOKENS
             )
             # Clean markdown code block if present
             cleaned_response = response.strip()
@@ -212,7 +217,7 @@ class NLToFOLPipeline:
             _max_tokens = (
                 max_new_tokens
                 if max_new_tokens is not None
-                else (4096 if not self.use_local else 1024)
+                else (REMOTE_TRANSLATION_MAX_TOKENS if not self.use_local else 1024)
             )
             try:
                 response_content = self._generate_text(
@@ -239,7 +244,7 @@ class NLToFOLPipeline:
             _max_tokens = (
                 max_new_tokens
                 if max_new_tokens is not None
-                else (4096 if not self.use_local else 1024)
+                else (REMOTE_TRANSLATION_MAX_TOKENS if not self.use_local else 1024)
             )
             try:
                 response_content = self._generate_text(
@@ -266,7 +271,11 @@ class NLToFOLPipeline:
             response_content = self._generate_text(
                 system_prompt,
                 user_prompt,
-                max_new_tokens=(4096 if not self.use_local else 2048),
+                max_new_tokens=(
+                    REMOTE_COMBINED_TRANSLATION_MAX_TOKENS
+                    if not self.use_local
+                    else 2048
+                ),
             )
             cleaned_response = response_content.strip()
 
@@ -316,7 +325,9 @@ class NLToFOLPipeline:
         response_content = self._generate_text(
             system_prompt,
             user_prompt,
-            max_new_tokens=(4096 if not self.use_local else 2048),
+            max_new_tokens=(
+                REMOTE_TRANSLATION_MAX_TOKENS if not self.use_local else 2048
+            ),
         )
         all_extracted_fol = extract_fol_formulas(response_content)
         # Normalize each formula automatically to repair simple syntax and casing issues immediately
@@ -334,7 +345,7 @@ class NLToFOLPipeline:
             formula=formula, error=error
         )
         return self._generate_text(
-            system_prompt, user_prompt, max_new_tokens=256
+            system_prompt, user_prompt, max_new_tokens=REMOTE_REPAIR_MAX_TOKENS
         ).strip()
 
     def _validate_and_repair_single(self, formula: str, max_retries: int = 2) -> str:
