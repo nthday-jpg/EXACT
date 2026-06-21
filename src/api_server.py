@@ -110,8 +110,8 @@ class ReasoningObject(BaseModel):
 
 class PredictResponseItem(BaseModel):
     query_id: str
-    answer: Union[str, List[str]]
-    unit: Union[str, List[str]]
+    answer: str
+    unit: str
     explanation: str
     premises_used: List[int]
     reasoning: Optional[ReasoningObject] = None
@@ -382,11 +382,9 @@ async def predict(request: PredictRequest):
                 unit_val = result.model_answer.get("unit")
 
                 if isinstance(ans_val, list):
-                    ans_str = [str(x) for x in ans_val]
+                    ans_str = "; ".join(str(x) for x in ans_val)
                 else:
                     ans_str = str(ans_val) if ans_val is not None else "0"
-                    if ";" in ans_str:
-                        ans_str = [x.strip() for x in ans_str.split(";")]
 
                 def clean_unit(u):
                     u_str = str(u) if u is not None else ""
@@ -396,13 +394,9 @@ async def predict(request: PredictRequest):
                     return u_str
 
                 if isinstance(unit_val, list):
-                    unit_str = [clean_unit(u) for u in unit_val]
+                    unit_str = "; ".join(clean_unit(u) for u in unit_val)
                 else:
-                    unit_str_raw = str(unit_val) if unit_val is not None else ""
-                    if ";" in unit_str_raw:
-                        unit_str = [clean_unit(u.strip()) for u in unit_str_raw.split(";")]
-                    else:
-                        unit_str = clean_unit(unit_str_raw)
+                    unit_str = clean_unit(unit_val)
 
             # 4. Form explanation and structured reasoning
             explanation = ""
