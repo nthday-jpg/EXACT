@@ -266,12 +266,120 @@ async def predict(request: PredictRequest):
                     result.get("verification", {}), filt_premises_nl, request.premises
                 )
 
-            explanation = result.get("reasoning") or ""
+            # Reconstruct the conclusion text to generate a concise, human-like explanation
+            from src.logic.pipeline import parse_mcq_options
+            conclusion_nl = request.query
+            try:
+                options = parse_mcq_options(request.query)
+                if answer in options:
+                    conclusion_nl = f"Option {answer}: {options[answer]}"
+                elif request.options and answer in request.options:
+                    idx = request.options.index(answer)
+                    opt_key = chr(65 + idx)
+                    if opt_key in options:
+                        conclusion_nl = f"Option {opt_key}: {options[opt_key]}"
+                    else:
+                        conclusion_nl = answer
+            except Exception:
+                pass
+
+            explanation = ""
+            if logic_pipeline and result.get("verification"):
+                try:
+                    from src.logic.reasoning.verifier import format_z3_model
+                    verification = result.get("verification")
+                    verification_result = verification.get("result")
+                    
+                    system_prompt = (
+                        "You are an expert in logical reasoning. "
+                        "Your role is to explain logical arguments clearly, concisely, and naturally, like a human thinker.\n\n"
+                        "IMPORTANT RULES:\n"
+                        "- Be highly concise and direct. Keep the explanation under 2-3 sentences.\n"
+                        "- Do NOT include any introductory fluff (e.g. 'Based on the provided premises...', 'We can conclude...'). Start immediately with the first logical step.\n"
+                        "- Synthesize ideas across premises — show how they connect and combine.\n"
+                        "- Use transitional language: 'Since', 'Therefore', 'This means', 'Combined with', 'As a result', 'It follows that'.\n"
+                        "- Never just copy or list premises verbatim — interpret and derive.\n"
+                        "- Your explanation should read as a flowing argument, not a bullet list of facts."
+                    )
+                    
+                    core_premises_nl = result.get("premises_nl") or request.premises
+                    
+                    if verification_result == z3.unsat:
+                        core_indices = []
+                        for var_str in verification.get("unsat_core", []):
+                            if var_str.startswith("p_"):
+                                try:
+                                    core_indices.append(int(var_str.split("_")[1]) - 1)
+                                except ValueError:
+                                    pass
+                        core_indices.sort()
+                        
+                        core_premises_text = "\n".join(
+                            f"- Premise {idx + 1}: {core_premises_nl[idx]}"
+                            for idx in core_indices if idx < len(core_premises_nl)
+                        )
+                        if not core_premises_text:
+                            core_premises_text = "\n".join(f"- {p}" for p in core_premises_nl)
+                            
+                        user_prompt = (
+                            "The following premises have been formally proven (via Z3 SMT solver) to entail the conclusion.\n\n"
+                            f"Key premises:\n{core_premises_text}\n\n"
+                            f"Conclusion:\n- {conclusion_nl}\n\n"
+                            "Write an extremely concise explanation (2-3 sentences max) that shows HOW these premises chain together to reach the conclusion. "
+                            "Start directly with the first step of reasoning, without any introductory filler. "
+                            "Trace the logical flow using transitional words like 'Since', 'Therefore', 'This means', 'Combined with'."
+                        )
+                    elif verification_result == z3.sat:
+                        premises_text = "\n".join(f"- {p}" for p in core_premises_nl)
+                        model_str = format_z3_model(verification.get("model"))
+                        user_prompt = (
+                            "The SMT solver found a counterexample: the premises are all TRUE yet the conclusion is FALSE.\n\n"
+                            f"Premises:\n{premises_text}\n\n"
+                            f"Conclusion being tested:\n- {conclusion_nl}\n\n"
+                            f"Counterexample (Z3 model):\n{model_str}\n\n"
+                            "Explain in a very brief plain language sentence or two why this counterexample breaks the conclusion. "
+                            "Start directly without introductory filler. Show what the counterexample tells us and what logical gap it exposes."
+                        )
+                    else:
+                        premises_text = "\n".join(f"- {p}" for p in core_premises_nl)
+                        user_prompt = (
+                            "The solver could not determine whether the conclusion is entailed by the premises.\n\n"
+                            f"Premises:\n{premises_text}\n\n"
+                            f"Conclusion:\n- {conclusion_nl}\n\n"
+                            "Analyse briefly (in 1-2 sentences) why the relationship is indeterminate. "
+                            "Start directly. What key information is missing?"
+                        )
+                    
+                    explanation = logic_pipeline.llm_client.generate_text(
+                        user_prompt,
+                        system_prompt=system_prompt,
+                        max_new_tokens=256
+                    ).strip()
+                except Exception as e:
+                    print(f"Error generating human explanation: {e}")
+
+            if not explanation or not explanation.strip():
+                explanation = result.get("reasoning") or ""
+
+            # If the explanation is just cited premises or list of rules, let's construct/use the CoT response 
+            # if it exists, as it is a more descriptive and flowing natural language explanation.
+            # However, for a single/multiple choice, if Z3 was unsat and we generated a simple cited premise string:
+            # "Option A is logically supported by the cited premises..."
+            # we want to ensure it reads nicely. If result has "cot" and explanation starts with "Option ",
+            # we can combine them or construct a flowing explanation.
+            if result.get("cot") and (not explanation.strip() or explanation.strip().startswith("Option ")):
+                # Filter out raw rule/fact formatting from CoT to make it natural language
+                clean_steps = []
+                for step in result.get("cot", []):
+                    # Remove formal logic tags if present
+                    s = step.replace("Rule:", "").replace("Fact:", "").replace("Conclusion:", "").strip()
+                    if s:
+                        clean_steps.append(s)
+                if clean_steps:
+                    explanation = " ".join(clean_steps)
+            
             if not explanation.strip():
-                # Fallback to CoT if explanation is empty
-                explanation = (
-                    "\n".join(result.get("cot", [])) or "No explanation generated."
-                )
+                explanation = "No explanation generated."
 
             reasoning = None
             if result.get("cot"):
