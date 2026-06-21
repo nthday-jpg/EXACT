@@ -16,7 +16,7 @@ import time
 import json
 import asyncio
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
@@ -110,8 +110,8 @@ class ReasoningObject(BaseModel):
 
 class PredictResponseItem(BaseModel):
     query_id: str
-    answer: str
-    unit: str
+    answer: Union[str, List[str]]
+    unit: Union[str, List[str]]
     explanation: str
     premises_used: List[int]
     reasoning: Optional[ReasoningObject] = None
@@ -382,71 +382,86 @@ async def predict(request: PredictRequest):
                 unit_val = result.model_answer.get("unit")
 
                 if isinstance(ans_val, list):
-                    ans_str = str(ans_val[0]) if ans_val else "0"
+                    ans_str = [str(x) for x in ans_val]
                 else:
                     ans_str = str(ans_val) if ans_val is not None else "0"
+                    if ";" in ans_str:
+                        ans_str = [x.strip() for x in ans_str.split(";")]
+
+                def clean_unit(u):
+                    u_str = str(u) if u is not None else ""
+                    u_str = u_str.replace("μ", "u").replace("µ", "u").replace("Ω", "ohm").replace("Ohm", "ohm")
+                    if u_str == "-":
+                        u_str = ""
+                    return u_str
 
                 if isinstance(unit_val, list):
-                    unit_str = str(unit_val[0]) if unit_val else ""
+                    unit_str = [clean_unit(u) for u in unit_val]
                 else:
-                    unit_str = str(unit_val) if unit_val is not None else ""
-
-                unit_str = unit_str.replace("μ", "u").replace("µ", "u").replace("Ω", "ohm").replace("Ohm", "ohm")
-                if unit_str == "-":
-                    unit_str = ""
+                    unit_str_raw = str(unit_val) if unit_val is not None else ""
+                    if ";" in unit_str_raw:
+                        unit_str = [clean_unit(u.strip()) for u in unit_str_raw.split(";")]
+                    else:
+                        unit_str = clean_unit(unit_str_raw)
 
             # 4. Form explanation and structured reasoning
             explanation = ""
             reasoning_steps = []
 
-            # Use result.explanation if available
+            # First, try to extract reasoning steps and a fallback explanation from raw response JSON
+            parsed_reasoning_steps = None
+            parsed_explanation = None
+            try:
+                data = json.loads(result.raw_response.strip())
+                thought = data.get("thought", "")
+                physics_analysis = data.get("physics_analysis", [])
+                algebraic_reasoning = data.get("algebraic_reasoning", [])
+
+                # Build reasoning steps: thought + physics_analysis + algebraic_reasoning
+                thought_list = [thought] if isinstance(thought, str) else (thought or [])
+                thought_list = [t for t in thought_list if t]
+                parsed_reasoning_steps = thought_list + physics_analysis + algebraic_reasoning
+
+                # Build parsed explanation fallback
+                explanation_parts = []
+                if thought:
+                    explanation_parts.append(thought)
+                if physics_analysis:
+                    explanation_parts.append(
+                        "Physics Analysis:\n"
+                        + "\n".join(f"- {step}" for step in physics_analysis)
+                    )
+                if algebraic_reasoning:
+                    explanation_parts.append(
+                        "Algebraic Reasoning:\n"
+                        + "\n".join(f"- {step}" for step in algebraic_reasoning)
+                    )
+                parsed_explanation = "\n\n".join(explanation_parts)
+            except Exception:
+                pass
+
+            # Determine final explanation (prefer result.explanation)
             if result.explanation and result.explanation.strip():
                 explanation = result.explanation.strip()
-                reasoning_steps = [
-                    line.strip() for line in explanation.splitlines() if line.strip()
-                ]
+            elif parsed_explanation:
+                explanation = parsed_explanation
             else:
-                try:
-                    # Try parsing raw LLM response as JSON to extract physics reasoning steps
-                    data = json.loads(result.raw_response.strip())
-                    thought = data.get("thought", "")
-                    physics_analysis = data.get("physics_analysis", [])
-                    algebraic_reasoning = data.get("algebraic_reasoning", [])
-
-                    explanation_parts = []
-                    if thought:
-                        explanation_parts.append(thought)
-                    if physics_analysis:
-                        explanation_parts.append(
-                            "Physics Analysis:\n"
-                            + "\n".join(f"- {step}" for step in physics_analysis)
-                        )
-                    if algebraic_reasoning:
-                        explanation_parts.append(
-                            "Algebraic Reasoning:\n"
-                            + "\n".join(f"- {step}" for step in algebraic_reasoning)
-                        )
-
-                    explanation = (
-                        "\n\n".join(explanation_parts)
-                        or f"Calculated answer: {ans_str} with unit {unit_str}."
-                    )
-                    
-                    thought_list = [thought] if isinstance(thought, str) else (thought or [])
-                    thought_list = [t for t in thought_list if t]
-                    reasoning_steps = thought_list + physics_analysis + algebraic_reasoning
-                except Exception:
-                    explanation = (
-                        result.raw_response
-                        or result.error
-                        or "Executed python code to compute answer."
-                    )
-                    reasoning_steps = [
-                        line.strip() for line in explanation.splitlines() if line.strip()
-                    ]
+                explanation = (
+                    result.raw_response
+                    or result.error
+                    or "Executed python code to compute answer."
+                )
 
             if not explanation.strip():
                 explanation = f"Calculated answer: {ans_str}."
+
+            # Determine final reasoning steps (prefer parsed JSON steps)
+            if parsed_reasoning_steps is not None:
+                reasoning_steps = parsed_reasoning_steps
+            else:
+                reasoning_steps = [
+                    line.strip() for line in explanation.splitlines() if line.strip()
+                ]
 
             reasoning = None
             if reasoning_steps:

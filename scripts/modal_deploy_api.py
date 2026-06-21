@@ -47,7 +47,7 @@ def api_server():
     load_dotenv(dotenv_path="/app/.env")
     
     # Set remote vLLM endpoint configuration
-    vllm_url = os.getenv("VLLM_BASE_URL", "https://cqktgju--exact-qwen3-8b-lora-exactmodel-api-server.modal.run/v1")
+    vllm_url = os.getenv("VLLM_BASE_URL", "https://cqktgju--exact-model-server-exactmodel-api-server.modal.run/v1")
     os.environ["VLLM_BASE_URL"] = vllm_url
     os.environ["MODEL_NAME"] = "fol_router"
     
