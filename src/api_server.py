@@ -399,41 +399,51 @@ async def predict(request: PredictRequest):
             explanation = ""
             reasoning_steps = []
 
-            try:
-                # Try parsing raw LLM response as JSON to extract physics reasoning steps
-                data = json.loads(result.raw_response.strip())
-                thought = data.get("thought", "")
-                physics_analysis = data.get("physics_analysis", [])
-                algebraic_reasoning = data.get("algebraic_reasoning", [])
-
-                explanation_parts = []
-                if thought:
-                    explanation_parts.append(thought)
-                if physics_analysis:
-                    explanation_parts.append(
-                        "Physics Analysis:\n"
-                        + "\n".join(f"- {step}" for step in physics_analysis)
-                    )
-                if algebraic_reasoning:
-                    explanation_parts.append(
-                        "Algebraic Reasoning:\n"
-                        + "\n".join(f"- {step}" for step in algebraic_reasoning)
-                    )
-
-                explanation = (
-                    "\n\n".join(explanation_parts)
-                    or f"Calculated answer: {ans_str} with unit {unit_str}."
-                )
-                reasoning_steps = physics_analysis + algebraic_reasoning
-            except Exception:
-                explanation = (
-                    result.raw_response
-                    or result.error
-                    or "Executed python code to compute answer."
-                )
+            # Use result.explanation if available
+            if result.explanation and result.explanation.strip():
+                explanation = result.explanation.strip()
                 reasoning_steps = [
                     line.strip() for line in explanation.splitlines() if line.strip()
                 ]
+            else:
+                try:
+                    # Try parsing raw LLM response as JSON to extract physics reasoning steps
+                    data = json.loads(result.raw_response.strip())
+                    thought = data.get("thought", "")
+                    physics_analysis = data.get("physics_analysis", [])
+                    algebraic_reasoning = data.get("algebraic_reasoning", [])
+
+                    explanation_parts = []
+                    if thought:
+                        explanation_parts.append(thought)
+                    if physics_analysis:
+                        explanation_parts.append(
+                            "Physics Analysis:\n"
+                            + "\n".join(f"- {step}" for step in physics_analysis)
+                        )
+                    if algebraic_reasoning:
+                        explanation_parts.append(
+                            "Algebraic Reasoning:\n"
+                            + "\n".join(f"- {step}" for step in algebraic_reasoning)
+                        )
+
+                    explanation = (
+                        "\n\n".join(explanation_parts)
+                        or f"Calculated answer: {ans_str} with unit {unit_str}."
+                    )
+                    
+                    thought_list = [thought] if isinstance(thought, str) else (thought or [])
+                    thought_list = [t for t in thought_list if t]
+                    reasoning_steps = thought_list + physics_analysis + algebraic_reasoning
+                except Exception:
+                    explanation = (
+                        result.raw_response
+                        or result.error
+                        or "Executed python code to compute answer."
+                    )
+                    reasoning_steps = [
+                        line.strip() for line in explanation.splitlines() if line.strip()
+                    ]
 
             if not explanation.strip():
                 explanation = f"Calculated answer: {ans_str}."

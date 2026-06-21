@@ -2,7 +2,7 @@ import os
 import modal
 
 # Define the Modal App
-app = modal.App("exact-api-server")
+app = modal.App("exact-server")
 
 # Define the container image with required dependencies and code directories
 image = (
@@ -32,7 +32,7 @@ image = (
     cpu=1.0,
     memory=1024,
     secrets=[modal.Secret.from_dotenv()],
-    min_containers=0,  # Allow scale-to-zero to minimize idle cost during smoke testing
+    min_containers=1,  # Allow scale-to-zero to minimize idle cost during smoke testing
 )
 @modal.asgi_app()
 def api_server():

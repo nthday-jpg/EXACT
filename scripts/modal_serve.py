@@ -1,7 +1,7 @@
 import os
 import modal
 
-app = modal.App("exact-qwen3-8b-lora")
+app = modal.App("exact-model-server")
 
 def download_model():
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -39,7 +39,7 @@ image = (
     memory=16384,       # 16 GB system RAM (sufficient since device_map="auto" loads directly to GPU)
     timeout=600,
     scaledown_window=60, # Shut down after 60 seconds of inactivity to save cost
-    min_containers=0,   # Allow scale-to-zero to minimize idle cost during smoke testing
+    min_containers=1,   # Allow scale-to-zero to minimize idle cost during smoke testing
     secrets=[modal.Secret.from_dotenv()],
 )
 class ExactModel:
